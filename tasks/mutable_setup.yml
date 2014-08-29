@@ -1,0 +1,9 @@
+---
+# Instantiate mutable config files
+
+- name: Create mutable configuration file directory
+  file: state=directory path={{ galaxy_mutable_config_dir }}
+
+- name: Instantiate mutable configuration files
+  command: cp {{ item.src }} {{ item.dest }} creates={{ item.dest }}
+  with_items: galaxy_mutable_configs

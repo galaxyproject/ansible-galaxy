@@ -1,0 +1,49 @@
+{#- define galaxy_config if it doesn't exist, for later ease of use -#}
+{%- if galaxy_config is not defined or galaxy_config == None -%}
+{%- set galaxy_config = {} %}
+{% endif %}
+
+{% for server in galaxy_config if server.startswith('server:') %}
+
+{#- server: must contain use, set it if unset -#}
+{#- default to enabling the threadpool, but this can be overridden -#}
+[{{ server }}]
+{{ "use = egg:Paste#http" if galaxy_config[server]['use'] is not defined else "" }}
+{{ "use_threadpool = True" if galaxy_config[server]['use_threadpool'] is not defined else "" }}
+{% for opt in galaxy_config[server] %}
+{{ opt }} = {{ galaxy_config[server][opt] }}
+{% endfor %}
+
+{% else %}
+
+[server:main]
+use = egg:Paste#http
+use_threadpool = True
+
+{% endfor %}
+
+{#- add any other defined sections (e.g. [uwsgi]). -#}
+{% for section in galaxy_config if not section.startswith('server:') and not section == 'app:main' %}
+[{{ section }}]
+{% for opt in galaxy_config[section] %}
+{{ opt }} = {{ galaxy_config[section][opt] }}
+{% endfor %}
+{% endfor %}
+
+[app:main]
+
+; options from the role's config defaults appear here
+{# defaults -#}
+{% for opt in galaxy_config_default['app:main'] %}
+{% if 'app:main' not in galaxy_config or ('app:main' in galaxy_config and opt not in galaxy_config['app:main']) %}
+{{ opt }} = {{ galaxy_config_default['app:main'][opt] }}
+{% endif %}
+{% endfor %}
+
+; options configured by the site admin appear here
+{# configured options -#}
+{% if 'app:main' in galaxy_config %}
+{% for opt in galaxy_config['app:main'] %}
+{{ opt }} = {{ galaxy_config['app:main'][opt] }}
+{% endfor %}
+{% endif %}

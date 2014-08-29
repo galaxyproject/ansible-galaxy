@@ -1,0 +1,77 @@
+---
+# defaults file for natefoo.galaxy
+
+# Controls which tasks are included, in case you need to perform different
+# options on different hosts or server directories.
+galaxy_manage_clone: yes
+galaxy_manage_static_setup: yes
+galaxy_manage_mutable_setup: yes
+galaxy_manage_database: yes
+galaxy_fetch_eggs: yes
+
+# Where to clone Galaxy from
+galaxy_repo: https://bitbucket.org/galaxy/galaxy-dist
+
+# This can be a tag (as shown here) but doing so will cause the revision check
+# task to always report "changed"
+galaxy_changeset_id: stable
+
+# This will automatically be used by run.sh
+galaxy_venv_dir: "{{ galaxy_server_dir }}/.venv"
+
+# TODO: Implement something like this for starter/restarter
+#galaxy_server_type: paste_singleprocess
+
+# By default, everything lives in the Galaxy clone
+galaxy_config_dir: "{{ galaxy_server_dir }}"
+galaxy_mutable_config_dir: "{{ galaxy_server_dir }}"
+galaxy_mutable_data_dir: "{{ galaxy_server_dir }}/database"
+galaxy_config_file: "{{ galaxy_config_dir }}/universe_wsgi.ini"
+galaxy_shed_tool_conf_file: "{{ galaxy_mutable_config_dir }}/shed_tool_conf.xml"
+
+# The default Galaxy configuration, ensures that Galaxy can find all of the
+# configs if galaxy_config_dir != galaxy_server_dir
+galaxy_config_default:
+  "app:main":
+    "paste.app_factory": "galaxy.web.buildapp:app_factory"
+    builds_file_path: "{{ galaxy_server_dir }}/tool-data/shared/ucsc/builds.txt.sample"
+    data_manager_config_file: "{{ galaxy_server_dir }}/data_manager_conf.xml.sample"
+    datatypes_config_file: "{{ galaxy_server_dir }}/datatypes_conf.xml.sample"
+    external_service_type_config_file: "{{ galaxy_server_dir }}/external_service_types_conf.xml.sample"
+    integrated_tool_panel_config: "{{ galaxy_mutable_config_dir }}/integrated_tool_panel.xml"
+    migrated_tools_config: "{{ galaxy_mutable_config_dir }}/migrated_tools_conf.xml"
+    openid_config_file: "{{ galaxy_server_dir }}/openid_conf.xml.sample }}"
+    shed_data_manager_config_file: "{{ galaxy_mutable_config_dir }}/shed_data_manager_conf.xml"
+    shed_tool_data_table_config: "{{ galaxy_mutable_config_dir }}/shed_tool_data_table_conf.xml"
+    tool_config_file: "{{ galaxy_server_dir }}/tool_conf.xml.sample,{{ galaxy_shed_tool_conf_file }}"
+    tool_data_table_config_path: "{{ galaxy_server_dir }}/tool_data_table_conf.xml.sample"
+    tool_sheds_config_file: "{{ galaxy_server_dir }}/tool_sheds_conf.xml.sample"
+    ucsc_build_sites: "{{ galaxy_server_dir }}/tool-data/shared/ucsc/ucsc_build_sites.txt.sample"
+    visualization_plugins_directory: "config/plugins/visualizations"
+
+    file_path: "{{ galaxy_mutable_data_dir }}/datasets"
+    new_file_path: "{{ galaxy_mutable_data_dir }}/tmp"
+    job_working_directory: "{{ galaxy_mutable_data_dir }}/jobs"
+    template_cache_path: "{{ galaxy_mutable_data_dir }}/template_cache"
+    whoosh_index_dir: "{{ galaxy_mutable_data_dir }}/whoosh_cache"
+    object_store_cache_path: "{{ galaxy_mutable_data_dir }}/object_store_cache"
+    citation_cache_data_dir: "{{ galaxy_mutable_data_dir }}/citations/data"
+    citation_cache_lock_dir: "{{ galaxy_mutable_data_dir }}/citations/locks"
+
+# Automatically instantiate mutable config files if they don't exist (dest will
+# not be overwritten if it exists)
+galaxy_mutable_configs:
+  - src: "{{ galaxy_server_dir }}/shed_tool_conf.xml.sample"
+    dest: "{{ galaxy_shed_tool_conf_file }}"
+  - src: "{{ galaxy_server_dir }}/migrated_tools_conf.xml.sample"
+    dest: "{{ galaxy_config['app:main']['migrated_tools_config'] if galaxy_config is defined and 'app:main' in galaxy_config and 'migrated_tools_config' in galaxy_config['app:main'] else galaxy_config_default['app:main']['migrated_tools_config'] }}"
+  - src: "{{ galaxy_server_dir }}/shed_data_manager_conf.xml.sample"
+    dest: "{{ galaxy_config['app:main']['shed_data_manager_config_file'] if galaxy_config is defined and 'app:main' in galaxy_config and 'shed_data_manager_config_file' in galaxy_config['app:main'] else galaxy_config_default['app:main']['shed_data_manager_config_file'] }}"
+  - src: "{{ galaxy_server_dir }}/shed_tool_data_table_conf.xml.sample"
+    dest: "{{ galaxy_config['app:main']['shed_tool_data_table_config'] if galaxy_config is defined and 'app:main' in galaxy_config and 'shed_tool_data_table_config' in galaxy_config['app:main'] else galaxy_config_default['app:main']['shed_tool_data_table_config'] }}"
+
+# These are lists of hashes in the same format as galaxy_mutable_configs that
+# can be used to cause extra files and templates to be installed on the managed
+# host.
+galaxy_config_files: []
+galaxy_config_templates: []

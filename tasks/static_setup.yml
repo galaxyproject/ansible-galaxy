@@ -1,0 +1,18 @@
+---
+# Manage static Galaxy configuration files
+
+- name: Create Galaxy config dir
+  file: state=directory path={{ galaxy_config_dir }}
+
+- name: Install additional Galaxy config files (static)
+  copy: src={{ item.name }} dest={{ item.dest }} backup=yes
+  with_items: galaxy_config_files
+
+- name: Install additional Galaxy config files (template)
+  template: src={{ item.name }} dest={{ item.dest }} backup=yes
+  with_items: galaxy_config_templates
+
+- name: Create Galaxy configuration file
+  template: src=universe_wsgi.ini.j2 dest={{ galaxy_config_file }} backup=yes
+  notify:
+    - restart galaxy

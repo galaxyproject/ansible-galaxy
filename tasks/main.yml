@@ -1,0 +1,22 @@
+---
+# main tasks file for natefoo.galaxy
+
+# Deploy a Galaxy server
+#   https://wiki.galaxyproject.org/
+
+- include: clone.yml
+  when: galaxy_manage_clone
+  tags:
+    - galaxy_manage_clone
+
+- include: static_setup.yml
+  when: galaxy_manage_static_setup
+
+- include: eggs.yml
+  when: galaxy_fetch_eggs
+
+- include: mutable_setup.yml
+  when: galaxy_manage_mutable_setup
+
+- include: database.yml
+  when: galaxy_manage_database
