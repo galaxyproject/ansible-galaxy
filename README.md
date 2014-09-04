@@ -216,5 +216,5 @@ License
 Author Information
 ------------------
 
-[Nate Coraor](https://github.com/natefoo)  
 [John Chilton](https://github.com/jmchilton)
+[Nate Coraor](https://github.com/natefoo)  

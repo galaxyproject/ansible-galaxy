@@ -1,8 +1,9 @@
 ---
 galaxy_info:
-  author: Nate Coraor
+  author: The Galaxy Project
   description: Install and manage a Galaxy (http://galaxyproject.org/) server.
-  company: Penn State University
+  company: The Galaxy Project
+  license: AFL v3.0
   min_ansible_version: 1.4
   platforms:
   - name: EL
