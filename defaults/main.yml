@@ -40,7 +40,7 @@ galaxy_config_default:
     external_service_type_config_file: "{{ galaxy_server_dir }}/external_service_types_conf.xml.sample"
     integrated_tool_panel_config: "{{ galaxy_mutable_config_dir }}/integrated_tool_panel.xml"
     migrated_tools_config: "{{ galaxy_mutable_config_dir }}/migrated_tools_conf.xml"
-    openid_config_file: "{{ galaxy_server_dir }}/openid_conf.xml.sample }}"
+    openid_config_file: "{{ galaxy_server_dir }}/openid_conf.xml.sample"
     shed_data_manager_config_file: "{{ galaxy_mutable_config_dir }}/shed_data_manager_conf.xml"
     shed_tool_data_table_config: "{{ galaxy_mutable_config_dir }}/shed_tool_data_table_conf.xml"
     tool_config_file: "{{ galaxy_server_dir }}/tool_conf.xml.sample,{{ galaxy_shed_tool_conf_file }}"
