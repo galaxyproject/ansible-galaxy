@@ -35,17 +35,17 @@ galaxy_config_default:
   "app:main":
     "paste.app_factory": "galaxy.web.buildapp:app_factory"
     builds_file_path: "{{ galaxy_server_dir }}/tool-data/shared/ucsc/builds.txt.sample"
-    data_manager_config_file: "{{ galaxy_server_dir }}/data_manager_conf.xml.sample"
-    datatypes_config_file: "{{ galaxy_server_dir }}/datatypes_conf.xml.sample"
-    external_service_type_config_file: "{{ galaxy_server_dir }}/external_service_types_conf.xml.sample"
+    data_manager_config_file: "{{ galaxy_server_dir }}/config/data_manager_conf.xml.sample"
+    datatypes_config_file: "{{ galaxy_server_dir }}/config/datatypes_conf.xml.sample"
+    external_service_type_config_file: "{{ galaxy_server_dir }}/config/external_service_types_conf.xml.sample"
     integrated_tool_panel_config: "{{ galaxy_mutable_config_dir }}/integrated_tool_panel.xml"
     migrated_tools_config: "{{ galaxy_mutable_config_dir }}/migrated_tools_conf.xml"
-    openid_config_file: "{{ galaxy_server_dir }}/openid_conf.xml.sample"
+    openid_config_file: "{{ galaxy_server_dir }}/config/openid_conf.xml.sample"
     shed_data_manager_config_file: "{{ galaxy_mutable_config_dir }}/shed_data_manager_conf.xml"
     shed_tool_data_table_config: "{{ galaxy_mutable_config_dir }}/shed_tool_data_table_conf.xml"
-    tool_config_file: "{{ galaxy_server_dir }}/tool_conf.xml.sample,{{ galaxy_shed_tool_conf_file }}"
-    tool_data_table_config_path: "{{ galaxy_server_dir }}/tool_data_table_conf.xml.sample"
-    tool_sheds_config_file: "{{ galaxy_server_dir }}/tool_sheds_conf.xml.sample"
+    tool_config_file: "{{ galaxy_server_dir }}/config/tool_conf.xml.sample,{{ galaxy_shed_tool_conf_file }}"
+    tool_data_table_config_path: "{{ galaxy_server_dir }}/config/tool_data_table_conf.xml.sample"
+    tool_sheds_config_file: "{{ galaxy_server_dir }}/config/tool_sheds_conf.xml.sample"
     ucsc_build_sites: "{{ galaxy_server_dir }}/tool-data/shared/ucsc/ucsc_build_sites.txt.sample"
     visualization_plugins_directory: "config/plugins/visualizations"
 
@@ -61,13 +61,13 @@ galaxy_config_default:
 # Automatically instantiate mutable config files if they don't exist (dest will
 # not be overwritten if it exists)
 galaxy_mutable_configs:
-  - src: "{{ galaxy_server_dir }}/shed_tool_conf.xml.sample"
+  - src: "{{ galaxy_server_dir }}/config/shed_tool_conf.xml.sample"
     dest: "{{ galaxy_shed_tool_conf_file }}"
-  - src: "{{ galaxy_server_dir }}/migrated_tools_conf.xml.sample"
+  - src: "{{ galaxy_server_dir }}/config/migrated_tools_conf.xml.sample"
     dest: "{{ galaxy_config['app:main']['migrated_tools_config'] if galaxy_config is defined and 'app:main' in galaxy_config and 'migrated_tools_config' in galaxy_config['app:main'] else galaxy_config_default['app:main']['migrated_tools_config'] }}"
-  - src: "{{ galaxy_server_dir }}/shed_data_manager_conf.xml.sample"
+  - src: "{{ galaxy_server_dir }}/config/shed_data_manager_conf.xml.sample"
     dest: "{{ galaxy_config['app:main']['shed_data_manager_config_file'] if galaxy_config is defined and 'app:main' in galaxy_config and 'shed_data_manager_config_file' in galaxy_config['app:main'] else galaxy_config_default['app:main']['shed_data_manager_config_file'] }}"
-  - src: "{{ galaxy_server_dir }}/shed_tool_data_table_conf.xml.sample"
+  - src: "{{ galaxy_server_dir }}/config/shed_tool_data_table_conf.xml.sample"
     dest: "{{ galaxy_config['app:main']['shed_tool_data_table_config'] if galaxy_config is defined and 'app:main' in galaxy_config and 'shed_tool_data_table_config' in galaxy_config['app:main'] else galaxy_config_default['app:main']['shed_tool_data_table_config'] }}"
 
 # These are lists of hashes in the same format as galaxy_mutable_configs that
