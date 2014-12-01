@@ -2,19 +2,19 @@
 # Manage Galaxy clone
 
 - name: Check for Galaxy
-  stat: path={{ galaxy_server_dir }}/universe_wsgi.ini.sample
-  register: universe_wsgi_ini_sample
+  stat: path={{ galaxy_server_dir }}/run.sh
+  register: run_sh
 
 - name: Get current Galaxy changeset
   command: "{{ hg_executable | default( 'hg' ) }} parents --template '{node}' chdir={{ galaxy_server_dir }}"
   register: current_changeset_id
   changed_when: False
-  when: universe_wsgi_ini_sample.stat.exists
+  when: run_sh.stat.exists
 
 - name: Report current Galaxy changeset
   debug: msg="Current changeset of {{ galaxy_server_dir }} {{ current_changeset_id.stdout | default(-1) }} does not match playbook version {{ galaxy_changeset_id }}"
   changed_when: True
-  when: universe_wsgi_ini_sample.stat.exists and (current_changeset_id.stdout | default(-1) != galaxy_changeset_id)
+  when: run_sh.stat.exists and (current_changeset_id.stdout | default(-1) != galaxy_changeset_id)
 
 - name: Update Galaxy to correct changeset
   hg: dest={{ galaxy_server_dir }} force=no purge=no repo={{ galaxy_repo }} revision={{ galaxy_changeset_id }} executable={{ hg_executable | default( 'hg' ) }}
