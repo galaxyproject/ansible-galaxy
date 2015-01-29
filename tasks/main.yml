@@ -9,6 +9,15 @@
   tags:
     - galaxy_manage_clone
 
+- include: download.yml
+  when: not galaxy_manage_clone and galaxy_manage_download 
+  tags:
+    - galaxy_manage_download
+
+# Only manage virtualenv if obtaining for backward compatibilty
+- include: virtualenv.yml
+  when: galaxy_manage_clone or galaxy_manage_download
+
 - include: static_setup.yml
   when: galaxy_manage_static_setup
 
