@@ -21,6 +21,3 @@
   notify:
     - restart galaxy
     - email administrator with changeset id
-
-- name: Create Galaxy virtualenv
-  pip: name=pip virtualenv={{ galaxy_venv_dir }} virtualenv_command="{{ pip_virtualenv_command | default( 'virtualenv' ) }}"
