@@ -12,10 +12,11 @@ to [Ansible Galaxy][ansiblegalaxy].
 Requirements
 ------------
 
-This role has the same dependencies as the `hg` module, namely,
-[Mercurial][hg]. In addition, [Python virtualenv][venv] is required (as is
-[pip][pip], but pip will automatically installed with virtualenv). These can
-easily be installed via a pre-task in the same play as this role:
+This role has the same dependencies as the VCS module in use, namely
+[Mercurial][hg] if using `hg` or [Git][git] if using `git`.  In addition,
+[Python virtualenv][venv] is required (as is [pip][pip], but pip will
+automatically installed with virtualenv). These can easily be installed via a
+pre-task in the same play as this role:
 
     - hosts: galaxyservers
         pre_tasks:
@@ -41,6 +42,7 @@ the `hg_executable` variable. Likewise with the `virtualenv` executable and
 corresponding `pip_virtualenv_command` variable.
 
 [hg]: http://mercurial.selenic.com/
+[git]: http://git-scm.com/
 [venv]: http://virtualenv.readthedocs.org/
 [pip]: http://pip.readthedocs.org/
 
@@ -60,6 +62,10 @@ to `yes`):
 - `galaxy_manage_clone`: Clone Galaxy from the source repository and maintain
   it at a specified version (changeset), as well as set up a
   [virtualenv][virtualenv] from which it can be run.
+    - `galaxy_vcs` (default: `hg`): Choose between cloning using Mercurial or
+      Git. Options are `hg` or `git`. If you choose git, be sure to change
+      `galaxy_changeset_id` from the default value of `stable` to a ref that
+      exists in the git repository (e.g. `master`).
 - `galaxy_manage_static_setup`: Manage "static" Galaxy configuration files -
   ones which are not modifiable by the Galaxy server itself. At a minimum, this
   is the primary Galaxy configuration file, universe_wsgi.ini.
@@ -76,6 +82,8 @@ you use, and where its configuration files will be placed:
 
 - `galaxy_repo` (default: `https://bitbucket.org/galaxy/galaxy-dist`): Upstream
   Mercurial repository from which Galaxy should be cloned.
+- `galaxy_git_repo` (default: `https://github.com/galaxyproject/galaxy.git`):
+  Upstream Git repository from which Galaxy should be cloned.
 - `galaxy_changeset_id` (default: `stable`): A changeset id, tag, branch, or
   other valid Mercurial identifier for which changeset Galaxy should be updated
   to. Specifying a branch will update to the latest changeset on that branch. A
@@ -120,11 +128,6 @@ None
 
 Example Playbook
 ----------------
-
-**NOTE:** The ability to skip Galaxy's built-in setup routines and fully
-separate the config directory from the server directory relies on features that
-will not be available in the stable version of Galaxy until the October, 2014
-release.
 
 Install Galaxy on your local system with all the default options:
 
@@ -216,5 +219,7 @@ License
 Author Information
 ------------------
 
-[John Chilton](https://github.com/jmchilton)
+[Enis Afgan](https://github.com/afgane)  
+[Dannon Baker](https://github.com/dannon)  
+[John Chilton](https://github.com/jmchilton)  
 [Nate Coraor](https://github.com/natefoo)  

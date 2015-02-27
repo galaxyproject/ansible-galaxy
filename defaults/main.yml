@@ -4,6 +4,7 @@
 # Controls which tasks are included, in case you need to perform different
 # options on different hosts or server directories.
 galaxy_manage_clone: yes
+galaxy_vcs: hg
 # Download the Galaxy instead cloning, for throw away boxes (e.g. Docker)
 galaxy_manage_download: no
 galaxy_manage_static_setup: yes
@@ -13,6 +14,7 @@ galaxy_fetch_eggs: yes
 
 # Where to clone Galaxy from
 galaxy_repo: https://bitbucket.org/galaxy/galaxy-dist
+galaxy_git_repo: https://github.com/galaxyproject/galaxy.git
 
 # This can be a tag (as shown here) but doing so will cause the revision check
 # task to always report "changed"
