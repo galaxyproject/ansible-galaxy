@@ -20,6 +20,9 @@ galaxy_git_repo: https://github.com/galaxyproject/galaxy.git
 # task to always report "changed"
 galaxy_changeset_id: stable
 
+# Download URL (if used)
+galaxy_download_url: "{{ galaxy_repo }}/get/{{ galaxy_changeset_id }}.tar.gz"
+
 # This will automatically be used by run.sh
 galaxy_venv_dir: "{{ galaxy_server_dir }}/.venv"
 
