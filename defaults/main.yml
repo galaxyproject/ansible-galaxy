@@ -62,6 +62,7 @@ galaxy_config_default:
     template_cache_path: "{{ galaxy_mutable_data_dir }}/template_cache"
     whoosh_index_dir: "{{ galaxy_mutable_data_dir }}/whoosh_cache"
     object_store_cache_path: "{{ galaxy_mutable_data_dir }}/object_store_cache"
+    openid_consumer_cache_path: "{{ galaxy_mutable_data_dir }}/openid_consumer_cache"
     citation_cache_data_dir: "{{ galaxy_mutable_data_dir }}/citations/data"
     citation_cache_lock_dir: "{{ galaxy_mutable_data_dir }}/citations/locks"
 

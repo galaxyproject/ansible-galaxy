@@ -30,8 +30,13 @@
     - email administrator with changeset id
 
 - name: Update Galaxy to correct changeset (git)
-  git: dest={{ galaxy_server_dir }} repo={{ galaxy_git_repo }} version={{ galaxy_changeset_id }} executable={{ git_executable | default(omit) }}
+  git: dest={{ galaxy_server_dir }} force=no repo={{ galaxy_git_repo }} version={{ galaxy_changeset_id }} executable={{ git_executable | default(omit) }}
   when: galaxy_vcs == 'git'
   notify:
     - restart galaxy
     - email administrator with changeset id
+
+- name: Remove orphaned .pyc files and compile bytecode
+  script: makepyc.py {{ galaxy_server_dir }}/lib
+  environment:
+    PATH: "{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"

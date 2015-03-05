@@ -3,19 +3,27 @@
 
 - name: Get current Galaxy DB version
   command: "{{ galaxy_venv_dir }}/bin/python {{ galaxy_server_dir }}/scripts/manage_db.py -c {{ galaxy_config_file }} db_version chdir={{ galaxy_server_dir }}"
+  environment:
+    GALAXY_EGGS_PATH: "{{ galaxy_eggs_path | default(galaxy_server_dir ~ '/eggs') }}"
   register: current_db_version
   changed_when: False
   failed_when: current_db_version.rc != 0 and 'migrate.exceptions.DatabaseNotControlledError' not in current_db_version.stderr
 
 - name: Get maximum Galaxy DB version
   command: "{{ galaxy_venv_dir }}/bin/python {{ galaxy_server_dir }}/scripts/manage_db.py -c {{ galaxy_config_file }} version chdir={{ galaxy_server_dir }}"
+  environment:
+    GALAXY_EGGS_PATH: "{{ galaxy_eggs_path | default(galaxy_server_dir ~ '/eggs') }}"
   register: max_db_version
   changed_when: False
 
 - name: Create Galaxy DB
   command: "{{ galaxy_venv_dir }}/bin/python {{ galaxy_server_dir }}/scripts/create_db.py -c {{ galaxy_config_file }} chdir={{ galaxy_server_dir }}"
+  environment:
+    GALAXY_EGGS_PATH: "{{ galaxy_eggs_path | default(galaxy_server_dir ~ '/eggs') }}"
   when: "'migrate.exceptions.DatabaseNotControlledError' in current_db_version.stderr"
 
 - name: Upgrade Galaxy DB
   command: "{{ galaxy_venv_dir }}/bin/python {{ galaxy_server_dir }}/scripts/manage_db.py -c {{ galaxy_config_file }} upgrade chdir={{ galaxy_server_dir }}"
+  environment:
+    GALAXY_EGGS_PATH: "{{ galaxy_eggs_path | default(galaxy_server_dir ~ '/eggs') }}"
   when: current_db_version.stdout != max_db_version.stdout and 'migrate.exceptions.DatabaseNotControlledError' not in current_db_version.stderr
