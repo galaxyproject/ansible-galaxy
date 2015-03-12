@@ -18,7 +18,7 @@
   when: lib_galaxy.stat.exists and galaxy_vcs == 'git'
 
 - name: Report current Galaxy changeset
-  debug: msg="Current changeset of {{ galaxy_server_dir }} {{ current_changeset_id.stdout | default(-1) }} does not match playbook version {{ galaxy_changeset_id }}"
+  debug: msg="Current changeset of {{ galaxy_server_dir }} {{ current_changeset_id.stdout | default(-1) }} does not match playbook version {{ galaxy_changeset_id }}"  #"
   changed_when: True
   when: lib_galaxy.stat.exists and (current_changeset_id.stdout | default(-1) != galaxy_changeset_id)
 
@@ -36,7 +36,9 @@
     - restart galaxy
     - email administrator with changeset id
 
+- include: virtualenv.yml
+
 - name: Remove orphaned .pyc files and compile bytecode
   script: makepyc.py {{ galaxy_server_dir }}/lib
   environment:
-    PATH: "{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
+    PATH: "{{ galaxy_venv_dir }}/bin"

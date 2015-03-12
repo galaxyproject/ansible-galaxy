@@ -5,3 +5,5 @@
 - name: Replace current version of Galaxy
   shell: "rm -rf '{{ galaxy_server_dir }}' && mkdir '{{ galaxy_server_dir }}' && wget -q -O - {{ galaxy_download_url }} | tar xzf - --strip-components=1 -C {{ galaxy_server_dir }} && touch '{{ galaxy_server_dir }}/{{ galaxy_changeset_id }}_receipt'"
   when: not download_receipt.stat.exists
+
+- include: virtualenv.yml

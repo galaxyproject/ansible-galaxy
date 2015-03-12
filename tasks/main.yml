@@ -4,10 +4,6 @@
 # Deploy a Galaxy server
 #   https://wiki.galaxyproject.org/
 
-# Only manage virtualenv if obtaining for backward compatibilty
-- include: virtualenv.yml
-  when: galaxy_manage_clone or galaxy_manage_download
-
 - include: clone.yml
   when: galaxy_manage_clone
   tags:
