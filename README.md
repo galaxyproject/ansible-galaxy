@@ -68,7 +68,7 @@ to `yes`):
       exists in the git repository (e.g. `master`).
 - `galaxy_manage_static_setup`: Manage "static" Galaxy configuration files -
   ones which are not modifiable by the Galaxy server itself. At a minimum, this
-  is the primary Galaxy configuration file, universe_wsgi.ini.
+  is the primary Galaxy configuration file, `galaxy.ini`.
 - `galaxy_manage_mutable_setup`: Manage "mutable" Galaxy configuration files -
   ones which are modifiable by Galaxy (e.g. as you install tools from the
   Galaxy Tool Shed).
@@ -104,14 +104,14 @@ you use, and where its configuration files will be placed:
 - `galaxy_mutable_data_dir` (default: `<galaxy_server_dir>/database`):
   Directory that will be used for "mutable" data and caches, must be writable
   by the user running Galaxy.
-- `galaxy_config_file` (default: `<galaxy_config_dir>/universe_wsgi.ini`):
+- `galaxy_config_file` (default: `<galaxy_config_dir>/galaxy.ini`):
   Galaxy's primary configuration file.
 - `galaxy_shed_tool_conf_file` (default:
   `<galaxy_mutable_config_dir>/shed_tool_conf.xml`): Configuration file for
   tools installed from the Galaxy Tool Shed. 
 - `galaxy_config`: The contents of the Galaxy configuration file
-  (universe_wsgi.ini by default) are controlled by this variable. It is a hash
-  of hashes (or dictionaries) that will be translated in to the configuration
+  (`galaxy.ini` by default) are controlled by this variable. It is a hash of
+  hashes (or dictionaries) that will be translated in to the configuration
   file. See the Example Playbooks below for usage.
 - `galaxy_config_files`: List of hashes (with `src` and `dest` keys) of files
   to copy from the control machine.

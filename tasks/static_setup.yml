@@ -13,6 +13,6 @@
   with_items: galaxy_config_templates
 
 - name: Create Galaxy configuration file
-  template: src=universe_wsgi.ini.j2 dest={{ galaxy_config_file }} backup=yes
+  template: src=galaxy.ini.j2 dest={{ galaxy_config_file }} backup=yes
   notify:
     - restart galaxy

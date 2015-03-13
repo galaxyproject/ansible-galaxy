@@ -33,7 +33,7 @@ galaxy_venv_dir: "{{ galaxy_server_dir }}/.venv"
 galaxy_config_dir: "{{ galaxy_server_dir }}"
 galaxy_mutable_config_dir: "{{ galaxy_server_dir }}"
 galaxy_mutable_data_dir: "{{ galaxy_server_dir }}/database"
-galaxy_config_file: "{{ galaxy_config_dir }}/universe_wsgi.ini"
+galaxy_config_file: "{{ galaxy_config_dir }}/galaxy.ini"
 galaxy_shed_tool_conf_file: "{{ galaxy_mutable_config_dir }}/shed_tool_conf.xml"
 
 # The default Galaxy configuration, ensures that Galaxy can find all of the
