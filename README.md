@@ -115,7 +115,7 @@ you use, and where its configuration files will be placed:
   file. See the Example Playbooks below for usage.
 - `galaxy_config_files`: List of hashes (with `src` and `dest` keys) of files
   to copy from the control machine.
-- `galaxy_config_template`: List of hashes (with `src` and `dest` keys) of
+- `galaxy_config_templates`: List of hashes (with `src` and `dest` keys) of
   templates to fill from the control machine.
 - `galaxy_admin_email_to`: If set, email this address when Galaxy has been
   updated. Assumes mail is properly configured on the managed host.
