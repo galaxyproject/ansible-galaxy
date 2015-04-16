@@ -23,14 +23,14 @@
   when: lib_galaxy.stat.exists and (current_changeset_id.stdout | default(-1) != galaxy_changeset_id)
 
 - name: Update Galaxy to correct changeset (hg)
-  hg: dest={{ galaxy_server_dir }} force=no purge=no repo={{ galaxy_repo }} revision={{ galaxy_changeset_id }} executable={{ hg_executable | default(omit) }}
+  hg: dest={{ galaxy_server_dir }} force={{ galaxy_force_checkout }} purge=no repo={{ galaxy_repo }} revision={{ galaxy_changeset_id }} executable={{ hg_executable | default(omit) }}
   when: galaxy_vcs == 'hg'
   notify:
     - restart galaxy
     - email administrator with changeset id
 
 - name: Update Galaxy to correct changeset (git)
-  git: dest={{ galaxy_server_dir }} force=no repo={{ galaxy_git_repo }} version={{ galaxy_changeset_id }} executable={{ git_executable | default(omit) }}
+  git: dest={{ galaxy_server_dir }} force={{ galaxy_force_checkout }} repo={{ galaxy_git_repo }} version={{ galaxy_changeset_id }} executable={{ git_executable | default(omit) }}
   when: galaxy_vcs == 'git'
   notify:
     - restart galaxy
