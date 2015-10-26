@@ -221,7 +221,10 @@ License
 Author Information
 ------------------
 
-[Enis Afgan](https://github.com/afgane)
-[Dannon Baker](https://github.com/dannon)
-[John Chilton](https://github.com/jmchilton)
-[Nate Coraor](https://github.com/natefoo)
+This role was written and contributed to by the following people:
+
+[Enis Afgan](https://github.com/afgane)  
+[Dannon Baker](https://github.com/dannon)  
+[Simon Belluzzo](https://github.com/simonalpha)  
+[John Chilton](https://github.com/jmchilton)  
+[Nate Coraor](https://github.com/natefoo)  

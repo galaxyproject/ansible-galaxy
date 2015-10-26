@@ -11,6 +11,9 @@ galaxy_manage_download: no
 galaxy_manage_static_setup: yes
 galaxy_manage_mutable_setup: yes
 galaxy_manage_database: yes
+galaxy_fetch_dependencies: yes
+
+# legacy
 galaxy_fetch_eggs: yes
 
 # Where to clone Galaxy from

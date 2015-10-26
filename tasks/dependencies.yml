@@ -1,0 +1,49 @@
+---
+# Manage Galaxy Eggs
+
+- name: Check if Galaxy uses eggs or wheels
+  stat:
+    path: "{{ galaxy_server_dir }}/lib/galaxy/dependencies/requirements.txt"
+  register: requirements_txt
+
+- name: Fetch Galaxy eggs
+  command: "{{ galaxy_venv_dir }}/bin/python {{ galaxy_server_dir }}/scripts/fetch_eggs.py -c {{ galaxy_config_file }} chdir={{ galaxy_server_dir }}"
+  environment:
+    GALAXY_EGGS_PATH: "{{ galaxy_eggs_path | default(galaxy_server_dir ~ '/eggs') }}"
+    PYTHONPATH: null
+  when: not requirements_txt.stat.exists
+  register: fetch_eggs_result
+  changed_when: (fetch_eggs_result.rc == 0) and (fetch_eggs_result.stdout != "")
+
+- name: Install Galaxy pip
+  pip:
+    name: pip
+    state: latest
+    extra_args: "--pre --no-index --find-links https://wheels.galaxyproject.org/simple/pip"
+    virtualenv: "{{ galaxy_venv_dir }}"
+  environment:
+    PYTHONPATH: null
+  when: requirements_txt.stat.exists
+
+- name: Install Galaxy base dependencies
+  pip:
+    requirements: "{{ galaxy_server_dir }}/lib/galaxy/dependencies/requirements.txt"
+    extra_args: "--index-url https://wheels.galaxyproject.org/simple/"
+    virtualenv: "{{ galaxy_venv_dir }}"
+  environment:
+    PYTHONPATH: null
+
+- name: Collect Galaxy conditional dependency requirement strings
+  command: "{{ galaxy_venv_dir }}/bin/python -c \"import galaxy.dependencies; print '\\n'.join(galaxy.dependencies.optional('{{ galaxy_config_file }}'))\""
+  environment:
+    PYTHONPATH: "{{ galaxy_server_dir }}/lib"
+  register: conditional_dependencies
+
+- name: Install Galaxy conditional dependencies
+  pip: 
+    name: "{{ item }}"
+    extra_args: "--index-url https://wheels.galaxyproject.org/simple/"
+    virtualenv: "{{ galaxy_venv_dir }}"
+  with_items: conditional_dependencies.stdout_lines
+  environment:
+    PYTHONPATH: null
