@@ -23,6 +23,16 @@
     virtualenv: "{{ galaxy_venv_dir }}"
   environment:
     PYTHONPATH: null
+    VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+  when: requirements_txt.stat.exists
+
+- name: Create binary-compatibility.cfg if necessary
+  command: "{{ galaxy_venv_dir }}/bin/python {{ galaxy_server_dir }}/scripts/binary_compatibility.py -o {{ galaxy_venv_dir }}/binary-compatibility.cfg"
+  args:
+    creates: "{{ galaxy_venv_dir }}/binary-compatibility.cfg"
+  environment:
+    PYTHONPATH: null
+    VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
   when: requirements_txt.stat.exists
 
 - name: Install Galaxy base dependencies
@@ -32,11 +42,14 @@
     virtualenv: "{{ galaxy_venv_dir }}"
   environment:
     PYTHONPATH: null
+    VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+  when: requirements_txt.stat.exists
 
 - name: Collect Galaxy conditional dependency requirement strings
   command: "{{ galaxy_venv_dir }}/bin/python -c \"import galaxy.dependencies; print '\\n'.join(galaxy.dependencies.optional('{{ galaxy_config_file }}'))\""
   environment:
     PYTHONPATH: "{{ galaxy_server_dir }}/lib"
+  when: requirements_txt.stat.exists
   register: conditional_dependencies
 
 - name: Install Galaxy conditional dependencies
@@ -47,3 +60,5 @@
   with_items: conditional_dependencies.stdout_lines
   environment:
     PYTHONPATH: null
+    VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+  when: requirements_txt.stat.exists
