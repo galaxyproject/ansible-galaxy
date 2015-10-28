@@ -15,12 +15,15 @@
   register: fetch_eggs_result
   changed_when: (fetch_eggs_result.rc == 0) and (fetch_eggs_result.stdout != "")
 
+# virtualenv_command is still required if `virtualenv` isn't on $PATH, even if
+# the venv already exists.
 - name: Install Galaxy pip
   pip:
     name: pip
     state: latest
     extra_args: "--pre --no-index --find-links https://wheels.galaxyproject.org/simple/pip"
     virtualenv: "{{ galaxy_venv_dir }}"
+    virtualenv_command: "{{ pip_virtualenv_command | default( 'virtualenv' ) }}"
   environment:
     PYTHONPATH: null
     VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
@@ -40,6 +43,7 @@
     requirements: "{{ galaxy_server_dir }}/lib/galaxy/dependencies/requirements.txt"
     extra_args: "--index-url https://wheels.galaxyproject.org/simple/"
     virtualenv: "{{ galaxy_venv_dir }}"
+    virtualenv_command: "{{ pip_virtualenv_command | default( 'virtualenv' ) }}"
   environment:
     PYTHONPATH: null
     VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
@@ -57,6 +61,7 @@
     name: "{{ item }}"
     extra_args: "--index-url https://wheels.galaxyproject.org/simple/"
     virtualenv: "{{ galaxy_venv_dir }}"
+    virtualenv_command: "{{ pip_virtualenv_command | default( 'virtualenv' ) }}"
   with_items: conditional_dependencies.stdout_lines
   environment:
     PYTHONPATH: null
