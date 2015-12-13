@@ -17,8 +17,22 @@
 {% else %}
 
 [server:main]
-use = egg:Paste#http
-use_threadpool = True
+
+; options from the role's config defaults appear here
+{# defaults -#}
+{% for opt in galaxy_config_default['server:main'] %}
+{% if 'server:main' not in galaxy_config or ('server:main' in galaxy_config and opt not in galaxy_config['server:main']) %}
+{{ opt }} = {{ galaxy_config_default['server:main'][opt] }}
+{% endif %}
+{% endfor %}
+
+; options configured by the site admin appear here
+{# configured options -#}
+{% if 'server:main' in galaxy_config %}
+{% for opt in galaxy_config['server:main'] %}
+{{ opt }} = {{ galaxy_config['server:main'][opt] }}
+{% endfor %}
+{% endif %}
 
 {% endfor %}
 
