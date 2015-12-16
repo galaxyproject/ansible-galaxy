@@ -18,7 +18,7 @@
   when: galaxy_manage_static_setup
 
 - include: dependencies.yml
-  when: galaxy_fetch_dependencies and galaxy_fetch_eggs
+  when: galaxy_fetch_dependencies or galaxy_fetch_eggs
 
 - include: mutable_setup.yml
   when: galaxy_manage_mutable_setup
