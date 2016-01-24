@@ -20,7 +20,7 @@
 - name: Install Galaxy pip
   pip:
     name: pip
-    state: latest
+    version: 8.0.0+gx1
     extra_args: "--pre --no-index --find-links https://wheels.galaxyproject.org/simple/pip"
     virtualenv: "{{ galaxy_venv_dir }}"
     virtualenv_command: "{{ pip_virtualenv_command | default( 'virtualenv' ) }}"
