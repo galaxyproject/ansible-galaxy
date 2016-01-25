@@ -13,6 +13,9 @@ galaxy_manage_mutable_setup: yes
 galaxy_manage_database: yes
 galaxy_fetch_dependencies: yes
 
+# Set a version of pip to install
+galaxy_pip_version: 8.0.0
+
 # legacy
 galaxy_fetch_eggs: yes
 
