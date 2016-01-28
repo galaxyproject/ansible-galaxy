@@ -21,7 +21,7 @@
   pip:
     name: pip
     version: "{{ galaxy_pip_version }}"
-    extra_args: "--pre --no-index --find-links https://wheels.galaxyproject.org/simple/pip"
+    extra_args: "--no-index --find-links https://wheels.galaxyproject.org/simple/pip"
     virtualenv: "{{ galaxy_venv_dir }}"
     virtualenv_command: "{{ pip_virtualenv_command | default( 'virtualenv' ) }}"
   environment:
