@@ -16,6 +16,8 @@
 
 - include: static_setup.yml
   when: galaxy_manage_static_setup
+  tags: 
+   - galaxy_config_files
 
 - include: dependencies.yml
   when: galaxy_fetch_dependencies and galaxy_fetch_eggs
