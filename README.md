@@ -74,8 +74,8 @@ to `yes`):
   Galaxy Tool Shed).
 - `galaxy_manage_database`: Upgrade the database schema as necessary, when new
   schema versions become available.
-- `galaxy_fetch_eggs`: Fetch Galaxy dependent modules (packaged as Python
-  eggs).
+- `galaxy_fetch_dependencies`: Fetch Galaxy dependent modules to the Galaxy
+  virtualenv.
 
 You can control various things about where you get Galaxy from, what version
 you use, and where its configuration files will be placed:
@@ -85,16 +85,20 @@ you use, and where its configuration files will be placed:
 - `galaxy_git_repo` (default: `https://github.com/galaxyproject/galaxy.git`):
   Upstream Git repository from which Galaxy should be cloned.
 - `galaxy_changeset_id` (default: `stable`): A changeset id, tag, branch, or
-  other valid Mercurial identifier for which changeset Galaxy should be updated
-  to. Specifying a branch will update to the latest changeset on that branch. A
-  debugging message will notify you if the current changeset of your Galaxy
-  server is different from this value. There is no harm in this, but:
+  other valid Git or Mercurial identifier for which changeset Galaxy should be
+  updated to. Specifying a branch will update to the latest changeset on that
+  branch. A debugging message will notify you if the current changeset of your
+  Galaxy server is different from this value. There is no harm in this, but:
     - if this annoys you, you must use a full (long) changeset hash to prevent
       that task from reporting **changed** on every run, and
     - using a real changeset hash is the only way to explicitly lock Galaxy at
       a specific version.
 - `galaxy_force_checkout` (default: `no`): If `yes`, any modified files in the
   Galaxy repository will be discarded.
+- `galaxy_requirements_file` (default:
+  `<galaxy_server_dir>/lib/galaxy/dependencies/pinned-requirements.txt`): The
+  Python `requirements.txt` file that should be used to install Galaxy
+  dependent modules using pip.
 - `galaxy_venv_dir` (default: `<galaxy_server_dir>/.venv`): The role will
   create a [virtualenv][virtualenv] from which Galaxy will run, this controls
   where the virtualenv will be placed.

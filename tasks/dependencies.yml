@@ -3,7 +3,7 @@
 
 - name: Check if Galaxy uses eggs or wheels
   stat:
-    path: "{{ galaxy_server_dir }}/lib/galaxy/dependencies/requirements.txt"
+    path: "{{ galaxy_requirements_file }}"
   register: requirements_txt
 
 - name: Fetch Galaxy eggs
@@ -40,7 +40,7 @@
 
 - name: Install Galaxy base dependencies
   pip:
-    requirements: "{{ galaxy_server_dir }}/lib/galaxy/dependencies/requirements.txt"
+    requirements: "{{ galaxy_requirements_file }}"
     extra_args: "--index-url https://wheels.galaxyproject.org/simple/"
     virtualenv: "{{ galaxy_venv_dir }}"
     virtualenv_command: "{{ pip_virtualenv_command | default( 'virtualenv' ) }}"
