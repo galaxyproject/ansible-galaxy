@@ -14,7 +14,7 @@ Requirements
 
 This role has the same dependencies as the VCS module in use, namely
 [Mercurial][hg] if using `hg` or [Git][git] if using `git`.  In addition,
-[Python virtualenv][venv] is required (as is [pip][pip], but pip will
+[Python virtualenv][venv] is required (as is [pip][pip], but pip will be
 automatically installed with virtualenv). These can easily be installed via a
 pre-task in the same play as this role:
 
@@ -147,7 +147,7 @@ Install Galaxy on your local system with all the default options:
 Once installed, you can start with:
 
     % cd /home/nate/galaxy-dist
-    % python ./scripts/paster.py serve universe_wsgi.ini
+    % python ./scripts/paster.py serve config/galaxy.ini
 
 Install Galaxy with the clone and configs owned by a different user than the
 user running Galaxy, and backed by PostgreSQL, on the hosts in the
