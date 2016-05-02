@@ -147,7 +147,7 @@ Install Galaxy on your local system with all the default options:
 Once installed, you can start with:
 
     % cd /home/nate/galaxy-dist
-    % python ./scripts/paster.py serve galaxy.ini
+    % python ./scripts/paster.py serve config/galaxy.ini
 
 Install Galaxy with the clone and configs owned by a different user than the
 user running Galaxy, and backed by PostgreSQL, on the hosts in the
