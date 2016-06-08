@@ -22,14 +22,14 @@ pre-task in the same play as this role:
         pre_tasks:
           - name: Install Mercurial
             apt: pkg={{ item }} state=installed
-            sudo: yes
+            become: yes
             when: ansible_os_family = 'Debian'
             with_items:
               - mercurial
               - python-virtualenv
           - name: Install Mercurial
             yum: pkg={{ item }} state=installed
-            sudo: yes
+            become: yes
             when: ansible_os_family = 'RedHat'
             with_items:
               - mercurial
