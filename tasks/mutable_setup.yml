@@ -6,4 +6,4 @@
 
 - name: Instantiate mutable configuration files
   command: cp {{ item.src }} {{ item.dest }} creates={{ item.dest }}
-  with_items: galaxy_mutable_configs
+  with_items: "{{ galaxy_mutable_configs }}"

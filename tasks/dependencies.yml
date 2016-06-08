@@ -62,7 +62,7 @@
     extra_args: "--index-url https://wheels.galaxyproject.org/simple/"
     virtualenv: "{{ galaxy_venv_dir }}"
     virtualenv_command: "{{ pip_virtualenv_command | default( 'virtualenv' ) }}"
-  with_items: conditional_dependencies.stdout_lines
+  with_items: "{{ conditional_dependencies.stdout_lines }}"
   environment:
     PYTHONPATH: null
     VIRTUAL_ENV: "{{ galaxy_venv_dir }}"

@@ -6,11 +6,11 @@
 
 - name: Install additional Galaxy config files (static)
   copy: src={{ item.src }} dest={{ item.dest }} backup=yes
-  with_items: galaxy_config_files
+  with_items: "{{ galaxy_config_files }}"
 
 - name: Install additional Galaxy config files (template)
   template: src={{ item.src }} dest={{ item.dest }} backup=yes
-  with_items: galaxy_config_templates
+  with_items: "{{ galaxy_config_templates }}"
 
 - name: Create Galaxy configuration file
   template: src=galaxy.ini.j2 dest={{ galaxy_config_file }} backup=yes
