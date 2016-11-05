@@ -21,18 +21,8 @@
   pip:
     name: pip
     version: "{{ galaxy_pip_version }}"
-    extra_args: "--no-index --find-links https://wheels.galaxyproject.org/simple/pip"
     virtualenv: "{{ galaxy_venv_dir }}"
     virtualenv_command: "{{ pip_virtualenv_command | default( 'virtualenv' ) }}"
-  environment:
-    PYTHONPATH: null
-    VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
-  when: requirements_txt.stat.exists
-
-- name: Create binary-compatibility.cfg if necessary
-  command: "{{ galaxy_venv_dir }}/bin/python {{ galaxy_server_dir }}/scripts/binary_compatibility.py -o {{ galaxy_venv_dir }}/binary-compatibility.cfg"
-  args:
-    creates: "{{ galaxy_venv_dir }}/binary-compatibility.cfg"
   environment:
     PYTHONPATH: null
     VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
