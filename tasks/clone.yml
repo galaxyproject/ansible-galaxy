@@ -2,39 +2,34 @@
 # Manage Galaxy clone
 
 - name: Check for Galaxy
-  stat: path={{ galaxy_server_dir }}/lib/galaxy
-  register: lib_galaxy
+  stat:
+    path: "{{ galaxy_server_dir }}/lib/galaxy"
+  register: galaxy_stat_out
 
-- name: Get current Galaxy changeset (hg)
-  command: "{{ hg_executable | default('hg') }} parents --template '{node}' chdir={{ galaxy_server_dir }}"
-  register: current_changeset_id
-  changed_when: False
-  when: lib_galaxy.stat.exists and galaxy_vcs == 'hg'
+- name: Get current Galaxy commit id
+  command: "{{ git_executable | default('git') }} rev-parse HEAD"
+  args:
+      chdir: "{{ galaxy_server_dir }}"
+  register: current_commit_id
+  changed_when: no
+  when: galaxy_stat_out.stat.exists
 
-- name: Get current Galaxy commit id (git)
-  command: "{{ git_executable | default('git') }} rev-parse HEAD chdir={{ galaxy_server_dir }}"
-  register: current_changeset_id
-  changed_when: False
-  when: lib_galaxy.stat.exists and galaxy_vcs == 'git'
-
-- name: Report current Galaxy changeset
-  debug: msg="Current changeset of {{ galaxy_server_dir }} {{ current_changeset_id.stdout | default(-1) }} does not match playbook version {{ galaxy_changeset_id }}"  #"
+- name: Report current Galaxy commit id
+  debug:
+    msg: "Current version of {{ galaxy_server_dir }} {{ current_commit_id.stdout | default(-1) }} does not match playbook version {{ galaxy_commit_id }}"
   changed_when: True
-  when: lib_galaxy.stat.exists and (current_changeset_id.stdout | default(-1) != galaxy_changeset_id)
+  when: galaxy_stat_out.stat.exists and (current_commit_id.stdout | default(-1) != galaxy_commit_id)
 
-- name: Update Galaxy to correct changeset (hg)
-  hg: dest={{ galaxy_server_dir }} force={{ galaxy_force_checkout }} purge=no repo={{ galaxy_repo }} revision={{ galaxy_changeset_id }} executable={{ hg_executable | default(omit) }}
-  when: galaxy_vcs == 'hg'
+- name: Update Galaxy to correct ref (git)
+  git:
+    dest: "{{ galaxy_server_dir }}"
+    force: "{{ galaxy_force_checkout }}"
+    repo: "{{ galaxy_repo }}"
+    version: "{{ galaxy_commit_id }}"
+    executable: "{{ git_executable | default(omit) }}"
   notify:
     - restart galaxy
-    - email administrator with changeset id
-
-- name: Update Galaxy to correct changeset (git)
-  git: dest={{ galaxy_server_dir }} force={{ galaxy_force_checkout }} repo={{ galaxy_git_repo }} version={{ galaxy_changeset_id }} executable={{ git_executable | default(omit) }}
-  when: galaxy_vcs == 'git'
-  notify:
-    - restart galaxy
-    - email administrator with changeset id
+    - email administrator with commit id
 
 - include: virtualenv.yml
 

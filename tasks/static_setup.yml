@@ -2,20 +2,31 @@
 # Manage static Galaxy configuration files
 
 - name: Create Galaxy config dirs
-  file: state=directory path={{ item }}
+  file:
+    path: "{{ item }}"
+    state: directory
   with_items:
     - "{{ galaxy_config_dir }}"
     - "{{ galaxy_shed_tools_dir }}"
 
 - name: Install additional Galaxy config files (static)
-  copy: src={{ item.src }} dest={{ item.dest }} backup=yes
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    backup: yes
   with_items: "{{ galaxy_config_files }}"
 
 - name: Install additional Galaxy config files (template)
-  template: src={{ item.src }} dest={{ item.dest }} backup=yes
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    backup: yes
   with_items: "{{ galaxy_config_templates }}"
 
 - name: Create Galaxy configuration file
-  template: src=galaxy.ini.j2 dest={{ galaxy_config_file }} backup=yes
+  template:
+    src: "galaxy.ini.j2"
+    dest: "{{ galaxy_config_file }}"
+    backup: yes
   notify:
     - restart galaxy

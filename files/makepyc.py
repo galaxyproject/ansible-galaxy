@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
-import sys
 import compileall
+import sys
 
-from os import walk, unlink
-from os.path import join, splitext, exists
+from os import unlink, walk
+from os.path import exists, join, splitext
 
 
 assert sys.argv[1], "usage: makepyc /path/to/lib"

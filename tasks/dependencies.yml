@@ -1,33 +1,9 @@
 ---
-# Manage Galaxy Eggs
+# Manage Galaxy framework dependencies
 
-- name: Check if Galaxy uses eggs or wheels
-  stat:
-    path: "{{ galaxy_requirements_file }}"
-  register: requirements_txt
+- include: virtualenv.yml
 
-- name: Fetch Galaxy eggs
-  command: "{{ galaxy_venv_dir }}/bin/python {{ galaxy_server_dir }}/scripts/fetch_eggs.py -c {{ galaxy_config_file }} chdir={{ galaxy_server_dir }}"
-  environment:
-    GALAXY_EGGS_PATH: "{{ galaxy_eggs_path | default(galaxy_server_dir ~ '/eggs') }}"
-    PYTHONPATH: null
-  when: not requirements_txt.stat.exists
-  register: fetch_eggs_result
-  changed_when: (fetch_eggs_result.rc == 0) and (fetch_eggs_result.stdout != "")
-
-# virtualenv_command is still required if `virtualenv` isn't on $PATH, even if
-# the venv already exists.
-- name: Install Galaxy pip
-  pip:
-    name: pip
-    version: "{{ galaxy_pip_version }}"
-    virtualenv: "{{ galaxy_venv_dir }}"
-    virtualenv_command: "{{ pip_virtualenv_command | default( 'virtualenv' ) }}"
-  environment:
-    PYTHONPATH: null
-    VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
-  when: requirements_txt.stat.exists
-
+# virtualenv_command is still required if `virtualenv` isn't on $PATH, even if the venv already exists.
 - name: Install Galaxy base dependencies
   pip:
     requirements: "{{ galaxy_requirements_file }}"
@@ -37,13 +13,11 @@
   environment:
     PYTHONPATH: null
     VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
-  when: requirements_txt.stat.exists
 
 - name: Collect Galaxy conditional dependency requirement strings
   command: "{{ galaxy_venv_dir }}/bin/python -c \"import galaxy.dependencies; print '\\n'.join(galaxy.dependencies.optional('{{ galaxy_config_file }}'))\""
   environment:
     PYTHONPATH: "{{ galaxy_server_dir }}/lib"
-  when: requirements_txt.stat.exists
   register: conditional_dependencies
 
 - name: Install Galaxy conditional dependencies
@@ -56,4 +30,3 @@
   environment:
     PYTHONPATH: null
     VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
-  when: requirements_txt.stat.exists

@@ -3,10 +3,13 @@
 
 # TODO: Magical restarters depending on how you're running Galaxy.
 - name: restart galaxy
-  debug: msg="RESTARTER NOT IMPLEMENTED - Please restart Galaxy manually"
+  debug:
+    msg: "RESTARTER NOT IMPLEMENTED - Please restart Galaxy manually"
 
-- name: email administrator with changeset id
-  mail: from="{{ galaxy_admin_email_from | default( 'root' ) }}" to="{{ galaxy_admin_email_to }}"
-        subject="Galaxy instance {{ galaxy_instance_hostname | default( inventory_hostname ) }} is at changeset {{ galaxy_changeset_id }}"
-        body=" "
+- name: email administrator with commit id
+  mail:
+    from: "{{ galaxy_admin_email_from | default( 'root' ) }}"
+    to: "{{ galaxy_admin_email_to }}"
+    subject: "Galaxy instance {{ galaxy_instance_hostname | default( inventory_hostname ) }} is at commit {{ galaxy_commit_id }}"
+    body: " "
   when: galaxy_admin_email_to is defined

@@ -1,3 +1,23 @@
+---
+
+# Having pip installed on $PYTHONPATH can break upgrading it, so we install
+# once with $PYTHONPATH set (in case it's needed for virtualenv) and then once
+# the venv is created we upgrade pip with $PYTHONPATH unset
 
 - name: Create Galaxy virtualenv
-  pip: name=pip virtualenv={{ galaxy_venv_dir }} virtualenv_command="{{ pip_virtualenv_command | default( 'virtualenv' ) }}"
+  pip:
+    name: pip
+    virtualenv: "{{ galaxy_venv_dir }}"
+    virtualenv_command: "{{ pip_virtualenv_command | default('virtualenv') }}"
+  environment:
+    VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+
+- name: Ensure pip is the latest release
+  pip:
+    name: pip
+    state: latest
+    virtualenv: "{{ galaxy_venv_dir }}"
+    virtualenv_command: "{{ pip_virtualenv_command | default('virtualenv') }}"
+  environment:
+    PYTHONPATH: null
+    VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
