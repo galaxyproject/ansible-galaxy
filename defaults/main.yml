@@ -82,6 +82,12 @@ galaxy_mutable_configs:
   - src: "{{ galaxy_server_dir }}/config/shed_tool_data_table_conf.xml.sample"
     dest: "{{ galaxy_config['app:main']['shed_tool_data_table_config'] if galaxy_config is defined and 'app:main' in galaxy_config and 'shed_tool_data_table_config' in galaxy_config['app:main'] else galaxy_config_default['app:main']['shed_tool_data_table_config'] }}"
 
+galaxy_config_error_email_to: "{{ galaxy_config['app:main']['error_email_to'] | default('') if galaxy_config is defined and galaxy_config['app:main'] is defined else '' }}"
+galaxy_config_instance_resource_url: "{{ galaxy_config['app:main']['instance_resource_url'] | default('') if galaxy_config is defined and galaxy_config['app:main'] is defined else '' }}"
+galaxy_errordocs_server_name: Galaxy
+galaxy_errordocs_prefix: /error
+
+
 # These are lists of hashes in the same format as galaxy_mutable_configs that
 # can be used to cause extra files and templates to be installed on the managed
 # host.

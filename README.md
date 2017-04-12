@@ -97,6 +97,13 @@ will be placed:
 - `galaxy_admin_email_to`: If set, email this address when Galaxy has been updated. Assumes mail is properly configured
   on the managed host.
 - `galaxy_admin_email_from`: Address to send the aforementioned email from.
+- `galaxy_errordocs_dir`: If set, install Galaxy-styled HTTP 413 and 502 error documents under this directory. The 502
+  message uses nginx server side includes to allow administrators to create a custom message in `~/maint` when Galaxy is
+  down. nginx must be configured separately to serve these error documents.
+- `galaxy_errordocs_server_name` (default: Galaxy): used to display the message "`galaxy_errdocs_server_name` cannot be
+  reached" on the 502 page.
+- `galaxy_errordocs_prefix` (default: `/error`): Web-side path to the error document root.
+
 
 Dependencies
 ------------

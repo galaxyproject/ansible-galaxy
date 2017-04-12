@@ -1,0 +1,88 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Frameset//EN" "http://www.w3.org/TR/html4/frameset.dtd">
+<html>
+
+<head>
+<title>Galaxy</title>
+<style type="text/css">
+body
+{
+    font: 75% verdana, "Bitstream Vera Sans", geneva, arial, helvetica, helve, sans-serif;
+    background: white url(/{{ galaxy_errordocs_prefix }}/content_bg.png) top repeat-x;
+    color: #303030;
+    padding: 0;
+    border: 0;
+    margin: 0;
+    margin-right: 0;
+    margin-left: 0;
+}
+
+div.pageTitle
+{
+    font-size: x-large;
+    font-weight: bold;
+}
+
+div.pageTitle a:link, div.pageTitle a:visited, div.pageTitle a:active, div.pageTitle a:hover
+{
+    text-decoration: none;
+    color: #ece7f2;
+}
+/*a:link, a:visited, a:active
+{
+}*/
+td.masthead
+{
+    vertical-align: middle;
+    background: #023858 url(/{{ galaxy_errordocs_prefix }}/masthead_bg.png) bottom;
+    height: 40px;
+    padding-left: 10px;
+}
+td.content
+{
+    vertical-align: top;
+    padding: 10px;
+}
+a:link, a:visited, a:active
+{
+    color: #303030;
+}
+</style>
+</head>
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+    <tr>
+        <td class="masthead"><div class="pageTitle"><a target="_blank" href="http://galaxyproject.org">Galaxy</a></div></td>
+    </tr>
+    <tr>
+        <td class="content">
+            <h2>{{ galaxy_errordocs_server_name }} could not be reached</h2>
+            <p>
+            <!--#block name="default_error" -->
+            {% if galaxy_errordocs_502_message is defined -%}
+            {{ galaxy_errordocs_502_message }}
+            {% else %}
+                You are seeing this message because a request to {{ galaxy_errordocs_server_name }} timed out or was refused. This may
+                be a temporary issue which could be resolved by retrying the operation you were performing. If you receive this
+                message repeatedly or for an extended amount of time, please
+                {%- if galaxy_config_error_email_to or galaxy_config_instance_resource_url -%}
+                {%- if galaxy_config_error_email_to %}
+                report it to the server administrator at
+                <a href='mailto:{{ galaxy_config_error_email_to }}'>{{ galaxy_config_error_email_to }}</a>
+                {%- if galaxy_config_instance_resource_url %}
+                or
+                {%- endif -%}
+                {%- endif -%}
+                {%- if galaxy_config_instance_resource_url %}
+                check the <a href='{{ galaxy_config_instance_resource_url }}'>server support resources page</a>
+                {%- endif -%}
+                {%- else %}
+                contact an administrator
+                {%- endif -%}.
+            {% endif %}
+            <!--#endblock -->
+            <!--#include file="maint" stub="default_error" -->
+            </p>
+        </td>
+    </tr>
+</table>
+
+</html>

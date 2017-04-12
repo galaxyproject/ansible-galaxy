@@ -27,3 +27,6 @@
 
 - include: database.yml
   when: galaxy_manage_database
+
+- include: errordocs.yml
+  when: galaxy_errordocs_dest is defined

@@ -1,0 +1,59 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Frameset//EN" "http://www.w3.org/TR/html4/frameset.dtd">
+<html>
+
+<head>
+<title>Galaxy</title>
+<style type="text/css">
+body
+{
+    font: 75% verdana, "Bitstream Vera Sans", geneva, arial, helvetica, helve, sans-serif;
+    color: #303030;
+    margin: 10px;
+}
+a:link, a:visited, a:active
+{
+    color: #303030;
+}
+hr
+{
+    border: none;
+    height: 0px;
+    border-bottom: dotted #303030 1px;
+}
+.errormessage
+{
+    padding: 10px;
+    padding-left: 52px;
+    min-height: 32px;
+    border: 1px solid #AA6666;
+    background-color: #FFCCCC;
+    background-image: url(/{{ galaxy_errordocs_prefix }}/error_message_icon.png);
+    background-repeat: no-repeat;
+    background-position: 10px 10px;
+}
+</style>
+</head>
+<div class="errormessage">
+    <b>Size limit exceeded.</b>
+    <hr/>
+	{% if galaxy_errordocs_413_message is defined -%}
+	{{ galaxy_errordocs_413_message }}
+	{% else %}
+        This request could not be completed since it exceeds the server's configured size limit. For help, please
+		{%- if galaxy_config_error_email_to or galaxy_config_instance_resource_url -%}
+		{%- if galaxy_config_error_email_to %}
+		report it to the server administrator at
+		<a href='mailto:{{ galaxy_config_error_email_to }}'>{{ galaxy_config_error_email_to }}</a>
+		{%- if galaxy_config_instance_resource_url %}
+		or
+		{%- endif -%}
+		{%- endif -%}
+		{%- if galaxy_config_instance_resource_url %}
+		check the <a href='{{ galaxy_config_instance_resource_url }}'>server support resources page</a>
+		{%- endif -%}
+		{%- else %}
+		contact an administrator
+		{%- endif -%}.
+	{% endif %}
+</div>
+</html>

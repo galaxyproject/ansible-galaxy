@@ -1,0 +1,41 @@
+---
+
+- name: Create error document directories
+  file:
+    path: "{{ galaxy_errordocs_dest }}/{{ item }}"
+    mode: "0755"
+    state: "directory"
+  with_items:
+    - 413
+    - 502
+
+- name: Install error documents static files
+  copy:
+    src: "errordocs/{{ item }}"
+    dest: "{{ galaxy_errordocs_dest }}/{{ item }}"
+    mode: "0644"
+  with_items:
+    - content_bg.png
+    - error_message_icon.png
+    - masthead_bg.png
+
+#- name: Set configured support email fact
+#  set_fact:
+#    galaxy_config_error_email_to: "{{ galaxy_config['app:main']['error_email_to'] | default('null') }}"
+#    galaxy_config_instance_resource_url: "{{ galaxy_config['app:main']['instance_resource_url'] | default('null') }}"
+
+- name: Install error document templates
+  template:
+    src: "errordocs/{{ item }}.j2"
+    dest: "{{ galaxy_errordocs_dest }}/{{ item }}"
+    mode: "0644"
+  with_items:
+    - 413/index.html
+    - 502/index.shtml
+
+- name: Create maintenance message link
+  file:
+    path: "{{ galaxy_errordocs_dest }}/502/maint"
+    src: "{{ galaxy_errordocs_maint_file | default('~/maint') }}"
+    state: link
+    force: yes
