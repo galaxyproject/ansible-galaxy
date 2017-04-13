@@ -11,6 +11,7 @@ galaxy_manage_static_setup: yes
 galaxy_manage_mutable_setup: yes
 galaxy_manage_database: yes
 galaxy_fetch_dependencies: yes
+galaxy_manage_errordocs: no
 
 # Where to clone Galaxy from. Backwards compatibility with galaxy_git_repo
 galaxy_repo: "{{ galaxy_git_repo | default('https://github.com/galaxyproject/galaxy.git') }}"
