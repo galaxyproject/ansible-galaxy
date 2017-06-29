@@ -1,5 +1,5 @@
 ---
-# defaults file for galaxyprojectdotorg.galaxy
+# defaults file for galaxyproject.galaxy
 
 # Controls which tasks are included, in case you need to perform different
 # options on different hosts or server directories.
