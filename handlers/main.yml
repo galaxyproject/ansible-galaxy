@@ -1,5 +1,5 @@
 ---
-# defaults file for galaxyprojectdotorg.galaxy
+# defaults file for galaxyproject.galaxy
 
 # TODO: Magical restarters depending on how you're running Galaxy.
 - name: restart galaxy
