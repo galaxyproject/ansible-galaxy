@@ -23,7 +23,7 @@
 - name: Install Galaxy conditional dependencies
   pip: 
     name: "{{ item }}"
-    extra_args: "--index-url https://wheels.galaxyproject.org/simple/"
+    extra_args: "--index-url https://wheels.galaxyproject.org/simple/ --extra-index-url https://pypi.python.org/simple"
     virtualenv: "{{ galaxy_venv_dir }}"
     virtualenv_command: "{{ pip_virtualenv_command | default( 'virtualenv' ) }}"
   with_items: "{{ conditional_dependencies.stdout_lines }}"
