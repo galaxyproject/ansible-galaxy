@@ -207,6 +207,7 @@ PostgreSQL, on the hosts in the `galaxyservers` group in your inventory:
       become_user: galaxy
       galaxy_manage_clone: no
       galaxy_manage_static_setup: no
+```
 
 License
 -------
