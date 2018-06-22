@@ -68,7 +68,9 @@ New options for Galaxy 18.01 and later:
   [unbit/uwsgi#863][uwsgi-863] for details.
 - To override the default uWSGI configuration, place your uWSGI options under the `uwsgi` key in the `galaxy_config`
   dictionary explained below. Note that the defaults are not merged with your config, so you should fully define the
-  `uwsgi` section if you choose to set it.
+  `uwsgi` section if you choose to set it. Note that **regardless of which `galaxy_uwsgi_yaml_parser` you use, this
+  should be written in real YAML** because Ansible parses it with libyaml, which does not support the uWSGI internal
+  parser's duplicate key syntax. This role will automatically convert the proper YAML to uWSGI-style YAML as necessary.
 
 [uwsgi-863]: https://github.com/unbit/uwsgi/issues/863
 
@@ -151,16 +153,17 @@ $ sh run.sh
 ```
 
 Install Galaxy with the clone and configs owned by a different user than the user running Galaxy, and backed by
-PostgreSQL, on the hosts in the `galaxyservers` group in your inventory:
+PostgreSQL, on the hosts in the `galaxyservers group in your inventory, and use the 18.01+ style YAML config:
 
 ```yaml
 - hosts: galaxyservers
   vars:
+    galaxy_config_style: yaml
     galaxy_server_dir: /opt/galaxy/server
     galaxy_config_dir: /opt/galaxy/config
     galaxy_mutable_config_dir: /var/opt/galaxy/config
     galaxy_mutable_data_dir: /var/opt/galaxy/data
-    galaxy_commit_id: release_17.01
+    galaxy_commit_id: release_18.05
     postgresql_objects_users:
       - name: galaxy
         password: null
@@ -168,9 +171,27 @@ PostgreSQL, on the hosts in the `galaxyservers` group in your inventory:
       - name: galaxy
         owner: galaxy
     galaxy_config:
-      "server:main":
-        host: 0.0.0.0
-      "app:main":
+      uwsgi:
+        socket: 127.0.0.1:4001
+        buffer-size: 16384
+        processes: 1
+        threads: 4
+        offload-threads: 2
+        static-map:
+          - /static/style={{ galaxy_server_dir }}/static/style/blue
+          - /static={{ galaxy_server_dir }}/static
+        master: true
+        virtualenv: "{{ galaxy_venv_dir }}"
+        pythonpath: "{{ galaxy_server_dir }}/lib"
+        module: galaxy.webapps.galaxy.buildapp:uwsgi_app()
+        thunder-lock: true
+        die-on-term: true
+        hook-master-start:
+          - unix_signal:2 gracefully_kill_them_all
+          - unix_signal:15 gracefully_kill_them_all
+        py-call-osafterfork: true
+        enable-threads: true
+      galaxy:
         database_connection: "postgresql:///galaxy?host=/var/run/postgresql"
   pre_tasks:
     - name: Create Galaxy code owner user
@@ -197,9 +218,8 @@ PostgreSQL, on the hosts in the `galaxyservers` group in your inventory:
         - git
         - python-psycopg2
         - python-virtualenv
-    # Precreating the mutable config directory may be necessary (it's not in
-    # our example since we set the user's home directory to
-    # galaxy_mutable_config_dir's parent).
+    # Precreating the mutable config directory may be necessary (it's not in our example since we set the user's home
+    # directory to galaxy_mutable_config_dir's parent).
     #- name: Create mutable configuration file directory
     #  file:
     #    path: "{{ galaxy_mutable_config_dir }}"
