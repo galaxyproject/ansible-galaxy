@@ -54,6 +54,24 @@ Role Variables
 
 ### Optional variables ###
 
+New options for Galaxy 18.01 and later:
+
+- `galaxy_config_style` (default: `ini-paste`): The type of Galaxy configuration file to write, `ini-paste` for the
+  traditional PasteDeploy-style INI file, or `yaml` for the YAML format supported by uWSGI.
+- `galaxy_app_config_section` (default: depends on `galaxy_config_style`): The config file section under which the
+  Galaxy config should be placed (and the key in `galaxy_config` in which the Galaxy config can be found. If
+  `galaxy_config_style` is `ini-paste` the default is `app:main`. If `galaxy_config_style` is `yaml`, the default is
+  `galaxy`.
+- `galaxy_uwsgi_yaml_parser` (default: `internal`): Controls whether the `uwsgi` section of the Galaxy config file will
+  be written in uWSGI-style YAML or real YAML. By default, uWSGI's internal YAML parser does not support real YAML. Set
+  to `libyaml` to write real YAML, if you are using uWSGI that has been compiled with libyaml. see
+  [unbit/uwsgi#863][uwsgi-863] for details.
+- To override the default uWSGI configuration, place your uWSGI options under the `uwsgi` key in the `galaxy_config`
+  dictionary explained below. Note that the defaults are not merged with your config, so you should fully define the
+  `uwsgi` section if you choose to set it.
+
+[uwsgi-863]: https://github.com/unbit/uwsgi/issues/863
+
 Several variables control which functions this role will perform (all default to `yes`):
 
 - `galaxy_manage_clone`: Clone Galaxy from the source repository and maintain it at a specified version (commit), as
@@ -69,6 +87,10 @@ Several variables control which functions this role will perform (all default to
 You can control various things about where you get Galaxy from, what version you use, and where its configuration files
 will be placed:
 
+- `galaxy_config`: The contents of the Galaxy configuration file (`galaxy.ini` by default) are controlled by this
+  variable. It is a hash of hashes (or dictionaries) that will be translated in to the configuration
+  file. See the Example Playbooks below for usage.
+- `galaxy_config_files`: List of hashes (with `src` and `dest` keys) of files to copy from the control machine.
 - `galaxy_repo` (default: `https://github.com/galaxyproject/galaxy.git`): Upstream Git repository from which Galaxy
   should be cloned.
 - `galaxy_commit_id` (default: `master`): A commit id, tag, branch, or other valid Git reference that Galaxy should be
@@ -90,10 +112,6 @@ will be placed:
 - `galaxy_config_file` (default: `<galaxy_config_dir>/galaxy.ini`): Galaxy's primary configuration file.
 - `galaxy_shed_tool_conf_file` (default: `<galaxy_mutable_config_dir>/shed_tool_conf.xml`): Configuration file for tools
   installed from the Galaxy Tool Shed.
-- `galaxy_config`: The contents of the Galaxy configuration file (`galaxy.ini` by default) are controlled by this
-  variable. It is a hash of hashes (or dictionaries) that will be translated in to the configuration
-  file. See the Example Playbooks below for usage.
-- `galaxy_config_files`: List of hashes (with `src` and `dest` keys) of files to copy from the control machine.
 - `galaxy_config_templates`: List of hashes (with `src` and `dest` keys) of templates to fill from the control machine.
 - `galaxy_admin_email_to`: If set, email this address when Galaxy has been updated. Assumes mail is properly configured
   on the managed host.

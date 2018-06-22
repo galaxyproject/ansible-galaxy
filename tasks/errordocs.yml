@@ -19,11 +19,6 @@
     - error_message_icon.png
     - masthead_bg.png
 
-#- name: Set configured support email fact
-#  set_fact:
-#    galaxy_config_error_email_to: "{{ galaxy_config['app:main']['error_email_to'] | default('null') }}"
-#    galaxy_config_instance_resource_url: "{{ galaxy_config['app:main']['instance_resource_url'] | default('null') }}"
-
 - name: Install error document templates
   template:
     src: "errordocs/{{ item }}.j2"
