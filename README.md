@@ -134,6 +134,8 @@ None
 Example Playbook
 ----------------
 
+**Basic:**
+
 Install Galaxy on your local system with all the default options:
 
 ```yaml
@@ -152,8 +154,13 @@ $ cd /srv/galaxy
 $ sh run.sh
 ```
 
+**Advanced:**
+
 Install Galaxy with the clone and configs owned by a different user than the user running Galaxy, and backed by
-PostgreSQL, on the hosts in the `galaxyservers group in your inventory, and use the 18.01+ style YAML config:
+PostgreSQL, on the hosts in the `galaxyservers` group in your inventory. Additionally, use the 18.01+ style YAML config
+and start two [job handler mules][deployment-options].
+
+[deployment-options]: https://docs.galaxyproject.org/en/master/admin/scaling.html#deployment-options
 
 ```yaml
 - hosts: galaxyservers
@@ -191,6 +198,9 @@ PostgreSQL, on the hosts in the `galaxyservers group in your inventory, and use 
           - unix_signal:15 gracefully_kill_them_all
         py-call-osafterfork: true
         enable-threads: true
+        mule: lib/galaxy/main.py
+        mule: lib/galaxy/main.py
+        farm: job-handlers:1,2
       galaxy:
         database_connection: "postgresql:///galaxy?host=/var/run/postgresql"
   pre_tasks:
