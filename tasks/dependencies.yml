@@ -1,7 +1,8 @@
 ---
 # Manage Galaxy framework dependencies
 
-- include: virtualenv.yml
+- name: Include virtualenv setup tasks
+  include_tasks: virtualenv.yml
 
 # virtualenv_command is still required if `virtualenv` isn't on $PATH, even if the venv already exists.
 - name: Install Galaxy base dependencies
