@@ -1,0 +1,23 @@
+---
+##
+## This file is managed by Ansible.  ALL CHANGES WILL BE OVERWRITTEN.
+##
+
+{#- define galaxy_config if it doesn't exist, for later ease of use -#}
+{%- if galaxy_config is not defined or galaxy_config == None -%}
+{%- set galaxy_config = {} %}
+{% endif %}
+
+
+{% set _uwsgi_config = galaxy_config.uwsgi | default(galaxy_uwsgi_config_default) -%}
+{% if galaxy_uwsgi_yaml_parser == 'libyaml' %}
+{{ {'uwsgi': _uwsgi_config} | to_nice_yaml(indent=4) }}
+{% else %}
+{{ {'uwsgi': _uwsgi_config} | to_uwsgi_yaml(indent=4) }}
+{% endif %}
+
+{#- add any other defined sections -#}
+{% for section, val in galaxy_config | dictsort if section not in ('uwsgi', galaxy_app_config_section) %}
+{{ {section: val} | to_nice_yaml(indent=4) }}
+{% endfor %}
+{{ {galaxy_app_config_section: galaxy_config_merged[galaxy_app_config_section]} | to_nice_yaml(indent=4) }}

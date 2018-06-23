@@ -31,7 +31,8 @@
     - restart galaxy
     - email administrator with commit id
 
-- include: virtualenv.yml
+- name: Include virtualenv setup tasks
+  include_tasks: virtualenv.yml
 
 - name: Remove orphaned .pyc files and compile bytecode
   script: makepyc.py {{ galaxy_server_dir }}/lib

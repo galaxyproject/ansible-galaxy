@@ -25,7 +25,7 @@
 
 - name: Create Galaxy configuration file
   template:
-    src: "galaxy.ini.j2"
+    src: "{{ galaxy_config_file_template }}"
     dest: "{{ galaxy_config_file }}"
     backup: yes
   notify:

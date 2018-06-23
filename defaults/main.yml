@@ -35,41 +35,50 @@ galaxy_config_dir: "{{ galaxy_server_dir }}"
 galaxy_mutable_config_dir: "{{ galaxy_server_dir }}"
 galaxy_tool_dependency_dir: "{{ galaxy_mutable_data_dir }}/dependencies"
 galaxy_mutable_data_dir: "{{ galaxy_server_dir }}/database"
-galaxy_config_file: "{{ galaxy_config_dir }}/galaxy.ini"
 galaxy_shed_tools_dir: "{{ galaxy_server_dir }}/../shed_tools"
 galaxy_shed_tool_conf_file: "{{ galaxy_mutable_config_dir }}/shed_tool_conf.xml"
 galaxy_requirements_file: "{{ galaxy_server_dir }}/lib/galaxy/dependencies/pinned-requirements.txt"
 
+# Galaxy config file can either be 'ini-paste' (old style) or 'yaml'
+galaxy_config_style: "ini-paste"
+galaxy_config_file_basename: "galaxy.{{ 'yml' if galaxy_config_style in ('yaml', 'yml') else 'ini' }}"
+galaxy_config_file_template: "{{ galaxy_config_file_basename }}.j2"
+galaxy_config_file: "{{ galaxy_config_dir }}/{{ galaxy_config_file_basename }}"
+galaxy_app_config_section: "{{ 'galaxy' if galaxy_config_style in ('yaml', 'yml') else 'app:main' }}"
+
 # The default Galaxy configuration, ensures that Galaxy can find all of the
 # configs if galaxy_config_dir != galaxy_server_dir
-galaxy_config_default:
-  "app:main":
-    "paste.app_factory": "galaxy.web.buildapp:app_factory"
-    builds_file_path: "{{ galaxy_server_dir }}/tool-data/shared/ucsc/builds.txt.sample"
-    data_manager_config_file: "{{ galaxy_server_dir }}/config/data_manager_conf.xml.sample"
-    datatypes_config_file: "{{ galaxy_server_dir }}/config/datatypes_conf.xml.sample"
-    external_service_type_config_file: "{{ galaxy_server_dir }}/config/external_service_types_conf.xml.sample"
-    integrated_tool_panel_config: "{{ galaxy_mutable_config_dir }}/integrated_tool_panel.xml"
-    migrated_tools_config: "{{ galaxy_mutable_config_dir }}/migrated_tools_conf.xml"
-    openid_config_file: "{{ galaxy_server_dir }}/config/openid_conf.xml.sample"
-    shed_data_manager_config_file: "{{ galaxy_mutable_config_dir }}/shed_data_manager_conf.xml"
-    shed_tool_data_table_config: "{{ galaxy_mutable_config_dir }}/shed_tool_data_table_conf.xml"
-    tool_config_file: "{{ galaxy_server_dir }}/config/tool_conf.xml.sample,{{ galaxy_shed_tool_conf_file }}"
-    tool_data_table_config_path: "{{ galaxy_server_dir }}/config/tool_data_table_conf.xml.sample"
-    tool_sheds_config_file: "{{ galaxy_server_dir }}/config/tool_sheds_conf.xml.sample"
-    ucsc_build_sites: "{{ galaxy_server_dir }}/tool-data/shared/ucsc/ucsc_build_sites.txt.sample"
-    visualization_plugins_directory: "config/plugins/visualizations"
+galaxy_paste_app_factory: "galaxy.web.buildapp:app_factory"
+galaxy_app_config_default:
+  builds_file_path: "{{ galaxy_server_dir }}/tool-data/shared/ucsc/builds.txt.sample"
+  data_manager_config_file: "{{ galaxy_server_dir }}/config/data_manager_conf.xml.sample"
+  datatypes_config_file: "{{ galaxy_server_dir }}/config/datatypes_conf.xml.sample"
+  external_service_type_config_file: "{{ galaxy_server_dir }}/config/external_service_types_conf.xml.sample"
+  integrated_tool_panel_config: "{{ galaxy_mutable_config_dir }}/integrated_tool_panel.xml"
+  migrated_tools_config: "{{ galaxy_mutable_config_dir }}/migrated_tools_conf.xml"
+  openid_config_file: "{{ galaxy_server_dir }}/config/openid_conf.xml.sample"
+  shed_data_manager_config_file: "{{ galaxy_mutable_config_dir }}/shed_data_manager_conf.xml"
+  shed_tool_data_table_config: "{{ galaxy_mutable_config_dir }}/shed_tool_data_table_conf.xml"
+  tool_config_file: "{{ galaxy_server_dir }}/config/tool_conf.xml.sample,{{ galaxy_shed_tool_conf_file }}"
+  tool_data_table_config_path: "{{ galaxy_server_dir }}/config/tool_data_table_conf.xml.sample"
+  tool_sheds_config_file: "{{ galaxy_server_dir }}/config/tool_sheds_conf.xml.sample"
+  ucsc_build_sites: "{{ galaxy_server_dir }}/tool-data/shared/ucsc/ucsc_build_sites.txt.sample"
+  visualization_plugins_directory: "config/plugins/visualizations"
 
-    file_path: "{{ galaxy_mutable_data_dir }}/datasets"
-    new_file_path: "{{ galaxy_mutable_data_dir }}/tmp"
-    job_working_directory: "{{ galaxy_mutable_data_dir }}/jobs"
-    tool_dependency_dir: "{{ galaxy_tool_dependency_dir }}"
-    template_cache_path: "{{ galaxy_mutable_data_dir }}/template_cache"
-    whoosh_index_dir: "{{ galaxy_mutable_data_dir }}/whoosh_cache"
-    object_store_cache_path: "{{ galaxy_mutable_data_dir }}/object_store_cache"
-    openid_consumer_cache_path: "{{ galaxy_mutable_data_dir }}/openid_consumer_cache"
-    citation_cache_data_dir: "{{ galaxy_mutable_data_dir }}/citations/data"
-    citation_cache_lock_dir: "{{ galaxy_mutable_data_dir }}/citations/locks"
+  file_path: "{{ galaxy_mutable_data_dir }}/datasets"
+  new_file_path: "{{ galaxy_mutable_data_dir }}/tmp"
+  job_working_directory: "{{ galaxy_mutable_data_dir }}/jobs"
+  tool_dependency_dir: "{{ galaxy_tool_dependency_dir }}"
+  template_cache_path: "{{ galaxy_mutable_data_dir }}/template_cache"
+  whoosh_index_dir: "{{ galaxy_mutable_data_dir }}/whoosh_cache"
+  object_store_cache_path: "{{ galaxy_mutable_data_dir }}/object_store_cache"
+  openid_consumer_cache_path: "{{ galaxy_mutable_data_dir }}/openid_consumer_cache"
+  citation_cache_data_dir: "{{ galaxy_mutable_data_dir }}/citations/data"
+  citation_cache_lock_dir: "{{ galaxy_mutable_data_dir }}/citations/locks"
+
+# Need to set galaxy_config_default[galaxy_app_config_section] dynamically but Ansible/Jinja2 does not make this easy
+galaxy_config_default: "{{ {} | combine({galaxy_app_config_section: galaxy_app_config_default}) }}"
+galaxy_config_merged: "{{ galaxy_config_default | combine(galaxy_config | default({}), recursive=True) }}"
 
 # Automatically instantiate mutable config files if they don't exist (dest will
 # not be overwritten if it exists)
@@ -77,14 +86,14 @@ galaxy_mutable_configs:
   - src: "{{ galaxy_server_dir }}/config/shed_tool_conf.xml.sample"
     dest: "{{ galaxy_shed_tool_conf_file }}"
   - src: "{{ galaxy_server_dir }}/config/migrated_tools_conf.xml.sample"
-    dest: "{{ galaxy_config['app:main']['migrated_tools_config'] if galaxy_config is defined and 'app:main' in galaxy_config and 'migrated_tools_config' in galaxy_config['app:main'] else galaxy_config_default['app:main']['migrated_tools_config'] }}"
+    dest: "{{ galaxy_config_merged[galaxy_app_config_section].migrated_tools_config }}"
   - src: "{{ galaxy_server_dir }}/config/shed_data_manager_conf.xml.sample"
-    dest: "{{ galaxy_config['app:main']['shed_data_manager_config_file'] if galaxy_config is defined and 'app:main' in galaxy_config and 'shed_data_manager_config_file' in galaxy_config['app:main'] else galaxy_config_default['app:main']['shed_data_manager_config_file'] }}"
+    dest: "{{ galaxy_config_merged[galaxy_app_config_section].shed_data_manager_config_file }}"
   - src: "{{ galaxy_server_dir }}/config/shed_tool_data_table_conf.xml.sample"
-    dest: "{{ galaxy_config['app:main']['shed_tool_data_table_config'] if galaxy_config is defined and 'app:main' in galaxy_config and 'shed_tool_data_table_config' in galaxy_config['app:main'] else galaxy_config_default['app:main']['shed_tool_data_table_config'] }}"
+    dest: "{{ galaxy_config_merged[galaxy_app_config_section].shed_tool_data_table_config }}"
 
-galaxy_config_error_email_to: "{{ galaxy_config['app:main']['error_email_to'] | default('') if galaxy_config is defined and galaxy_config['app:main'] is defined else '' }}"
-galaxy_config_instance_resource_url: "{{ galaxy_config['app:main']['instance_resource_url'] | default('') if galaxy_config is defined and galaxy_config['app:main'] is defined else '' }}"
+galaxy_config_error_email_to: "{{ galaxy_config_merged[galaxy_app_config_section].error_email_to | default('') }}"
+galaxy_config_instance_resource_url: "{{ galaxy_config_merged[galaxy_app_config_section].instance_resource_url | default('') }}"
 galaxy_errordocs_server_name: Galaxy
 galaxy_errordocs_prefix: /error
 
@@ -94,3 +103,25 @@ galaxy_errordocs_prefix: /error
 # host.
 galaxy_config_files: []
 galaxy_config_templates: []
+
+galaxy_uwsgi_yaml_parser: internal
+galaxy_uwsgi_config_default:
+  http: 127.0.0.1:8080
+  buffer-size: 16384
+  processes: 1
+  threads: 4
+  offload-threads: 2
+  static-map:
+    - /static/style={{ galaxy_server_dir }}/static/style/blue
+    - /static={{ galaxy_server_dir }}/static
+  master: true
+  virtualenv: "{{ galaxy_venv_dir }}"
+  pythonpath: "{{ galaxy_server_dir }}/lib"
+  module: galaxy.webapps.galaxy.buildapp:uwsgi_app()
+  thunder-lock: true
+  die-on-term: true
+  hook-master-start:
+    - unix_signal:2 gracefully_kill_them_all
+    - unix_signal:15 gracefully_kill_them_all
+  py-call-osafterfork: true
+  enable-threads: true

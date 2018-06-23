@@ -4,29 +4,36 @@
 # Deploy a Galaxy server
 #   https://wiki.galaxyproject.org/
 
-- include: clone.yml
+- name: Include clone tasks
+  include_tasks: clone.yml
   when: galaxy_manage_clone
   tags:
     - galaxy_manage_clone
 
-- include: download.yml
+- name: Include download tasks
+  include_tasks: download.yml
   when: not galaxy_manage_clone and galaxy_manage_download
   tags:
     - galaxy_manage_download
 
-- include: static_setup.yml
+- name: Include static config setup tasks
+  include_tasks: static_setup.yml
   when: galaxy_manage_static_setup
   tags: 
    - galaxy_config_files
 
-- include: dependencies.yml
+- name: Include dependency setup tasks
+  include_tasks: dependencies.yml
   when: galaxy_fetch_dependencies
 
-- include: mutable_setup.yml
+- name: Include mutable config setup tasks
+  include_tasks: mutable_setup.yml
   when: galaxy_manage_mutable_setup
 
-- include: database.yml
+- name: Include database management tasks
+  include_tasks: database.yml
   when: galaxy_manage_database
 
-- include: errordocs.yml
+- name: Include error document setup tasks
+  include_tasks: errordocs.yml
   when: galaxy_manage_errordocs
