@@ -22,7 +22,7 @@ galaxy_repo: "{{ galaxy_git_repo | default('https://github.com/galaxyproject/gal
 galaxy_commit_id: "{{ galaxy_changeset_id | default('master') }}"
 
 # Download URL (if used)
-galaxy_download_url: "{{ galaxy_repo | replace('.git', '') }}/archive/{{ galaxy_commit_id | replace('release_', 'v') }}.tar.gz"
+galaxy_download_url: "{{ galaxy_repo | replace('.git', '') }}/archive/{{ galaxy_commit_id }}.tar.gz"
 
 # This will automatically be used by run.sh
 galaxy_venv_dir: "{{ galaxy_server_dir }}/.venv"
