@@ -6,6 +6,11 @@
     path: "{{ galaxy_server_dir }}/{{ galaxy_commit_id }}_receipt"
   register: download_receipt
 
+- name: Create Galaxy server directory
+  file:
+    path: "{{ galaxy_server_dir }}"
+    state: directory
+
 - name: Install current version of Galaxy
   unarchive:
     src: "{{ galaxy_download_url }}"
