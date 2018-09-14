@@ -8,4 +8,4 @@
   when: not download_receipt.stat.exists
 
 - name: Include virtualenv setup tasks
-  include_tasks: virtualenv.yml
+  include: virtualenv.yml
