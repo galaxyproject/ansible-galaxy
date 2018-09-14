@@ -5,35 +5,35 @@
 #   https://wiki.galaxyproject.org/
 
 - name: Include clone tasks
-  include_tasks: clone.yml
+  include: clone.yml
   when: galaxy_manage_clone
   tags:
     - galaxy_manage_clone
 
 - name: Include download tasks
-  include_tasks: download.yml
+  include: download.yml
   when: not galaxy_manage_clone and galaxy_manage_download
   tags:
     - galaxy_manage_download
 
 - name: Include static config setup tasks
-  include_tasks: static_setup.yml
+  include: static_setup.yml
   when: galaxy_manage_static_setup
   tags: 
    - galaxy_config_files
 
 - name: Include dependency setup tasks
-  include_tasks: dependencies.yml
+  include: dependencies.yml
   when: galaxy_fetch_dependencies
 
 - name: Include mutable config setup tasks
-  include_tasks: mutable_setup.yml
+  include: mutable_setup.yml
   when: galaxy_manage_mutable_setup
 
 - name: Include database management tasks
-  include_tasks: database.yml
+  include: database.yml
   when: galaxy_manage_database
 
 - name: Include error document setup tasks
-  include_tasks: errordocs.yml
+  include: errordocs.yml
   when: galaxy_manage_errordocs

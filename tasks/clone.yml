@@ -32,7 +32,7 @@
     - email administrator with commit id
 
 - name: Include virtualenv setup tasks
-  include_tasks: virtualenv.yml
+  include: virtualenv.yml
 
 - name: Remove orphaned .pyc files and compile bytecode
   script: makepyc.py {{ galaxy_server_dir }}/lib
