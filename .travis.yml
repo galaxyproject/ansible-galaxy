@@ -1,0 +1,26 @@
+---
+language: python
+python: "2.7"
+
+services:
+  - docker
+
+before_install:
+  - docker --version
+  - docker info
+  - export GALAXY_HOME=/home/galaxy
+  - export GALAXY_TRAVIS_USER=galaxy
+  - export GALAXY_UID=1450
+  - export GALAXY_GID=1450
+  - sudo groupadd -r $GALAXY_TRAVIS_USER -g $GALAXY_GID
+  - sudo useradd -u $GALAXY_UID -r -g $GALAXY_TRAVIS_USER -d $GALAXY_HOME -p travis_testing -c "Galaxy user" $GALAXY_TRAVIS_USER
+
+install:
+  # Install Ansible.
+  - pip install ansible
+
+  # Add ansible.cfg to pick up roles path.
+  - printf '[defaults]\nroles_path = ../' > ansible.cfg
+
+script:
+  - ansible-playbook -i "localhost, " --syntax-check tests/test_playbook.yml
