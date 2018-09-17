@@ -1,0 +1,15 @@
+---
+# Travis CI test playbook
+
+- hosts: localhost
+  gather_facts: False
+  connection: local
+  vars:
+    galaxy_commit_id: release_18.05
+    galaxy_manage_clone: yes
+    galaxy_manage_download: no
+    galaxy_server_dir: /home/galaxy
+    galaxy_config_style: yaml
+  roles:
+    - role: galaxy
+      become_user: galaxy
