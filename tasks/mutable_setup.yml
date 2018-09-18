@@ -8,9 +8,24 @@
   with_items:
     - "{{ galaxy_mutable_config_dir }}"
     - "{{ galaxy_tool_dependency_dir }}"
+  become: yes
 
 - name: Instantiate mutable configuration files
   command: cp {{ item.src }} {{ item.dest }}
   args:
     creates: "{{ item.dest }}"
   with_items: "{{ galaxy_mutable_configs }}"
+  become: yes
+
+- name: Set Galaxy config and shed tools directory ownership and permissions
+  file:
+    path: "{{ item }}"
+    owner: "{{ galaxy_user }}"
+    group: "{{ galaxy_group }}"
+    mode: "{{ galaxy_mode }}"
+    recurse: yes
+  with_items:
+    - "{{ galaxy_mutable_config_dir }}"
+    - "{{ galaxy_tool_dependency_dir }}"
+  become: yes
+
