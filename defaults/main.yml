@@ -13,6 +13,11 @@ galaxy_manage_database: yes
 galaxy_fetch_dependencies: yes
 galaxy_manage_errordocs: no
 
+# Folder ownership and permission variables
+galaxy_user: galaxy
+galaxy_group: galaxy
+galaxy_mode: 0755
+
 # Where to clone Galaxy from. Backwards compatibility with galaxy_git_repo
 galaxy_repo: "{{ galaxy_git_repo | default('https://github.com/galaxyproject/galaxy.git') }}"
 
