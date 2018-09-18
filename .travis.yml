@@ -3,12 +3,7 @@ language: python
 python: "2.7"
 sudo: required
 
-services:
-  - docker
-
 before_install:
-  - docker --version
-  - docker info
   - export GALAXY_HOME=/home/galaxy
   - export GALAXY_TRAVIS_USER=galaxy
   - export GALAXY_UID=1450
