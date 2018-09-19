@@ -12,7 +12,7 @@ before_install:
   - sudo useradd -u $GALAXY_UID -r -g $GALAXY_TRAVIS_USER -d $GALAXY_HOME -p travis_testing -c "Galaxy user" $GALAXY_TRAVIS_USER
   - sudo mkdir $GALAXY_HOME
   - sudo chown -R $GALAXY_TRAVIS_USER:$GALAXY_TRAVIS_USER $GALAXY_HOME
-  - sudo chmod -R 775 $GALAXY_HOME
+  - sudo chmod -R 755 $GALAXY_HOME
 
 install:
   # Install Ansible.
