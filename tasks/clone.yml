@@ -5,7 +5,6 @@
   stat:
     path: "{{ galaxy_server_dir }}/lib/galaxy"
   register: galaxy_stat_out
-  become: yes
 
 - name: Get current Galaxy commit id
   command: "{{ git_executable | default('git') }} rev-parse HEAD"
@@ -14,7 +13,6 @@
   register: current_commit_id
   changed_when: no
   when: galaxy_stat_out.stat.exists
-  become: yes
 
 - name: Report current Galaxy commit id
   debug:
@@ -34,7 +32,6 @@
   notify:
     - restart galaxy
     - email administrator with commit id
-  become: yes
 
 - name: Set Galaxy server directory ownership and permissions
   file:
@@ -43,7 +40,6 @@
     group: "{{ galaxy_group }}"
     mode: "{{ galaxy_mode }}"
     recurse: yes
-  become: yes
 
 - name: Include virtualenv setup tasks
   include_tasks: virtualenv.yml
@@ -52,4 +48,3 @@
   script: "makepyc.py {{ galaxy_server_dir }}/lib"
   environment:
     PATH: "{{ galaxy_venv_dir }}/bin"
-  become: yes
