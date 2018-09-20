@@ -15,6 +15,11 @@ before_install:
   - sudo chmod -R 755 $GALAXY_HOME
 
 install:
+  # Install an upgraded pip and virtualenv
+  - sudo apt-get install python-pip
+  - pip install virtualenv
+  - pip install --upgrade pip
+
   # Install Ansible.
   - pip install ansible==2.4
 
