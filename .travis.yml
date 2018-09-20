@@ -16,6 +16,7 @@ before_install:
 
 install:
   # Install an upgraded pip and virtualenv
+  - sudo apt-get install git
   - sudo apt-get install python-pip
   - pip install virtualenv
   - pip install --upgrade pip
