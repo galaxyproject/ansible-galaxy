@@ -8,7 +8,6 @@
   register: current_db_version
   changed_when: no
   failed_when: current_db_version.rc != 0 and 'migrate.exceptions.DatabaseNotControlledError' not in current_db_version.stderr
-  become: yes
 
 - name: Get maximum Galaxy DB version
   command: "{{ galaxy_venv_dir }}/bin/python {{ galaxy_server_dir }}/scripts/manage_db.py -c {{ galaxy_config_file }} version"
@@ -16,14 +15,12 @@
     chdir: "{{ galaxy_server_dir }}"
   register: max_db_version
   changed_when: no
-  become: yes
 
 - name: Create Galaxy DB
   command: "{{ galaxy_venv_dir }}/bin/python {{ galaxy_server_dir }}/scripts/create_db.py -c {{ galaxy_config_file }}"
   args:
     chdir: "{{ galaxy_server_dir }}"
   when: "'migrate.exceptions.DatabaseNotControlledError' in current_db_version.stderr"
-  become: yes
 
 - name: Set Galaxy DB ownership and permissions
   file:
@@ -31,11 +28,9 @@
     owner: "{{ galaxy_user }}"
     group: "{{ galaxy_group }}"
     mode: "{{ galaxy_mode }}"
-  become: yes
  
 - name: Upgrade Galaxy DB
   command: "{{ galaxy_venv_dir }}/bin/python {{ galaxy_server_dir }}/scripts/manage_db.py -c {{ galaxy_config_file }} upgrade"
   args:
     chdir: "{{ galaxy_server_dir }}"
   when: current_db_version.stdout != max_db_version.stdout and 'migrate.exceptions.DatabaseNotControlledError' not in current_db_version.stderr
-  become: yes

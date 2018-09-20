@@ -14,14 +14,12 @@
   environment:
     PYTHONPATH: null
     VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
-  become: yes
 
 - name: Collect Galaxy conditional dependency requirement strings
   command: "{{ galaxy_venv_dir }}/bin/python -c \"import galaxy.dependencies; print '\\n'.join(galaxy.dependencies.optional('{{ galaxy_config_file }}'))\""
   environment:
     PYTHONPATH: "{{ galaxy_server_dir }}/lib"
   register: conditional_dependencies
-  become: yes
 
 - name: Install Galaxy conditional dependencies
   pip: 
@@ -33,4 +31,3 @@
   environment:
     PYTHONPATH: null
     VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
-  become: yes

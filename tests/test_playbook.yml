@@ -13,3 +13,4 @@
     galaxy_config_style: yaml
   roles:
     - role: ansible-galaxy
+      become: yes
