@@ -22,13 +22,6 @@
     chdir: "{{ galaxy_server_dir }}"
   when: "'migrate.exceptions.DatabaseNotControlledError' in current_db_version.stderr"
 
-- name: Set Galaxy DB ownership and permissions
-  file:
-    path: "{{ galaxy_server_dir }}/database/universe.sqlite"
-    owner: "{{ galaxy_user }}"
-    group: "{{ galaxy_group }}"
-    mode: "{{ galaxy_mode }}"
- 
 - name: Upgrade Galaxy DB
   command: "{{ galaxy_venv_dir }}/bin/python {{ galaxy_server_dir }}/scripts/manage_db.py -c {{ galaxy_config_file }} upgrade"
   args:

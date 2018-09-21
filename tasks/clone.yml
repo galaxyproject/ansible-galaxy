@@ -20,8 +20,6 @@
   changed_when: True
   when: galaxy_stat_out.stat.exists and (current_commit_id.stdout | default(-1) != galaxy_commit_id)
 
-# task will fail if galaxy_server_dir
-# before adding "force: yes" we may want to add a conditional backup task
 - name: Update Galaxy to correct ref (git)
   git:
     dest: "{{ galaxy_server_dir }}"
@@ -32,14 +30,6 @@
   notify:
     - restart galaxy
     - email administrator with commit id
-
-- name: Set Galaxy server directory ownership and permissions
-  file:
-    path: "{{ galaxy_server_dir }}"
-    owner: "{{ galaxy_user }}"
-    group: "{{ galaxy_group }}"
-    mode: "{{ galaxy_mode }}"
-    recurse: yes
 
 - name: Include virtualenv setup tasks
   include_tasks: virtualenv.yml
