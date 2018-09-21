@@ -1,7 +1,7 @@
 ---
 # Manage static Galaxy configuration files
 
-- name: Create Galaxy config dirs
+- name: Create Galaxy config and shed tools directory
   file:
     path: "{{ item }}"
     state: directory

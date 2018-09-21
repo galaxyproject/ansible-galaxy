@@ -1,0 +1,16 @@
+---
+# Travis CI test playbook
+
+- hosts: localhost
+  gather_facts: False
+  connection: local
+  remote_user: travis
+  vars:
+    galaxy_commit_id: release_18.05
+    galaxy_manage_clone: yes
+    galaxy_manage_download: no
+    galaxy_server_dir: /home/galaxy/server
+    galaxy_config_style: yaml
+  roles:
+    - role: ansible-galaxy
+      become: yes
