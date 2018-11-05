@@ -16,7 +16,7 @@ for root, dirs, files in walk(sys.argv[1]):
             pyc = join(root, name)
             py = splitext(pyc)[0] + '.py'
             if not exists(py):
-                print 'Removing orphaned', pyc, '...'
+                print('Removing orphaned', pyc, '...')
                 unlink(pyc)
 
 compileall.compile_dir(sys.argv[1])
