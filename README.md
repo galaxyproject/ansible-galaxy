@@ -222,12 +222,8 @@ and start two [job handler mules][deployment-options].
       become: yes
     - name: Install Dependencies
       apt:
-        name: "{{ item }}"
+        name: ['git', 'python-psycopg2', 'python-virtualenv']
       become: yes
-      with_items:
-        - git
-        - python-psycopg2
-        - python-virtualenv
     # Precreating the mutable config directory may be necessary (it's not in our example since we set the user's home
     # directory to galaxy_mutable_config_dir's parent).
     #- name: Create mutable configuration file directory
