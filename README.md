@@ -198,8 +198,9 @@ and start two [job handler mules][deployment-options].
           - unix_signal:15 gracefully_kill_them_all
         py-call-osafterfork: true
         enable-threads: true
-        mule: lib/galaxy/main.py
-        mule: lib/galaxy/main.py
+        mules:
+          - mule: lib/galaxy/main.py
+          - mule: lib/galaxy/main.py
         farm: job-handlers:1,2
       galaxy:
         database_connection: "postgresql:///galaxy?host=/var/run/postgresql"
