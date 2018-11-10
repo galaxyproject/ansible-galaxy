@@ -29,3 +29,4 @@ install:
 
 script:
   - ansible-playbook -i "localhost, " -c local tests/test_playbook.yml
+  - python -m unittest tests.test_seqtodict

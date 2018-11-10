@@ -2,9 +2,6 @@ import re
 
 from ansible.errors import AnsibleFilterError
 
-def get1():
-    return 1
-
 
 def seqtodict(yaml_string, seq_key):
     '''Transforms sequence of YAML-formatted key-value pairs to dictionary.
@@ -49,7 +46,7 @@ def seqtodict(yaml_string, seq_key):
     DELETE_MARKER = '#DELETE-ME#'
 
     #check type: str (Python 3) or unicode (Python 2)
-    if not (isinstance(yaml_string, str) or isinstance(yaml_string, str)):
+    if not (isinstance(yaml_string, str) or isinstance(yaml_string, unicode)):
         raise AnsibleFilterError('seqtodict expects a string')
     if seq_key is None or seq_key == '':
         raise AnsibleFilterError('seq_key cannot be empty')
