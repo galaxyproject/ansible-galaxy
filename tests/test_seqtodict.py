@@ -5,6 +5,23 @@ from filter_plugins import seqtodict
 
 class TestSeqToDictFilter(unittest.TestCase):
 
+    def test_no_change(self):
+        input = '''
+            a: v1 
+            b: v2
+            d: v4
+        '''
+
+        expected = '''
+            a: v1 
+            b: v2
+            d: v4
+        '''
+
+        result = seqtodict.seqtodict(input, 'foo')
+        self.assertEqual(result, expected)
+
+
     def test_transform_one_sequence(self):
         input = '''
             a: v1 
