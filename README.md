@@ -235,7 +235,8 @@ and start two [job handler mules][deployment-options].
   roles:
     # Install with:
     #   % ansible-galaxy install galaxyproject.postgresql
-    - galaxyproject.postgresql
+    - role: galaxyproject.postgresql
+      become: yes
     # Install with:
     #   % ansible-galaxy install natefoo.postgresql_objects
     - role: natefoo.postgresql_objects
