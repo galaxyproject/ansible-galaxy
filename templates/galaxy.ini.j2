@@ -42,7 +42,7 @@ paste.app_factory = {{ galaxy_paste_app_factory }}
 
 ; options from the role's config defaults appear here
 {# defaults -#}
-{% for opt in galaxy_config_default[galaxy_app_config_section] %}
+{% for opt in galaxy_config_default[galaxy_app_config_section] | sort %}
 {% if galaxy_app_config_section not in galaxy_config or (galaxy_app_config_section in galaxy_config and opt not in galaxy_config[galaxy_app_config_section]) %}
 {{ opt }} = {{ galaxy_config_default[galaxy_app_config_section][opt] }}
 {% endif %}
@@ -51,7 +51,7 @@ paste.app_factory = {{ galaxy_paste_app_factory }}
 ; options configured by the site admin appear here
 {# configured options -#}
 {% if galaxy_app_config_section in galaxy_config %}
-{% for opt in galaxy_config[galaxy_app_config_section] %}
+{% for opt in galaxy_config[galaxy_app_config_section] | sort %}
 {{ opt }} = {{ galaxy_config[galaxy_app_config_section][opt] }}
 {% endfor %}
 {% endif %}
