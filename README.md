@@ -35,7 +35,7 @@ the same play as this role:
         - mercurial
         - python-virtualenv
   roles:
-    - galaxyprojectdotorg.galaxy
+    - galaxyproject.galaxy
 ```
 
 If your `git` executable is not on `$PATH`, you can specify its location with the `git_executable` variable. Likewise
@@ -267,8 +267,9 @@ Author Information
 
 This role was written and contributed to by the following people:
 
-[Enis Afgan](https://github.com/afgane)  
-[Dannon Baker](https://github.com/dannon)  
-[Simon Belluzzo](https://github.com/simonalpha)  
-[John Chilton](https://github.com/jmchilton)  
-[Nate Coraor](https://github.com/natefoo)  
+[Enis Afgan](https://github.com/afgane)
+[Dannon Baker](https://github.com/dannon)
+[Simon Belluzzo](https://github.com/simonalpha)
+[John Chilton](https://github.com/jmchilton)
+[Nate Coraor](https://github.com/natefoo)
+[Helena Rasche](https://github.com/erasche)
