@@ -18,14 +18,14 @@
 
 - name: Build client
   include_tasks: build_client.yml
-  when: (current_commit_id.stdout | default(-1) != galaxy_commit_id) or (not download_receipt.stat.exists)
+  when: (galaxy_manage_clone and current_commit_id.stdout | default(-1) != galaxy_commit_id) or (galaxy_manage_download and not download_receipt.stat.exists)
   tags:
    - galaxy_build_client
 
 - name: Include static config setup tasks
   include_tasks: static_setup.yml
   when: galaxy_manage_static_setup
-  tags: 
+  tags:
    - galaxy_config_files
 
 - name: Include dependency setup tasks
