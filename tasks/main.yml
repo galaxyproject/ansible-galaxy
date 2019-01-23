@@ -18,7 +18,7 @@
 
 - name: Build client
   include_tasks: build_client.yml
-  when: (galaxy_manage_clone and current_commit_id.stdout | default(-1) != galaxy_commit_id) or (galaxy_manage_download and not download_receipt.stat.exists)
+  when: (galaxy_manage_clone and current_repo_state.before | default(-1) != galaxy_commit_id) or (galaxy_manage_download and not download_receipt.stat.exists)
   tags:
    - galaxy_build_client
 
