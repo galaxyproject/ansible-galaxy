@@ -27,6 +27,7 @@
     repo: "{{ galaxy_repo }}"
     version: "{{ galaxy_commit_id }}"
     executable: "{{ git_executable | default(omit) }}"
+    depth: "{{ galaxy_repo_clone_depth | default(omit) }}"
   notify:
     - restart galaxy
     - email administrator with commit id
