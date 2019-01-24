@@ -5,7 +5,7 @@
 # options on different hosts or server directories.
 galaxy_manage_clone: yes
 galaxy_force_checkout: no
-# Download the Galaxy instead cloning, for throw away boxes (e.g. Docker)
+# Download Galaxy instead of cloning, for throw away boxes (e.g. Docker)
 galaxy_manage_download: no
 galaxy_manage_static_setup: yes
 galaxy_manage_mutable_setup: yes

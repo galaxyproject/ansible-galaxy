@@ -2,7 +2,7 @@
 # main tasks file for galaxyproject.galaxy
 
 # Deploy a Galaxy server
-#   https://wiki.galaxyproject.org/
+#   https://docs.galaxyproject.org/
 
 - name: Include clone tasks
   include_tasks: clone.yml
@@ -20,7 +20,7 @@
   include_tasks: static_setup.yml
   when: galaxy_manage_static_setup
   tags: 
-   - galaxy_config_files
+    - galaxy_config_files
 
 - name: Include dependency setup tasks
   include_tasks: dependencies.yml

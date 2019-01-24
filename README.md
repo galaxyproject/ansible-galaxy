@@ -125,7 +125,6 @@ will be placed:
   reached" on the 502 page.
 - `galaxy_errordocs_prefix` (default: `/error`): Web-side path to the error document root.
 
-
 Dependencies
 ------------
 
@@ -267,8 +266,8 @@ Author Information
 
 This role was written and contributed to by the following people:
 
-[Enis Afgan](https://github.com/afgane)  
-[Dannon Baker](https://github.com/dannon)  
-[Simon Belluzzo](https://github.com/simonalpha)  
-[John Chilton](https://github.com/jmchilton)  
-[Nate Coraor](https://github.com/natefoo)  
+- [Enis Afgan](https://github.com/afgane)
+- [Dannon Baker](https://github.com/dannon)
+- [Simon Belluzzo](https://github.com/simonalpha)
+- [John Chilton](https://github.com/jmchilton)
+- [Nate Coraor](https://github.com/natefoo)
