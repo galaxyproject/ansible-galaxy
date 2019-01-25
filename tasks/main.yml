@@ -4,6 +4,9 @@
 # Deploy a Galaxy server
 #   https://docs.galaxyproject.org/
 
+- name: Import layout variable tasks
+  import_tasks: layout.yml
+
 - name: Include clone tasks
   include_tasks: clone.yml
   when: galaxy_manage_clone

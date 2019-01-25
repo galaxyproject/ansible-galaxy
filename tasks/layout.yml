@@ -1,0 +1,40 @@
+---
+# Configure any unset variables using layout defaults
+
+- name: Include layout vars
+  include_vars: "layout-{{ galaxy_layout | default('legacy') }}.yml"
+
+- name: Set any unset variables from layout defaults
+  set_fact:
+    "{{ item }}": "{{ lookup('vars', '__' ~ item) }}"
+  when: item not in vars
+  with_items:
+    - galaxy_venv_dir
+    - galaxy_server_dir
+    - galaxy_config_dir
+    - galaxy_mutable_config_dir
+    - galaxy_mutable_data_dir
+    - galaxy_shed_tools_dir
+    - galaxy_cache_dir
+
+- name: Check that any explicitly set Galaxy config options match the values of explicitly set variables
+  assert:
+    that:
+      - lookup('vars', 'galaxy_' ~ item) == galaxy_config[galaxy_app_config_section][item]
+    msg: "Value of '{{ 'galaxy_' ~ item }}' does not match value of '{{ item }}' in galaxy_config: {{ lookup('vars', 'galaxy_' ~ item) }} != {{ galaxy_config[galaxy_app_config_section][item] }}"
+    # TODO: requires Ansible 2.7
+    #success_msg: "Value of '{{ 'galaxy_' ~ item }}' matches galaxy_config value of '{{ item }}' in galaxy_config"
+  when: "'galaxy_' ~ item in vars and item in ((galaxy_config | default({}))[galaxy_app_config_section] | default({}))"
+  with_items:
+    - tool_dependency_dir
+    - file_path
+    - job_working_directory
+
+- name: Set any unset variables corresponding to Galaxy config options from galaxy_config or layout defaults
+  set_fact:
+    "{{ 'galaxy_' ~ item }}": "{{ ((galaxy_config | default({}))[galaxy_app_config_section] | default({}))[item] | default(lookup('vars', '__galaxy_' ~ item)) }}"
+  when: "'galaxy_' ~ item not in vars"
+  with_items:
+    - tool_dependency_dir
+    - file_path
+    - job_working_directory
