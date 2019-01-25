@@ -163,7 +163,7 @@ Options for controlling where certain Galaxy components are placed on the filesy
 **User management and privilege separation**
 
 - `galaxy_separate_privileges` (default: `no`): Enable privilege separation mode.
-- `galaxy_user` (default: `galaxy`): The name of the system user under which Galaxy runs.
+- `galaxy_user` (default: user running ansible): The name of the system user under which Galaxy runs.
 - `galaxy_privsep_user` (default: `root`): The name of the system user that owns the Galaxy code, config files, and
   virtualenv (and dependencies therein).
 - `galaxy_group`: Common group between the Galaxy user and privilege separation user. If set and `galaxy_manage_paths`

@@ -5,7 +5,7 @@
   block:
 
     - name: Include virtualenv setup tasks
-      include_tasks: virtualenv.yml
+      import_tasks: virtualenv.yml
 
     # virtualenv_command is still required if `virtualenv` isn't on $PATH, even if the venv already exists.
     - name: Install Galaxy base dependencies
@@ -33,6 +33,7 @@
       environment:
         PYTHONPATH: null
         VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+      when: conditional_dependencies.stdout_lines | length > 0
 
   remote_user: "{{ galaxy_remote_users.privsep | default(omit) }}"
   become: "{{ galaxy_become_users.privsep is not undefined }}"

@@ -29,7 +29,7 @@
       when: not download_receipt.stat.exists
 
     - name: Include virtualenv setup tasks
-      include_tasks: virtualenv.yml
+      import_tasks: virtualenv.yml
 
     - name: Remove orphaned .pyc files and compile bytecode
       script: makepyc.py {{ galaxy_server_dir }}/lib

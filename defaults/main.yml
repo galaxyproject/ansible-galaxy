@@ -62,7 +62,7 @@ galaxy_remote_users: {}
 galaxy_separate_privileges: no
 
 # User that Galaxy runs as
-galaxy_user: galaxy
+galaxy_user: "{{ ansible_user_id }}"
 
 # User that owns Galaxy code, configs, and virutalenv, and that runs `pip install` for dependencies
 galaxy_privsep_user: root
