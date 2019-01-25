@@ -12,6 +12,18 @@
   import_tasks: layout.yml
   tags: always
 
+- name: Include user creation tasks
+  include_tasks: user.yml
+  when: galaxy_create_user or galaxy_create_privsep_user
+  tags:
+    - galaxy_create_user
+
+- name: Include path management tasks
+  include_tasks: paths.yml
+  when: galaxy_manage_paths
+  tags:
+    - galaxy_manage_paths
+
 - name: Include clone tasks
   include_tasks: clone.yml
   when: galaxy_manage_clone
@@ -30,15 +42,23 @@
 - name: Include dependency setup tasks
   include_tasks: dependencies.yml
   when: galaxy_fetch_dependencies
+  tags:
+    - galaxy_fetch_dependencies
 
 - name: Include mutable config setup tasks
   include_tasks: mutable_setup.yml
   when: galaxy_manage_mutable_setup
+  tags:
+    - galaxy_manage_mutable_setup
 
 - name: Include database management tasks
   include_tasks: database.yml
   when: galaxy_manage_database
+  tags:
+    - galaxy_manage_database
 
 - name: Include error document setup tasks
   include_tasks: errordocs.yml
   when: galaxy_manage_errordocs
+  tags:
+    - galaxy_manage_errordocs

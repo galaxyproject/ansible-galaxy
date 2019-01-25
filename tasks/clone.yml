@@ -1,40 +1,47 @@
 ---
 # Manage Galaxy clone
 
-- name: Check for Galaxy
-  stat:
-    path: "{{ galaxy_server_dir }}/lib/galaxy"
-  register: galaxy_stat_out
+- name: Clone Galaxy
+  block:
 
-- name: Get current Galaxy commit id
-  command: "{{ git_executable | default('git') }} rev-parse HEAD"
-  args:
-      chdir: "{{ galaxy_server_dir }}"
-  register: current_commit_id
-  changed_when: no
-  when: galaxy_stat_out.stat.exists
+    - name: Check for Galaxy
+      stat:
+        path: "{{ galaxy_server_dir }}/lib/galaxy"
+      register: galaxy_stat_out
 
-- name: Report current Galaxy commit id
-  debug:
-    msg: "Current version of {{ galaxy_server_dir }} {{ current_commit_id.stdout | default(-1) }} does not match playbook version {{ galaxy_commit_id }}"
-  changed_when: True
-  when: galaxy_stat_out.stat.exists and (current_commit_id.stdout | default(-1) != galaxy_commit_id)
+    - name: Get current Galaxy commit id
+      command: "{{ git_executable | default('git') }} rev-parse HEAD"
+      args:
+          chdir: "{{ galaxy_server_dir }}"
+      register: current_commit_id
+      changed_when: no
+      when: galaxy_stat_out.stat.exists
 
-- name: Update Galaxy to correct ref (git)
-  git:
-    dest: "{{ galaxy_server_dir }}"
-    force: "{{ galaxy_force_checkout }}"
-    repo: "{{ galaxy_repo }}"
-    version: "{{ galaxy_commit_id }}"
-    executable: "{{ git_executable | default(omit) }}"
-  notify:
-    - restart galaxy
-    - email administrator with commit id
+    - name: Report current Galaxy commit id
+      debug:
+        msg: "Current version of {{ galaxy_server_dir }} {{ current_commit_id.stdout | default(-1) }} does not match playbook version {{ galaxy_commit_id }}"
+      changed_when: True
+      when: galaxy_stat_out.stat.exists and (current_commit_id.stdout | default(-1) != galaxy_commit_id)
 
-- name: Include virtualenv setup tasks
-  include_tasks: virtualenv.yml
+    - name: Update Galaxy to correct ref (git)
+      git:
+        dest: "{{ galaxy_server_dir }}"
+        force: "{{ galaxy_force_checkout }}"
+        repo: "{{ galaxy_repo }}"
+        version: "{{ galaxy_commit_id }}"
+        executable: "{{ git_executable | default(omit) }}"
+      notify:
+        - restart galaxy
+        - email administrator with commit id
 
-- name: Remove orphaned .pyc files and compile bytecode
-  script: "makepyc.py {{ galaxy_server_dir }}/lib"
-  environment:
-    PATH: "{{ galaxy_venv_dir }}/bin"
+    - name: Include virtualenv setup tasks
+      include_tasks: virtualenv.yml
+
+    - name: Remove orphaned .pyc files and compile bytecode
+      script: "makepyc.py {{ galaxy_server_dir }}/lib"
+      environment:
+        PATH: "{{ galaxy_venv_dir }}/bin"
+
+  remote_user: "{{ galaxy_remote_users.privsep | default(omit) }}"
+  become: "{{ galaxy_become_users.privsep is not undefined }}"
+  become_user: "{{ galaxy_become_users.privsep | default(omit) }}"

@@ -1,33 +1,39 @@
 ---
 # Manage Galaxy framework dependencies
 
-- name: Include virtualenv setup tasks
-  include_tasks: virtualenv.yml
+- name: Manage dependencies
+  block:
 
-# virtualenv_command is still required if `virtualenv` isn't on $PATH, even if the venv already exists.
-- name: Install Galaxy base dependencies
-  pip:
-    requirements: "{{ galaxy_requirements_file }}"
-    extra_args: "--index-url https://wheels.galaxyproject.org/simple/ --extra-index-url https://pypi.python.org/simple"
-    virtualenv: "{{ galaxy_venv_dir }}"
-    virtualenv_command: "{{ pip_virtualenv_command | default( 'virtualenv' ) }}"
-  environment:
-    PYTHONPATH: null
-    VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+    - name: Include virtualenv setup tasks
+      include_tasks: virtualenv.yml
 
-- name: Collect Galaxy conditional dependency requirement strings
-  command: "{{ galaxy_venv_dir }}/bin/python -c \"import galaxy.dependencies; print('\\n'.join(galaxy.dependencies.optional('{{ galaxy_config_file }}')))\""
-  environment:
-    PYTHONPATH: "{{ galaxy_server_dir }}/lib"
-  register: conditional_dependencies
+    # virtualenv_command is still required if `virtualenv` isn't on $PATH, even if the venv already exists.
+    - name: Install Galaxy base dependencies
+      pip:
+        requirements: "{{ galaxy_requirements_file }}"
+        extra_args: "--index-url https://wheels.galaxyproject.org/simple/ --extra-index-url https://pypi.python.org/simple"
+        virtualenv: "{{ galaxy_venv_dir }}"
+        virtualenv_command: "{{ pip_virtualenv_command | default( 'virtualenv' ) }}"
+      environment:
+        PYTHONPATH: null
+        VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
 
-- name: Install Galaxy conditional dependencies
-  pip: 
-    name: "{{ item }}"
-    extra_args: "--index-url https://wheels.galaxyproject.org/simple/ --extra-index-url https://pypi.python.org/simple"
-    virtualenv: "{{ galaxy_venv_dir }}"
-    virtualenv_command: "{{ pip_virtualenv_command | default( 'virtualenv' ) }}"
-  with_items: "{{ conditional_dependencies.stdout_lines }}"
-  environment:
-    PYTHONPATH: null
-    VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+    - name: Collect Galaxy conditional dependency requirement strings
+      command: "{{ galaxy_venv_dir }}/bin/python -c \"import galaxy.dependencies; print('\\n'.join(galaxy.dependencies.optional('{{ galaxy_config_file }}')))\""
+      environment:
+        PYTHONPATH: "{{ galaxy_server_dir }}/lib"
+      register: conditional_dependencies
+
+    - name: Install Galaxy conditional dependencies
+      pip:
+        name: "{{ conditional_dependencies.stdout_lines }}"
+        extra_args: "--index-url https://wheels.galaxyproject.org/simple/ --extra-index-url https://pypi.python.org/simple"
+        virtualenv: "{{ galaxy_venv_dir }}"
+        virtualenv_command: "{{ pip_virtualenv_command | default( 'virtualenv' ) }}"
+      environment:
+        PYTHONPATH: null
+        VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+
+  remote_user: "{{ galaxy_remote_users.privsep | default(omit) }}"
+  become: "{{ galaxy_become_users.privsep is not undefined }}"
+  become_user: "{{ galaxy_become_users.privsep | default(omit) }}"
