@@ -48,6 +48,11 @@ with the `virtualenv` executable and corresponding `pip_virtualenv_command` vari
 Role Variables
 --------------
 
+Not all variables are listed or explained in detail. For additional information about less commonly used variables, see
+the [defaults file][defaults].
+
+[defaults]: defaults/main.yml
+
 Many variables control where specific files are placed and where Galaxy writes data. In order to simplify configuration,
 you may select a *layout* with the `galaxy_layout` variable. Which layout you choose affects the required variables.
 
@@ -64,7 +69,7 @@ If using `root-dir`:
 
 ### Optional variables ###
 
-Layout control:
+**Layout control**
 
 - `galaxy_layout`: available layouts can be found in the [vars/][vars] subdirectory and possible values include:
   - `root-dir`: Everything is laid out in subdirectories underneath a single root directory.
@@ -83,7 +88,7 @@ Options below that control individual file or subdirectory placement can still o
 [custom]: vars/layout-custom.yml
 [fhs]: http://www.pathname.com/fhs/
 
-New options for Galaxy 18.01 and later:
+**New options for Galaxy 18.01 and later**
 
 - `galaxy_config_style` (default: `ini-paste`): The type of Galaxy configuration file to write, `ini-paste` for the
   traditional PasteDeploy-style INI file, or `yaml` for the YAML format supported by uWSGI.
@@ -103,8 +108,15 @@ New options for Galaxy 18.01 and later:
 
 [uwsgi-863]: https://github.com/unbit/uwsgi/issues/863
 
-Several variables control which functions this role will perform (all default to `yes`):
+**Feature control**
 
+Several variables control which functions this role will perform (all default to `yes` except where noted):
+
+- `galaxy_create_user` (default: `no`): Create the Galaxy user. Running as a dedicated user is a best practice, but most
+  production Galaxy instances submitting jobs to a cluster will manage users in a directory service (e.g.  LDAP). This
+  option is useful for standalone servers. Requires superuser privileges.
+- `galaxy_manage_paths` (default: `no`): Create and manage ownership/permissions of configured Galaxy paths. Requires
+  superuser privileges.
 - `galaxy_manage_clone`: Clone Galaxy from the source repository and maintain it at a specified version (commit), as
   well as set up a [virtualenv][virtualenv] from which it can be run.
 - `galaxy_manage_static_setup`: Manage "static" Galaxy configuration files - ones which are not modifiable by the Galaxy
@@ -113,26 +125,30 @@ Several variables control which functions this role will perform (all default to
   as you install tools from the Galaxy Tool Shed).
 - `galaxy_manage_database`: Upgrade the database schema as necessary, when new schema versions become available.
 - `galaxy_fetch_dependencies`: Fetch Galaxy dependent modules to the Galaxy virtualenv.
-- `galaxy_manage_errordocs`: Install Galaxy-styled 413 and 502 HTTP error documents for nginx
+- `galaxy_build_client`: Build the Galaxy client application (web UI).
+- `galaxy_manage_errordocs` (default: `no`): Install Galaxy-styled 413 and 502 HTTP error documents for nginx. Requires
+  write privileges for the nginx error document directory.
 
-You can control various things about where you get Galaxy from, what version you use, and where its configuration files
-will be placed:
+**Galaxy code and configuration**
+
+Options for configuring Galaxy and controlling which version is installed.
 
 - `galaxy_config`: The contents of the Galaxy configuration file (`galaxy.ini` by default) are controlled by this
   variable. It is a hash of hashes (or dictionaries) that will be translated in to the configuration
   file. See the Example Playbooks below for usage.
 - `galaxy_config_files`: List of hashes (with `src` and `dest` keys) of files to copy from the control machine.
+- `galaxy_config_templates`: List of hashes (with `src` and `dest` keys) of templates to fill from the control machine.
 - `galaxy_repo` (default: `https://github.com/galaxyproject/galaxy.git`): Upstream Git repository from which Galaxy
   should be cloned.
 - `galaxy_commit_id` (default: `master`): A commit id, tag, branch, or other valid Git reference that Galaxy should be
-  updated to. Specifying a branch will update to the latest commit on that branch. A debugging message will notify you
-  if the current commit of your Galaxy server is different from this value. There is no harm in this, but:
-    - if this annoys you, you must use a full (long) commit id to prevent that task from reporting **changed** on every
-      run, and
-    - using a real commit id is the only way to explicitly lock Galaxy at a specific version.
+  updated to. Specifying a branch will update to the latest commit on that branch. Using a real commit id is the only
+  way to explicitly lock Galaxy at a specific version.
 - `galaxy_force_checkout` (default: `no`): If `yes`, any modified files in the Galaxy repository will be discarded.
-- `galaxy_requirements_file` (default: `<galaxy_server_dir>/lib/galaxy/dependencies/pinned-requirements.txt`): The
-  Python `requirements.txt` file that should be used to install Galaxy dependent modules using pip.
+
+**Path configuration**
+
+Options for controlling where certain Galaxy components are placed on the filesystem.
+
 - `galaxy_venv_dir` (default: `<galaxy_server_dir>/.venv`): The role will create a [virtualenv][virtualenv] from which
   Galaxy will run, this controls where the virtualenv will be placed.
 - `galaxy_config_dir` (default: `<galaxy_server_dir>`): Directory that will be used for "static" configuration files.
@@ -141,18 +157,37 @@ will be placed:
 - `galaxy_mutable_data_dir` (default: `<galaxy_server_dir>/database`): Directory that will be used for "mutable" data
   and caches, must be writable by the user running Galaxy.
 - `galaxy_config_file` (default: `<galaxy_config_dir>/galaxy.ini`): Galaxy's primary configuration file.
-- `galaxy_shed_tool_conf_file` (default: `<galaxy_mutable_config_dir>/shed_tool_conf.xml`): Configuration file for tools
-  installed from the Galaxy Tool Shed.
-- `galaxy_config_templates`: List of hashes (with `src` and `dest` keys) of templates to fill from the control machine.
-- `galaxy_admin_email_to`: If set, email this address when Galaxy has been updated. Assumes mail is properly configured
-  on the managed host.
-- `galaxy_admin_email_from`: Address to send the aforementioned email from.
+
+**User management and privilege separation**
+
+- `galaxy_separate_privileges` (default: `no`): Enable privilege separation mode.
+- `galaxy_user` (default: user running ansible): The name of the system user under which Galaxy runs.
+- `galaxy_privsep_user` (default: `root`): The name of the system user that owns the Galaxy code, config files, and
+  virtualenv (and dependencies therein).
+- `galaxy_group`: Common group between the Galaxy user and privilege separation user. If set and `galaxy_manage_paths`
+  is enabled, directories containing potentially sensitive information such as the Galaxy config file will be created
+  group- but not world-readable. Otherwise, directories are created world-readable.
+
+**Access method control**
+
+The role needs to perform tasks as different users depending on which features you have enabled and how you are
+connecting to the target host. By default, the role will use `become` (i.e. sudo) to perform tasks as the appropriate
+user if deemed necessary. Overriding this behavior is discussed in the [defaults file][defaults].
+
+**Error documents**
+
 - `galaxy_errordocs_dir`: Install Galaxy-styled HTTP 413 and 502 error documents under this directory. The 502 message
   uses nginx server side includes to allow administrators to create a custom message in `~/maint` when Galaxy is down.
   nginx must be configured separately to serve these error documents.
 - `galaxy_errordocs_server_name` (default: Galaxy): used to display the message "`galaxy_errdocs_server_name` cannot be
   reached" on the 502 page.
 - `galaxy_errordocs_prefix` (default: `/error`): Web-side path to the error document root.
+
+**Miscellaneous options**
+
+- `galaxy_admin_email_to`: If set, email this address when Galaxy has been updated. Assumes mail is properly configured
+  on the managed host.
+- `galaxy_admin_email_from`: Address to send the aforementioned email from.
 
 Dependencies
 ------------
@@ -162,7 +197,7 @@ None
 Example Playbook
 ----------------
 
-**Basic:**
+### Basic ###
 
 Install Galaxy on your local system with all the default options:
 
@@ -182,11 +217,16 @@ $ cd /srv/galaxy
 $ sh run.sh
 ```
 
-**Advanced:**
+### Best Practice ###
 
-Install Galaxy with the clone and configs owned by a different user than the user running Galaxy, and backed by
-PostgreSQL, on the hosts in the `galaxyservers` group in your inventory. Additionally, use the 18.01+ style YAML config
-and start two [job handler mules][deployment-options].
+Install Galaxy as per the current production server best practices:
+
+- Galaxy code (clone) is "clean": no configs or mutable data live underneath the clone
+- Galaxy code and static configs are privilege separated: not owned/writeable by the user that runs Galaxy
+- Configuration files are not world-readable
+- PostgreSQL is used as the backing database
+- The 18.01+ style YAML configuration is used
+- Two [job handler mules][deployment-options] are started
 
 [deployment-options]: https://docs.galaxyproject.org/en/master/admin/scaling.html#deployment-options
 
@@ -194,8 +234,15 @@ and start two [job handler mules][deployment-options].
 - hosts: galaxyservers
   vars:
     galaxy_config_style: yaml
-    galaxy_layout: opt
+    galaxy_layout: root-dir
+    galaxy_root: /srv/galaxy
     galaxy_commit_id: release_18.09
+    galaxy_separate_privileges: yes
+    galaxy_create_users: yes
+    galaxy_manage_paths: yes
+    galaxy_user: galaxy
+    galaxy_privsep_user: gxpriv
+    galaxy_group: galaxy
     postgresql_objects_users:
       - name: galaxy
         password: null
@@ -230,34 +277,10 @@ and start two [job handler mules][deployment-options].
       galaxy:
         database_connection: "postgresql:///galaxy?host=/var/run/postgresql"
   pre_tasks:
-    - name: Create Galaxy code owner user
-      user:
-        name: gxcode
-        comment: "Galaxy Code"
-        system: yes
-        home: /opt/galaxy
-        createhome: yes
-      become: yes
-    - name: Create Galaxy runtime user
-      user:
-        name: galaxy
-        comment: "Galaxy Server"
-        system: yes
-        home: /var/opt/galaxy
-        createhome: yes
-      become: yes
     - name: Install Dependencies
       apt:
         name: ['git', 'python-psycopg2', 'python-virtualenv']
       become: yes
-    # Precreating the mutable config directory may be necessary (it's not in our example since we set the user's home
-    # directory to galaxy_mutable_config_dir's parent).
-    #- name: Create mutable configuration file directory
-    #  file:
-    #    path: "{{ galaxy_mutable_config_dir }}"
-    #    owner: galaxy
-    #    state: directory
-    #  become: yes
   roles:
     # Install with:
     #   % ansible-galaxy install galaxyproject.postgresql
@@ -268,16 +291,7 @@ and start two [job handler mules][deployment-options].
     - role: natefoo.postgresql_objects
       become: yes
       become_user: postgres
-    - role: galaxy
-      become: yes
-      become_user: gxcode
-      galaxy_manage_mutable_setup: no
-      galaxy_manage_database: no
-    - role: galaxy
-      become: yes
-      become_user: galaxy
-      galaxy_manage_clone: no
-      galaxy_manage_static_setup: no
+    - role: galaxyproject.galaxy
 ```
 
 License

@@ -6,11 +6,24 @@
   connection: local
   remote_user: travis
   vars:
-    galaxy_commit_id: release_18.05
+    galaxy_commit_id: release_18.09
+    galaxy_create_user: yes
+    galaxy_manage_paths: yes
     galaxy_manage_clone: yes
     galaxy_manage_download: no
-    galaxy_server_dir: /home/galaxy/server
     galaxy_config_style: yaml
+    galaxy_layout: root-dir
+    galaxy_root: /srv/galaxy
+    galaxy_separate_privileges: yes
+    galaxy_user: galaxy
+    galaxy_privsep_user: gxpriv
+    galaxy_config:
+      galaxy:
+        database_connection: sqlite:///{{ galaxy_mutable_data_dir }}/universe.sqlite
+    # needed because we've disabled facts
+    ansible_user_uid: "{{ lookup('env', 'UID') }}"
+    ansible_user_id: "{{ lookup('env', 'USER') }}"
+    ansible_env:
+      PATH: "{{ lookup('env', 'PATH') }}"
   roles:
     - role: ansible-galaxy
-      become: yes
