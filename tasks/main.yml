@@ -2,7 +2,12 @@
 # main tasks file for galaxyproject.galaxy
 
 # Deploy a Galaxy server
-#   https://wiki.galaxyproject.org/
+#   https://docs.galaxyproject.org/
+
+- name: Import layout variable tasks
+  import_tasks: layout.yml
+  tags:
+    - always
 
 - name: Include clone tasks
   include_tasks: clone.yml
@@ -18,9 +23,8 @@
 
 - name: Include static config setup tasks
   include_tasks: static_setup.yml
-  when: galaxy_manage_static_setup
-  tags:
-   - galaxy_config_files
+  when: galaxy_manage_static_setup 
+    - galaxy_config_files
 
 - name: Include dependency setup tasks
   include_tasks: dependencies.yml

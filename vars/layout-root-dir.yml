@@ -1,0 +1,15 @@
+---
+
+# Layout defaults
+__galaxy_server_dir: "{{ galaxy_root }}/server"
+__galaxy_venv_dir: "{{ galaxy_root }}/venv"
+__galaxy_config_dir: "{{ galaxy_root }}/config"
+__galaxy_mutable_data_dir: "{{ galaxy_root }}/var"
+__galaxy_mutable_config_dir: "{{ galaxy_mutable_data_dir }}/config"
+__galaxy_cache_dir: "{{ galaxy_mutable_data_dir }}/cache"
+__galaxy_shed_tools_dir: "{{ galaxy_mutable_data_dir }}/shed_tools"
+
+# These correspond to galaxy config options
+__galaxy_tool_dependency_dir: "{{ galaxy_mutable_data_dir }}/dependencies"
+__galaxy_file_path: "{{ galaxy_root }}/datasets"
+__galaxy_job_working_directory: "{{ galaxy_root }}/jobs"
