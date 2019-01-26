@@ -140,11 +140,8 @@ Options for configuring Galaxy and controlling which version is installed.
 - `galaxy_repo` (default: `https://github.com/galaxyproject/galaxy.git`): Upstream Git repository from which Galaxy
   should be cloned.
 - `galaxy_commit_id` (default: `master`): A commit id, tag, branch, or other valid Git reference that Galaxy should be
-  updated to. Specifying a branch will update to the latest commit on that branch. A debugging message will notify you
-  if the current commit of your Galaxy server is different from this value. There is no harm in this, but:
-    - if this annoys you, you must use a full (long) commit id to prevent that task from reporting **changed** on every
-      run, and
-    - using a real commit id is the only way to explicitly lock Galaxy at a specific version.
+  updated to. Specifying a branch will update to the latest commit on that branch. Using a real commit id is the only
+  way to explicitly lock Galaxy at a specific version.
 - `galaxy_force_checkout` (default: `no`): If `yes`, any modified files in the Galaxy repository will be discarded.
 
 **Path configuration**

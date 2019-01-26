@@ -4,35 +4,23 @@
 - name: Clone Galaxy
   block:
 
-    - name: Check for Galaxy
-      stat:
-        path: "{{ galaxy_server_dir }}/lib/galaxy"
-      register: galaxy_stat_out
-
-    - name: Get current Galaxy commit id
-      command: "{{ git_executable | default('git') }} rev-parse HEAD"
-      args:
-          chdir: "{{ galaxy_server_dir }}"
-      register: current_commit_id
-      changed_when: no
-      when: galaxy_stat_out.stat.exists
-
-    - name: Report current Galaxy commit id
-      debug:
-        msg: "Current version of {{ galaxy_server_dir }} {{ current_commit_id.stdout | default(-1) }} does not match playbook version {{ galaxy_commit_id }}"
-      changed_when: True
-      when: galaxy_stat_out.stat.exists and (current_commit_id.stdout | default(-1) != galaxy_commit_id)
-
-    - name: Update Galaxy to correct ref (git)
+    - name: Update Galaxy to specified ref
       git:
         dest: "{{ galaxy_server_dir }}"
         force: "{{ galaxy_force_checkout }}"
         repo: "{{ galaxy_repo }}"
         version: "{{ galaxy_commit_id }}"
         executable: "{{ git_executable | default(omit) }}"
+      register: __galaxy_git_update_result
       notify:
         - restart galaxy
         - email administrator with commit id
+
+    - name: Report Galaxy version change
+      debug:
+        msg: "Galaxy version changed from '{{ __galaxy_git_update_result.before }}' to '{{ __galaxy_git_update_result.after }}'"
+      changed_when: __galaxy_git_update_result is changed
+      when: __galaxy_git_update_result is changed
 
     - name: Include virtualenv setup tasks
       import_tasks: virtualenv.yml
@@ -41,6 +29,7 @@
       script: "makepyc.py {{ galaxy_server_dir }}/lib"
       environment:
         PATH: "{{ galaxy_venv_dir }}/bin"
+      when: __galaxy_git_update_result is changed
 
   remote_user: "{{ galaxy_remote_users.privsep | default(omit) }}"
   become: "{{ galaxy_become_users.privsep is not undefined }}"
