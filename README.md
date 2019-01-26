@@ -48,11 +48,40 @@ with the `virtualenv` executable and corresponding `pip_virtualenv_command` vari
 Role Variables
 --------------
 
+Many variables control where specific files are placed and where Galaxy writes data. In order to simplify configuration,
+you may select a *layout* with the `galaxy_layout` variable. Which layout you choose affects the required variables.
+
 ### Required variables ###
+
+If using any layout other than `root-dir`:
 
 - `galaxy_server_dir`: Filesystem path where the Galaxy server code will be installed (cloned).
 
+If using `root-dir`:
+
+- `galaxy_root`: Filesystem path of the root of a Galaxy deployment, the Galaxy server code will be installed in to a
+  subdirectory of this directory.
+
 ### Optional variables ###
+
+Layout control:
+
+- `galaxy_layout`: available layouts can be found in the [vars/][vars] subdirectory and possible values include:
+  - `root-dir`: Everything is laid out in subdirectories underneath a single root directory.
+  - `opt`: An [FHS][fhs]-conforming layout across multiple directories such as `/opt`, `/etc/opt`, etc.
+  - `legacy-improved`: Everything underneath the Galaxy server directory, as with `run.sh`.
+  - `legacy`: The default layout prior to the existence of `galaxy_layout` and currently the default so as not to break
+    existing usage of this role.
+  - `custom`: Reasonable defaults for custom layouts, requires setting a few variables as described in
+    [vars/layout-custom.yml][custom]
+
+Either the `root-dir` or `opt` layout is recommended for new Galaxy deployments.
+
+Options below that control individual file or subdirectory placement can still override defaults set by the layout.
+
+[vars]: vars/
+[custom]: vars/layout-custom.yml
+[fhs]: http://www.pathname.com/fhs/
 
 New options for Galaxy 18.01 and later:
 
@@ -125,7 +154,6 @@ will be placed:
   reached" on the 502 page.
 - `galaxy_errordocs_prefix` (default: `/error`): Web-side path to the error document root.
 
-
 Dependencies
 ------------
 
@@ -166,11 +194,8 @@ and start two [job handler mules][deployment-options].
 - hosts: galaxyservers
   vars:
     galaxy_config_style: yaml
-    galaxy_server_dir: /opt/galaxy/server
-    galaxy_config_dir: /opt/galaxy/config
-    galaxy_mutable_config_dir: /var/opt/galaxy/config
-    galaxy_mutable_data_dir: /var/opt/galaxy/data
-    galaxy_commit_id: release_18.05
+    galaxy_layout: opt
+    galaxy_commit_id: release_18.09
     postgresql_objects_users:
       - name: galaxy
         password: null
@@ -198,8 +223,9 @@ and start two [job handler mules][deployment-options].
           - unix_signal:15 gracefully_kill_them_all
         py-call-osafterfork: true
         enable-threads: true
-        mule: lib/galaxy/main.py
-        mule: lib/galaxy/main.py
+        mule:
+          - lib/galaxy/main.py
+          - lib/galaxy/main.py
         farm: job-handlers:1,2
       galaxy:
         database_connection: "postgresql:///galaxy?host=/var/run/postgresql"
@@ -235,7 +261,8 @@ and start two [job handler mules][deployment-options].
   roles:
     # Install with:
     #   % ansible-galaxy install galaxyproject.postgresql
-    - galaxyproject.postgresql
+    - role: galaxyproject.postgresql
+      become: yes
     # Install with:
     #   % ansible-galaxy install natefoo.postgresql_objects
     - role: natefoo.postgresql_objects
@@ -265,8 +292,8 @@ Author Information
 
 This role was written and contributed to by the following people:
 
-[Enis Afgan](https://github.com/afgane)  
-[Dannon Baker](https://github.com/dannon)  
-[Simon Belluzzo](https://github.com/simonalpha)  
-[John Chilton](https://github.com/jmchilton)  
-[Nate Coraor](https://github.com/natefoo)  
+- [Enis Afgan](https://github.com/afgane)
+- [Dannon Baker](https://github.com/dannon)
+- [Simon Belluzzo](https://github.com/simonalpha)
+- [John Chilton](https://github.com/jmchilton)
+- [Nate Coraor](https://github.com/natefoo)

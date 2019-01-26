@@ -5,13 +5,16 @@
 # options on different hosts or server directories.
 galaxy_manage_clone: yes
 galaxy_force_checkout: no
-# Download the Galaxy instead cloning, for throw away boxes (e.g. Docker)
+# Download Galaxy instead of cloning, for throw away boxes (e.g. Docker)
 galaxy_manage_download: no
 galaxy_manage_static_setup: yes
 galaxy_manage_mutable_setup: yes
 galaxy_manage_database: yes
 galaxy_fetch_dependencies: yes
 galaxy_manage_errordocs: no
+
+# Directory layout for deployment (legacy is the default)
+#galaxy_layout: legacy
 
 # Where to clone Galaxy from. Backwards compatibility with galaxy_git_repo
 galaxy_repo: "{{ galaxy_git_repo | default('https://github.com/galaxyproject/galaxy.git') }}"
@@ -22,21 +25,15 @@ galaxy_repo: "{{ galaxy_git_repo | default('https://github.com/galaxyproject/gal
 galaxy_commit_id: "{{ galaxy_changeset_id | default('master') }}"
 
 # Download URL (if used)
-galaxy_download_url: "{{ galaxy_repo }}/get/{{ galaxy_commit_id }}.tar.gz"
-
-# This will automatically be used by run.sh
-galaxy_venv_dir: "{{ galaxy_server_dir }}/.venv"
+galaxy_download_url: "{{ galaxy_repo | replace('.git', '') }}/archive/{{ galaxy_commit_id }}.tar.gz"
 
 # TODO: Implement something like this for starter/restarter
 #galaxy_server_type: paste_singleprocess
 
-# By default, everything lives in the Galaxy clone
-galaxy_config_dir: "{{ galaxy_server_dir }}"
-galaxy_mutable_config_dir: "{{ galaxy_server_dir }}"
-galaxy_tool_dependency_dir: "{{ galaxy_mutable_data_dir }}/dependencies"
-galaxy_mutable_data_dir: "{{ galaxy_server_dir }}/database"
-galaxy_shed_tools_dir: "{{ galaxy_server_dir }}/../shed_tools"
+# The shed tool conf path is needed separate from the value of tool_conf for instantiation
 galaxy_shed_tool_conf_file: "{{ galaxy_mutable_config_dir }}/shed_tool_conf.xml"
+
+# Avoid hardcoding paths that could change in tasks
 galaxy_requirements_file: "{{ galaxy_server_dir }}/lib/galaxy/dependencies/pinned-requirements.txt"
 
 # Galaxy config file can either be 'ini-paste' (old style) or 'yaml'
@@ -50,31 +47,41 @@ galaxy_app_config_section: "{{ 'galaxy' if galaxy_config_style in ('yaml', 'yml'
 # configs if galaxy_config_dir != galaxy_server_dir
 galaxy_paste_app_factory: "galaxy.web.buildapp:app_factory"
 galaxy_app_config_default:
+  # Defaults for sample configs that require a value to be set
   builds_file_path: "{{ galaxy_server_dir }}/tool-data/shared/ucsc/builds.txt.sample"
   data_manager_config_file: "{{ galaxy_server_dir }}/config/data_manager_conf.xml.sample"
   datatypes_config_file: "{{ galaxy_server_dir }}/config/datatypes_conf.xml.sample"
   external_service_type_config_file: "{{ galaxy_server_dir }}/config/external_service_types_conf.xml.sample"
-  integrated_tool_panel_config: "{{ galaxy_mutable_config_dir }}/integrated_tool_panel.xml"
-  migrated_tools_config: "{{ galaxy_mutable_config_dir }}/migrated_tools_conf.xml"
   openid_config_file: "{{ galaxy_server_dir }}/config/openid_conf.xml.sample"
-  shed_data_manager_config_file: "{{ galaxy_mutable_config_dir }}/shed_data_manager_conf.xml"
-  shed_tool_data_table_config: "{{ galaxy_mutable_config_dir }}/shed_tool_data_table_conf.xml"
-  tool_config_file: "{{ galaxy_server_dir }}/config/tool_conf.xml.sample,{{ galaxy_shed_tool_conf_file }}"
+  ucsc_build_sites: "{{ galaxy_server_dir }}/tool-data/shared/ucsc/ucsc_build_sites.txt.sample"
   tool_data_table_config_path: "{{ galaxy_server_dir }}/config/tool_data_table_conf.xml.sample"
   tool_sheds_config_file: "{{ galaxy_server_dir }}/config/tool_sheds_conf.xml.sample"
-  ucsc_build_sites: "{{ galaxy_server_dir }}/tool-data/shared/ucsc/ucsc_build_sites.txt.sample"
-  visualization_plugins_directory: "config/plugins/visualizations"
 
-  file_path: "{{ galaxy_mutable_data_dir }}/datasets"
+  # Various cache and temporary directories
+  template_cache_path: "{{ galaxy_cache_dir }}/template_cache"
+  whoosh_index_dir: "{{ galaxy_cache_dir }}/whoosh_cache"
+  object_store_cache_path: "{{ galaxy_cache_dir }}/object_store_cache"
+  openid_consumer_cache_path: "{{ galaxy_cache_dir }}/openid_consumer_cache"
+  citation_cache_data_dir: "{{ galaxy_cache_dir }}/citations/data"
+  citation_cache_lock_dir: "{{ galaxy_cache_dir }}/citations/locks"
   new_file_path: "{{ galaxy_mutable_data_dir }}/tmp"
-  job_working_directory: "{{ galaxy_mutable_data_dir }}/jobs"
+
+  # Mutable config files
+  integrated_tool_panel_config: "{{ galaxy_mutable_config_dir }}/integrated_tool_panel.xml"
+  migrated_tools_config: "{{ galaxy_mutable_config_dir }}/migrated_tools_conf.xml"
+  shed_data_manager_config_file: "{{ galaxy_mutable_config_dir }}/shed_data_manager_conf.xml"
+  shed_tool_data_table_config: "{{ galaxy_mutable_config_dir }}/shed_tool_data_table_conf.xml"
+
+  # Directories that would often be stored outside the mutable data dir, these values are either from the layout or set by the user
+  file_path: "{{ galaxy_file_path }}"
+  job_working_directory: "{{ galaxy_job_working_directory }}"
   tool_dependency_dir: "{{ galaxy_tool_dependency_dir }}"
-  template_cache_path: "{{ galaxy_mutable_data_dir }}/template_cache"
-  whoosh_index_dir: "{{ galaxy_mutable_data_dir }}/whoosh_cache"
-  object_store_cache_path: "{{ galaxy_mutable_data_dir }}/object_store_cache"
-  openid_consumer_cache_path: "{{ galaxy_mutable_data_dir }}/openid_consumer_cache"
-  citation_cache_data_dir: "{{ galaxy_mutable_data_dir }}/citations/data"
-  citation_cache_lock_dir: "{{ galaxy_mutable_data_dir }}/citations/locks"
+
+  # Static config files
+  tool_config_file: "{{ galaxy_server_dir }}/config/tool_conf.xml.sample,{{ galaxy_shed_tool_conf_file }}"
+
+  # Everything else
+  visualization_plugins_directory: "config/plugins/visualizations"
 
 # Need to set galaxy_config_default[galaxy_app_config_section] dynamically but Ansible/Jinja2 does not make this easy
 galaxy_config_default: "{{ {} | combine({galaxy_app_config_section: galaxy_app_config_default}) }}"
