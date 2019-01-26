@@ -125,6 +125,7 @@ Several variables control which functions this role will perform (all default to
   as you install tools from the Galaxy Tool Shed).
 - `galaxy_manage_database`: Upgrade the database schema as necessary, when new schema versions become available.
 - `galaxy_fetch_dependencies`: Fetch Galaxy dependent modules to the Galaxy virtualenv.
+- `galaxy_build_client`: Build the Galaxy client application (web UI).
 - `galaxy_manage_errordocs` (default: `no`): Install Galaxy-styled 413 and 502 HTTP error documents for nginx. Requires
   write privileges for the nginx error document directory.
 
