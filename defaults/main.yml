@@ -25,7 +25,7 @@ galaxy_repo: "{{ galaxy_git_repo | default('https://github.com/galaxyproject/gal
 galaxy_commit_id: "{{ galaxy_changeset_id | default('master') }}"
 
 # Download URL (if used)
-galaxy_download_url: "{{ galaxy_repo }}/get/{{ galaxy_commit_id }}.tar.gz"
+galaxy_download_url: "{{ galaxy_repo | replace('.git', '') }}/archive/{{ galaxy_commit_id }}.tar.gz"
 
 # TODO: Implement something like this for starter/restarter
 #galaxy_server_type: paste_singleprocess
