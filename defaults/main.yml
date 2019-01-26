@@ -15,6 +15,7 @@ galaxy_manage_static_setup: yes
 galaxy_manage_mutable_setup: yes
 galaxy_manage_database: yes
 galaxy_fetch_dependencies: yes
+galaxy_build_client: yes
 galaxy_manage_errordocs: no
 
 #
@@ -96,6 +97,9 @@ galaxy_privsep_dirs:
 # Version control
 #
 
+# TODO: This needs to be read from Galaxy. Until we have a good solution for that, this is valid for 18.09 and older.
+galaxy_node_version: "9.11.1"
+
 # Where to clone Galaxy from. Backwards compatibility with galaxy_git_repo
 galaxy_repo: "{{ galaxy_git_repo | default('https://github.com/galaxyproject/galaxy.git') }}"
 
@@ -121,6 +125,9 @@ galaxy_shed_tool_conf_file: "{{ galaxy_mutable_config_dir }}/shed_tool_conf.xml"
 
 # The Python `requirements.txt` file that should be used to install Galaxy dependent modules using pip
 galaxy_requirements_file: "{{ galaxy_server_dir }}/lib/galaxy/dependencies/pinned-requirements.txt"
+
+# This will be configurable at some point
+galaxy_static_dir: "{{ galaxy_server_dir }}/static"
 
 # Galaxy config file can either be 'ini-paste' (old style) or 'yaml'
 galaxy_config_style: "ini-paste"

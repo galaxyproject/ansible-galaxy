@@ -23,5 +23,7 @@
     # needed because we've disabled facts
     ansible_user_uid: "{{ lookup('env', 'UID') }}"
     ansible_user_id: "{{ lookup('env', 'USER') }}"
+    ansible_env:
+      PATH: "{{ lookup('env', 'PATH') }}"
   roles:
     - role: ansible-galaxy

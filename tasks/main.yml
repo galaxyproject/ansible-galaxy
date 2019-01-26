@@ -57,6 +57,12 @@
   tags:
     - galaxy_manage_database
 
+- name: Include client build tasks
+  include_tasks: client.yml
+  when: galaxy_build_client
+  tags:
+    - galaxy_build_client
+
 - name: Include error document setup tasks
   include_tasks: errordocs.yml
   when: galaxy_manage_errordocs
