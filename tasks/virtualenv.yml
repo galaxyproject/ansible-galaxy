@@ -9,6 +9,7 @@
     name: pip
     virtualenv: "{{ galaxy_venv_dir }}"
     virtualenv_command: "{{ pip_virtualenv_command | default('virtualenv') }}"
+    virtualenv_python: python2.7
   environment:
     VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
 
