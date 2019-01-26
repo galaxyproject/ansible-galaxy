@@ -6,6 +6,8 @@
 
 - name: Import layout variable tasks
   import_tasks: layout.yml
+  tags:
+    - always
 
 - name: Include clone tasks
   include_tasks: clone.yml
