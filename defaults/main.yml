@@ -1,11 +1,15 @@
 ---
 # defaults file for galaxyproject.galaxy
 
-# Controls which tasks are included, in case you need to perform different
-# options on different hosts or server directories.
+#
+# Feature control
+#
+
+# Control which tasks are included, in case you need to perform different options on different hosts or server
+# directories.
+galaxy_create_user: no
+galaxy_manage_paths: no
 galaxy_manage_clone: yes
-galaxy_force_checkout: no
-# Download Galaxy instead of cloning, for throw away boxes (e.g. Docker)
 galaxy_manage_download: no
 galaxy_manage_static_setup: yes
 galaxy_manage_mutable_setup: yes
@@ -13,27 +17,109 @@ galaxy_manage_database: yes
 galaxy_fetch_dependencies: yes
 galaxy_manage_errordocs: no
 
-# Directory layout for deployment (legacy is the default)
-#galaxy_layout: legacy
+#
+# Access method control
+#
+
+# The role needs to perform tasks as different users depending on your configuration and how you are connecting to the
+# target host. Keys are the privileges needed and the values are the user to connect as or become:
+#
+#   root: Tasks that require "root" privileges such as creating/chowning directories inside directories owned by root
+#   galaxy: Tasks that run as the Galaxy user
+#   privsep: Tasks that run as the privilege separation user
+#   errdocs: Tasks that install error docs (run as whatever user owns these)
+#
+# You would most commonly connect to the target host either as root or as a user with full sudo privileges, but if not
+# using privilege separation, it is possible to run this role as an unprivileged user with no escalation. In such a
+# case, set `galaxy_become_users` to an empty hash like so:
+#
+#galaxy_become_users: {}
+
+# Attempt to automatically decide whether to use `become` and which users to `become`. To disable, set
+# `galaxy_become_users` to an empty hash.
+__galaxy_privsep_user: "{{ galaxy_privsep_user if galaxy_separate_privileges else galaxy_user }}"
+# this goes through two levels of variables since there's no "else if"
+__galaxy_default_root_become_users:
+  galaxy: "{{ galaxy_user }}"
+  privsep: "{{ __galaxy_privsep_user }}"
+__galaxy_default_nonroot_become_users:
+  root: root
+  galaxy: "{{ galaxy_user }}"
+  privsep: "{{ __galaxy_privsep_user }}"
+__galaxy_default_become_users: "{{ __galaxy_default_root_become_users if ansible_user_uid == 0 else __galaxy_default_nonroot_become_users }}"
+galaxy_become_users: "{{ {} if ansible_user_id == galaxy_user and not galaxy_separate_privileges else __galaxy_default_become_users }}"
+
+# Some sites do not allow the use of passwordless `sudo` and require logging directly in to accounts using `ssh`, this
+# variable works like `galaxy_become_users` and accommodates such scenarios (if using you probably want to set
+# `galaxy_become_users` to an empty hash)
+galaxy_remote_users: {}
+
+#
+# Privilege separation, user and path management
+#
+
+# Privilege separation mode switch
+galaxy_separate_privileges: no
+
+# User that Galaxy runs as
+galaxy_user: "{{ ansible_user_id }}"
+
+# User that owns Galaxy code, configs, and virutalenv, and that runs `pip install` for dependencies
+galaxy_privsep_user: root
+
+# No explicit group is created by default, system policy will decide users' groups. However, in order to enable
+# privilege separation without making configs world-readable, the users should share a common group. This group will be
+# created if `galaxy_create_user` is enabled and it does not exist. Ideally this is the primary group of `galaxy_user`,
+# on most Linux systems, just set this to the same value as `galaxy_user` if you want to enable this feature.
+#galaxy_group:
+
+# If `galaxy_create_user` is enabled, the privsep user will also be created, but you can override this behavior
+galaxy_create_privsep_user: "{{ galaxy_create_user if galaxy_privsep_user != 'root' else false }}"
+
+# Directories to create as the Galaxy user if galaxy_manage_paths is enabled
+galaxy_dirs:
+  - "{{ galaxy_mutable_data_dir }}"
+  - "{{ galaxy_mutable_config_dir }}"
+  - "{{ galaxy_cache_dir }}"
+  - "{{ galaxy_shed_tools_dir }}"
+  - "{{ galaxy_tool_dependency_dir }}"
+  - "{{ galaxy_file_path }}"
+  - "{{ galaxy_job_working_directory }}"
+
+# Directories to create as the privilege separated user if galaxy_manage_paths is enabled
+galaxy_privsep_dirs:
+  - "{{ galaxy_venv_dir }}"
+  - "{{ galaxy_server_dir }}"
+  - "{{ galaxy_config_dir }}"
+
+#
+# Version control
+#
 
 # Where to clone Galaxy from. Backwards compatibility with galaxy_git_repo
 galaxy_repo: "{{ galaxy_git_repo | default('https://github.com/galaxyproject/galaxy.git') }}"
 
-# This can be a tag (as shown here) but doing so will cause the revision check
-# task to always report "changed". Backwards compatibility with
-# galaxy_changeset_id.
+# Automatically delete things in the repo that do not belong there
+galaxy_force_checkout: no
+
+# This can be a tag (as shown here) but doing so will cause the revision check task to always report "changed".
+# Backwards compatibility with galaxy_changeset_id.
 galaxy_commit_id: "{{ galaxy_changeset_id | default('master') }}"
 
 # Download URL (if used)
 galaxy_download_url: "{{ galaxy_repo | replace('.git', '') }}/archive/{{ galaxy_commit_id }}.tar.gz"
 
-# TODO: Implement something like this for starter/restarter
-#galaxy_server_type: paste_singleprocess
+#
+# Path and Galaxy configuration
+#
+
+# Directory layout for deployment (legacy is the default)
+#galaxy_layout: legacy
 
 # The shed tool conf path is needed separate from the value of tool_conf for instantiation
 galaxy_shed_tool_conf_file: "{{ galaxy_mutable_config_dir }}/shed_tool_conf.xml"
 
-# Avoid hardcoding paths that could change in tasks
+# The Python `requirements.txt` file that should be used to install Galaxy dependent modules using pip
 galaxy_requirements_file: "{{ galaxy_server_dir }}/lib/galaxy/dependencies/pinned-requirements.txt"
 
 # Galaxy config file can either be 'ini-paste' (old style) or 'yaml'
@@ -43,8 +129,8 @@ galaxy_config_file_template: "{{ galaxy_config_file_basename }}.j2"
 galaxy_config_file: "{{ galaxy_config_dir }}/{{ galaxy_config_file_basename }}"
 galaxy_app_config_section: "{{ 'galaxy' if galaxy_config_style in ('yaml', 'yml') else 'app:main' }}"
 
-# The default Galaxy configuration, ensures that Galaxy can find all of the
-# configs if galaxy_config_dir != galaxy_server_dir
+# The default Galaxy configuration, ensures that Galaxy can find all of the configs if galaxy_config_dir !=
+# galaxy_server_dir
 galaxy_paste_app_factory: "galaxy.web.buildapp:app_factory"
 galaxy_app_config_default:
   # Defaults for sample configs that require a value to be set
@@ -87,8 +173,7 @@ galaxy_app_config_default:
 galaxy_config_default: "{{ {} | combine({galaxy_app_config_section: galaxy_app_config_default}) }}"
 galaxy_config_merged: "{{ galaxy_config_default | combine(galaxy_config | default({}), recursive=True) }}"
 
-# Automatically instantiate mutable config files if they don't exist (dest will
-# not be overwritten if it exists)
+# Automatically instantiate mutable config files if they don't exist (dest will not be overwritten if it exists)
 galaxy_mutable_configs:
   - src: "{{ galaxy_server_dir }}/config/shed_tool_conf.xml.sample"
     dest: "{{ galaxy_shed_tool_conf_file }}"
@@ -104,13 +189,12 @@ galaxy_config_instance_resource_url: "{{ galaxy_config_merged[galaxy_app_config_
 galaxy_errordocs_server_name: Galaxy
 galaxy_errordocs_prefix: /error
 
-
-# These are lists of hashes in the same format as galaxy_mutable_configs that
-# can be used to cause extra files and templates to be installed on the managed
-# host.
+# These are lists of hashes in the same format as galaxy_mutable_configs that can be used to cause extra files and
+# templates to be installed on the managed host.
 galaxy_config_files: []
 galaxy_config_templates: []
 
+# Default uWSGI configuration
 galaxy_uwsgi_yaml_parser: internal
 galaxy_uwsgi_config_default:
   http: 127.0.0.1:8080
@@ -132,3 +216,6 @@ galaxy_uwsgi_config_default:
     - unix_signal:15 gracefully_kill_them_all
   py-call-osafterfork: true
   enable-threads: true
+
+# TODO: Implement something like this for starter/restarter
+#galaxy_server_type: paste_singleprocess

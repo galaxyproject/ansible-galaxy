@@ -1,34 +1,41 @@
 ---
 # Manage Galaxy download
 
-- name: Check for Galaxy download receipt
-  stat:
-    path: "{{ galaxy_server_dir }}/{{ galaxy_commit_id }}_receipt"
-  register: download_receipt
+- name: Download Galaxy
+  block:
 
-- name: Create Galaxy server directory
-  file:
-    path: "{{ galaxy_server_dir }}"
-    state: directory
+    - name: Check for Galaxy download receipt
+      stat:
+        path: "{{ galaxy_server_dir }}/{{ galaxy_commit_id }}_receipt"
+      register: download_receipt
 
-- name: Install current version of Galaxy
-  unarchive:
-    src: "{{ galaxy_download_url }}"
-    dest: "{{ galaxy_server_dir }}"
-    extra_opts: --strip-components=1
-    remote_src: yes
-  when: not download_receipt.stat.exists
+    - name: Create Galaxy server directory
+      file:
+        path: "{{ galaxy_server_dir }}"
+        state: directory
 
-- name: Create Galaxy download receipt
-  file:
-    path: "{{ galaxy_server_dir }}/{{ galaxy_commit_id }}_receipt"
-    state: touch
-  when: not download_receipt.stat.exists
+    - name: Install current version of Galaxy
+      unarchive:
+        src: "{{ galaxy_download_url }}"
+        dest: "{{ galaxy_server_dir }}"
+        extra_opts: --strip-components=1
+        remote_src: yes
+      when: not download_receipt.stat.exists
 
-- name: Include virtualenv setup tasks
-  include_tasks: virtualenv.yml
+    - name: Create Galaxy download receipt
+      file:
+        path: "{{ galaxy_server_dir }}/{{ galaxy_commit_id }}_receipt"
+        state: touch
+      when: not download_receipt.stat.exists
 
-- name: Remove orphaned .pyc files and compile bytecode
-  script: makepyc.py {{ galaxy_server_dir }}/lib
-  environment:
-    PATH: "{{ galaxy_venv_dir }}/bin"
+    - name: Include virtualenv setup tasks
+      import_tasks: virtualenv.yml
+
+    - name: Remove orphaned .pyc files and compile bytecode
+      script: makepyc.py {{ galaxy_server_dir }}/lib
+      environment:
+        PATH: "{{ galaxy_venv_dir }}/bin"
+
+  remote_user: "{{ galaxy_remote_users.privsep | default(omit) }}"
+  become: "{{ galaxy_become_users.privsep is not undefined }}"
+  become_user: "{{ galaxy_become_users.privsep | default(omit) }}"
