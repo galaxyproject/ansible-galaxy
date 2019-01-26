@@ -16,21 +16,21 @@
       copy:
         src: "{{ item.src }}"
         dest: "{{ item.dest }}"
-        backup: yes
+        backup: "{{ galaxy_backup_configfiles }}"
       with_items: "{{ galaxy_config_files }}"
 
     - name: Install additional Galaxy config files (template)
       template:
         src: "{{ item.src }}"
         dest: "{{ item.dest }}"
-        backup: yes
+        backup: "{{ galaxy_backup_configfiles }}"
       with_items: "{{ galaxy_config_templates }}"
 
     - name: Create Galaxy configuration file
       template:
         src: "{{ galaxy_config_file_template }}"
         dest: "{{ galaxy_config_file }}"
-        backup: yes
+        backup: "{{ galaxy_backup_configfiles }}"
       notify:
         - restart galaxy
 
