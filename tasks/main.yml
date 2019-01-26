@@ -4,28 +4,28 @@
 # Deploy a Galaxy server
 #   https://docs.galaxyproject.org/
 
+- fail:
+    msg: "Variables galaxy_manage_clone and galaxy_manage_download cannot both be true."
+  when: galaxy_manage_clone and galaxy_manage_download
+
 - name: Import layout variable tasks
   import_tasks: layout.yml
-  tags:
-    - always
+  tags: always
 
 - name: Include clone tasks
   include_tasks: clone.yml
   when: galaxy_manage_clone
-  tags:
-    - galaxy_manage_clone
+  tags: galaxy_manage_clone
 
 - name: Include download tasks
   include_tasks: download.yml
-  when: not galaxy_manage_clone and galaxy_manage_download
-  tags:
-    - galaxy_manage_download
+  when: galaxy_manage_download
+  tags: galaxy_manage_download
 
 - name: Include static config setup tasks
   include_tasks: static_setup.yml
   when: galaxy_manage_static_setup
-  tags: 
-    - galaxy_config_files
+  tags: galaxy_config_files
 
 - name: Include dependency setup tasks
   include_tasks: dependencies.yml
