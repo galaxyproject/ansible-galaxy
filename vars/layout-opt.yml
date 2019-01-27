@@ -1,12 +1,13 @@
 ---
 
 # Layout defaults
-__galaxy_server_dir: "/opt/galaxy/server"
-__galaxy_venv_dir: "/opt/galaxy/venv"
+__galaxy_server_dir: "/opt/galaxy"
+__galaxy_venv_dir: "/var/opt/galaxy/venv"
 __galaxy_config_dir: "/etc/opt/galaxy"
-__galaxy_mutable_data_dir: "/var/opt/galaxy"
+__galaxy_mutable_data_dir: "/var/opt/galaxy/data"
 __galaxy_mutable_config_dir: "{{ galaxy_mutable_data_dir }}/config"
 __galaxy_cache_dir: "{{ galaxy_mutable_data_dir }}/cache"
+__galaxy_local_tools_dir: "/var/opt/galaxy/local_tools"
 __galaxy_shed_tools_dir: "{{ galaxy_mutable_data_dir }}/shed_tools"
 
 # These correspond to galaxy config options

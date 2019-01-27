@@ -26,6 +26,24 @@
         backup: "{{ galaxy_backup_configfiles }}"
       with_items: "{{ galaxy_config_templates }}"
 
+    - name: Install local tools
+      copy:
+        src: "{{ galaxy_local_tools_src_dir }}/{{ item }}"
+        dest: "{{ galaxy_local_tools_dir }}/{{ item }}"
+      with_items: "{{ galaxy_local_tools | default([]) }}"
+      when: galaxy_local_tools is defined
+
+    - name: Install local_tool_conf.xml
+      template:
+        src: local_tool_conf.xml.j2
+        dest: "{{ galaxy_config_dir }}/local_tool_conf.xml"
+      when: galaxy_local_tools is defined
+
+    - name: Append local_tool_conf.xml to tool_config_file Galaxy config option
+      set_fact:
+        galaxy_tool_config_files: "{{ galaxy_tool_config_files }} + ['{{ galaxy_config_dir ~ '/local_tool_conf.xml' }}']"
+      when: galaxy_local_tools is defined
+
     - name: Create Galaxy configuration file
       template:
         src: "{{ galaxy_config_file_template }}"
