@@ -44,6 +44,29 @@
         galaxy_tool_config_files: "{{ galaxy_tool_config_files }} + ['{{ galaxy_config_dir ~ '/local_tool_conf.xml' }}']"
       when: galaxy_local_tools is defined
 
+    - name: Ensure dynamic job rules paths exists
+      file:
+        path: "{{ galaxy_dynamic_job_rules_dir }}/{{ item | dirname }}"
+        state: directory
+      loop_control:
+        label: "{{ galaxy_dynamic_job_rules_dir }}/{{ item | dirname }}"
+      with_items: "{{ galaxy_dynamic_job_rules }}"
+
+    - name: Install dynamic job rules
+      copy:
+        src: "{{ galaxy_dynamic_job_rules_src_dir }}/{{ item }}"
+        dest: "{{ galaxy_dynamic_job_rules_dir }}/{{ item }}"
+      with_items: "{{ galaxy_dynamic_job_rules }}"
+
+    - name: Ensure dynamic rule __init__.py's exist
+      copy:
+        content: ""
+        dest: "{{ galaxy_dynamic_job_rules_dir }}/{{ item | dirname }}/__init__.py"
+        force: no
+      loop_control:
+        label: "{{ galaxy_dynamic_job_rules_dir }}/{{ ((item | dirname) != '') | ternary ((item | dirname) ~ '/', '') }}__init__.py"
+      with_items: "{{ galaxy_dynamic_job_rules }}"
+
     - name: Create Galaxy configuration file
       template:
         src: "{{ galaxy_config_file_template }}"

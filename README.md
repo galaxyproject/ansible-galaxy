@@ -141,6 +141,12 @@ Options for configuring Galaxy and controlling which version is installed.
 - `galaxy_local_tools`: List of local tool files or directories to copy from the control machine, relative to
   `galaxy_local_tools_src_dir` (default: `files/galaxy/tools` in the playbook).
 - `galaxy_local_tools_dir`: Directory on the Galaxy server where local tools will be installed.
+- `galaxy_dynamic_job_rules`: List of dynamic job rules to copy from the control machine, relative to
+  `galaxy_dynamic_job_rules_src_dir` (default: `files/galaxy/dynamic_job_rules` in the playbook).
+- `galaxy_dynamic_job_rules_dir` (default: `{{ galaxy_server_dir }}/lib/galaxy/jobs/rules`): Directory on the Galaxy
+  server where dynamic job rules will be installed. If changed from the default, ensure the directory is on Galaxy's
+  `$PYTHONPATH` (e.g. in `{{ galaxy_venv_dir }}/lib/python2.7/site-packages`) and configure the dynamic rules plugin in
+  `job_conf.xml` accordingly.
 - `galaxy_repo` (default: `https://github.com/galaxyproject/galaxy.git`): Upstream Git repository from which Galaxy
   should be cloned.
 - `galaxy_commit_id` (default: `master`): A commit id, tag, branch, or other valid Git reference that Galaxy should be

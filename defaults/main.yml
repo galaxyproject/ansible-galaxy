@@ -98,6 +98,15 @@ galaxy_privsep_dirs:
 # Local (relative to playbook) path to local tools
 galaxy_local_tools_src_dir: files/galaxy/tools
 
+# Local (relative to playbook) path to dynamic job rules
+galaxy_dynamic_job_rules_src_dir: files/galaxy/dynamic_job_rules
+
+# Remote path to dynamic job rules (must be on Galaxy's $PYTHONPATH if not the default)
+galaxy_dynamic_job_rules_dir: "{{ galaxy_server_dir }}/lib/galaxy/jobs/rules"
+
+# List of dynamic rules to install
+galaxy_dynamic_job_rules: []
+
 #
 # Version control
 #
