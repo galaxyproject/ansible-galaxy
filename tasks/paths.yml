@@ -8,8 +8,8 @@
         database: passwd
         key: "{{ item }}"
       with_items:
-        - "{{ galaxy_user }}"
-        - "{{ __galaxy_privsep_user }}"
+        - "{{ __galaxy_user_name }}"
+        - "{{ __galaxy_privsep_user_name }}"
       when: galaxy_group is not defined
       register: __galaxy_passwd_result
 
@@ -25,8 +25,8 @@
 
     - name: Set Galaxy user facts
       set_fact:
-        __galaxy_user_group: "{{ galaxy_group if galaxy_group is defined else __galaxy_group_result.results[0].ansible_facts.getent_group.keys() | first }}"
-        __galaxy_privsep_user_group: "{{ galaxy_group if galaxy_group is defined else __galaxy_group_result.results[1].ansible_facts.getent_group.keys() | first }}"
+        __galaxy_user_group: "{{ ((galaxy_group | default({})).name | default(galaxy_group)) if galaxy_group is defined else (__galaxy_group_result.results[0].ansible_facts.getent_group.keys() | first) }}"
+        __galaxy_privsep_user_group: "{{ ((galaxy_group | default({})).name | default(galaxy_group)) if galaxy_group is defined else (__galaxy_group_result.results[1].ansible_facts.getent_group.keys() | first) }}"
 
     - name: Determine whether to restrict to group permissions
       set_fact:
@@ -37,7 +37,7 @@
       file:
         path: "{{ galaxy_root }}"
         state: directory
-        owner: "{{ __galaxy_privsep_user }}"
+        owner: "{{ __galaxy_privsep_user_name }}"
         group: "{{ __galaxy_privsep_user_group }}"
         mode: "{{ __galaxy_dir_perms }}"
       when: galaxy_root is defined
@@ -46,7 +46,7 @@
       file:
         path: "{{ item }}"
         state: directory
-        owner: "{{ __galaxy_privsep_user }}"
+        owner: "{{ __galaxy_privsep_user_name }}"
         group: "{{ __galaxy_privsep_user_group }}"
         mode: "{{ __galaxy_dir_perms }}"
       with_items: "{{ galaxy_privsep_dirs }}"
@@ -55,12 +55,12 @@
       file:
         path: "{{ item }}"
         state: directory
-        owner: "{{ galaxy_user }}"
+        owner: "{{ __galaxy_user_name }}"
         group: "{{ __galaxy_user_group }}"
         mode: "{{ __galaxy_dir_perms }}"
       with_items: "{{ galaxy_dirs }}"
 
   # TODO: for root squashing it might be useful for this to be separate from other root tasks
   remote_user: "{{ galaxy_remote_users.root | default(omit) }}"
-  become: "{{ galaxy_become_users.root is not undefined }}"
-  become_user: "{{ galaxy_become_users.root | default(omit) }}"
+  become: "{{ true if galaxy_become_users.root is defined else __galaxy_become }}"
+  become_user: "{{ galaxy_become_users.root | default(ansible_user_id) }}"

@@ -36,5 +36,5 @@
       when: conditional_dependencies.stdout_lines | length > 0
 
   remote_user: "{{ galaxy_remote_users.privsep | default(omit) }}"
-  become: "{{ galaxy_become_users.privsep is not undefined }}"
-  become_user: "{{ galaxy_become_users.privsep | default(omit) }}"
+  become: "{{ true if galaxy_become_users.privsep is defined else __galaxy_become }}"
+  become_user: "{{ galaxy_become_users.privsep | default(ansible_user_id) }}"

@@ -19,5 +19,5 @@
       with_items: "{{ galaxy_mutable_configs }}"
 
   remote_user: "{{ galaxy_remote_users.galaxy | default(omit) }}"
-  become: "{{ galaxy_become_users.galaxy is not undefined }}"
-  become_user: "{{ galaxy_become_users.galaxy | default(omit) }}"
+  become: "{{ true if galaxy_become_users.galaxy is defined else __galaxy_become }}"
+  become_user: "{{ galaxy_become_users.galaxy | default(ansible_user_id) }}"
