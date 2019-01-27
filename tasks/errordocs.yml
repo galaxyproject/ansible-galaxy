@@ -1,36 +1,43 @@
 ---
 
-- name: Create error document directories
-  file:
-    path: "{{ galaxy_errordocs_dest }}/{{ item }}"
-    mode: "0755"
-    state: "directory"
-  with_items:
-    - 413
-    - 502
+- name: Manage error documents
+  block:
 
-- name: Install error documents static files
-  copy:
-    src: "errordocs/{{ item }}"
-    dest: "{{ galaxy_errordocs_dest }}/{{ item }}"
-    mode: "0644"
-  with_items:
-    - content_bg.png
-    - error_message_icon.png
-    - masthead_bg.png
+    - name: Create error document directories
+      file:
+        path: "{{ galaxy_errordocs_dest }}/{{ item }}"
+        mode: "0755"
+        state: "directory"
+      with_items:
+        - 413
+        - 502
 
-- name: Install error document templates
-  template:
-    src: "errordocs/{{ item }}.j2"
-    dest: "{{ galaxy_errordocs_dest }}/{{ item }}"
-    mode: "0644"
-  with_items:
-    - 413/index.html
-    - 502/index.shtml
+    - name: Install error documents static files
+      copy:
+        src: "errordocs/{{ item }}"
+        dest: "{{ galaxy_errordocs_dest }}/{{ item }}"
+        mode: "0644"
+      with_items:
+        - content_bg.png
+        - error_message_icon.png
+        - masthead_bg.png
 
-- name: Create maintenance message link
-  file:
-    path: "{{ galaxy_errordocs_dest }}/502/maint"
-    src: "{{ galaxy_errordocs_maint_file | default('~/maint') }}"
-    state: link
-    force: yes
+    - name: Install error document templates
+      template:
+        src: "errordocs/{{ item }}.j2"
+        dest: "{{ galaxy_errordocs_dest }}/{{ item }}"
+        mode: "0644"
+      with_items:
+        - 413/index.html
+        - 502/index.shtml
+
+    - name: Create maintenance message link
+      file:
+        path: "{{ galaxy_errordocs_dest }}/502/maint"
+        src: "{{ galaxy_errordocs_maint_file | default('~/maint') }}"
+        state: link
+        force: yes
+
+  remote_user: "{{ galaxy_remote_users.errdocs | default(omit) }}"
+  become: "{{ true if galaxy_become_users.errdocs is defined else __galaxy_become }}"
+  become_user: "{{ galaxy_become_users.errdocs | default(ansible_user_id) }}"

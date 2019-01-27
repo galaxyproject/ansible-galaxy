@@ -1,35 +1,44 @@
 ---
 # Manage Galaxy Database
 
-- name: Get current Galaxy DB version
-  command: "{{ galaxy_venv_dir }}/bin/python {{ galaxy_server_dir }}/scripts/manage_db.py -c {{ galaxy_config_file }} db_version"
-  args:
-    chdir: "{{ galaxy_server_dir }}"
-  register: current_db_version
-  changed_when: no
-  failed_when: current_db_version.rc != 0 and 'migrate.exceptions.DatabaseNotControlledError' not in current_db_version.stderr
+- name: Manage Galaxy database
+  block:
 
-- name: Get maximum Galaxy DB version
-  command: "{{ galaxy_venv_dir }}/bin/python {{ galaxy_server_dir }}/scripts/manage_db.py -c {{ galaxy_config_file }} version"
-  args:
-    chdir: "{{ galaxy_server_dir }}"
-  register: max_db_version
-  changed_when: no
+    - name: Get current Galaxy DB version
+      command: "{{ galaxy_venv_dir }}/bin/python {{ galaxy_server_dir }}/scripts/manage_db.py -c {{ galaxy_config_file }} db_version"
+      args:
+        chdir: "{{ galaxy_server_dir }}"
+      register: current_db_version
+      changed_when: no
+      failed_when: current_db_version.rc != 0 and 'migrate.exceptions.DatabaseNotControlledError' not in current_db_version.stderr
+      when: not ansible_check_mode
 
-- name: Create Galaxy DB
-  command: "{{ galaxy_venv_dir }}/bin/python {{ galaxy_server_dir }}/scripts/create_db.py -c {{ galaxy_config_file }}"
-  args:
-    chdir: "{{ galaxy_server_dir }}"
-  when: "'migrate.exceptions.DatabaseNotControlledError' in current_db_version.stderr"
+    - name: Get maximum Galaxy DB version
+      command: "{{ galaxy_venv_dir }}/bin/python {{ galaxy_server_dir }}/scripts/manage_db.py -c {{ galaxy_config_file }} version"
+      args:
+        chdir: "{{ galaxy_server_dir }}"
+      register: max_db_version
+      changed_when: no
+      when: not ansible_check_mode
 
-- name: Report current and max Galaxy database
-  debug:
-    msg: "Current database version is {{ current_db_version.stdout }} and the maxiumum version is {{ max_db_version.stdout }}."
-  changed_when: True
-  when: current_db_version.stdout != max_db_version.stdout and 'migrate.exceptions.DatabaseNotControlledError' not in current_db_version.stderr
+    - name: Create Galaxy DB
+      command: "{{ galaxy_venv_dir }}/bin/python {{ galaxy_server_dir }}/scripts/create_db.py -c {{ galaxy_config_file }}"
+      args:
+        chdir: "{{ galaxy_server_dir }}"
+      when: "(not ansible_check_mode) and 'migrate.exceptions.DatabaseNotControlledError' in current_db_version.stderr"
 
-- name: Upgrade Galaxy DB
-  command: "{{ galaxy_venv_dir }}/bin/python {{ galaxy_server_dir }}/scripts/manage_db.py -c {{ galaxy_config_file }} upgrade"
-  args:
-    chdir: "{{ galaxy_server_dir }}"
-  when: current_db_version.stdout != max_db_version.stdout and 'migrate.exceptions.DatabaseNotControlledError' not in current_db_version.stderr
+    - name: Report current and max Galaxy database
+      debug:
+        msg: "Current database version is {{ current_db_version.stdout }} and the maxiumum version is {{ max_db_version.stdout }}."
+      changed_when: True
+      when: "(not ansible_check_mode) and (current_db_version.stdout != max_db_version.stdout and 'migrate.exceptions.DatabaseNotControlledError' not in current_db_version.stderr)"
+
+    - name: Upgrade Galaxy DB
+      command: "{{ galaxy_venv_dir }}/bin/python {{ galaxy_server_dir }}/scripts/manage_db.py -c {{ galaxy_config_file }} upgrade"
+      args:
+        chdir: "{{ galaxy_server_dir }}"
+      when: "(not ansible_check_mode) and current_db_version.stdout != max_db_version.stdout and 'migrate.exceptions.DatabaseNotControlledError' not in current_db_version.stderr"
+
+  remote_user: "{{ galaxy_remote_users.galaxy | default(omit) }}"
+  become: "{{ true if galaxy_become_users.galaxy is defined else __galaxy_become }}"
+  become_user: "{{ galaxy_become_users.galaxy | default(ansible_user_id) }}"

@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='utf-8'?>
+<toolbox monitor="true" tool_path="{{ galaxy_local_tools_dir }}">
+{% for tool in galaxy_local_tools %}
+{% if tool.endswith('.xml') %}
+    <tool file="{{ tool }}" />
+{% endif %}
+{% endfor %}
+</toolbox>

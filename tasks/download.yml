@@ -1,11 +1,41 @@
-- name: Check for Galaxy download receipt
-  stat:
-    path: "{{ galaxy_server_dir }}/{{ galaxy_commit_id }}_receipt"
-  register: download_receipt
+---
+# Manage Galaxy download
 
-- name: Replace current version of Galaxy
-  shell: "rm -rf '{{ galaxy_server_dir }}' && mkdir '{{ galaxy_server_dir }}' && wget -q -O - {{ galaxy_download_url }} | tar xzf - --strip-components=1 -C {{ galaxy_server_dir }} && touch '{{ galaxy_server_dir }}/{{ galaxy_commit_id }}_receipt'"
-  when: not download_receipt.stat.exists
+- name: Download Galaxy
+  block:
 
-- name: Include virtualenv setup tasks
-  include_tasks: virtualenv.yml
+    - name: Check for Galaxy download receipt
+      stat:
+        path: "{{ galaxy_server_dir }}/{{ galaxy_commit_id }}_receipt"
+      register: download_receipt
+
+    - name: Create Galaxy server directory
+      file:
+        path: "{{ galaxy_server_dir }}"
+        state: directory
+
+    - name: Install current version of Galaxy
+      unarchive:
+        src: "{{ galaxy_download_url }}"
+        dest: "{{ galaxy_server_dir }}"
+        extra_opts: --strip-components=1
+        remote_src: yes
+      when: not download_receipt.stat.exists
+
+    - name: Create Galaxy download receipt
+      file:
+        path: "{{ galaxy_server_dir }}/{{ galaxy_commit_id }}_receipt"
+        state: touch
+      when: not download_receipt.stat.exists
+
+    - name: Include virtualenv setup tasks
+      import_tasks: virtualenv.yml
+
+    - name: Remove orphaned .pyc files and compile bytecode
+      script: makepyc.py {{ galaxy_server_dir }}/lib
+      environment:
+        PATH: "{{ galaxy_venv_dir }}/bin"
+
+  remote_user: "{{ galaxy_remote_users.privsep | default(omit) }}"
+  become: "{{ true if galaxy_become_users.privsep is defined else __galaxy_become }}"
+  become_user: "{{ galaxy_become_users.privsep | default(ansible_user_id) }}"

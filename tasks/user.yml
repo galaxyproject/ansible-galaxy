@@ -1,0 +1,42 @@
+---
+
+- name: Create users
+  block:
+
+    - name: Create Galaxy group
+      group:
+        name: "{{ galaxy_group.name | default(galaxy_group) }}"
+        gid: "{{ galaxy_group.gid | default(omit) }}"
+        system: "{{ galaxy_group.system | default(galaxy_user.system) | default('true') }}"
+        local: "{{ galaxy_group.local | default(galaxy_user.local) | default(omit) }}"
+      when: galaxy_group is defined
+
+    - name: Create Galaxy user
+      user:
+        name: "{{ galaxy_user.name | default(galaxy_user) }}"
+        uid: "{{ galaxy_user.uid | default(omit) }}"
+        group: "{{ (galaxy_group | default({})).name | default(galaxy_group) | default(omit) }}"
+        comment: "{{ galaxy_user.comment | default('Galaxy server') }}"
+        create_home: "{{ galaxy_user.create_home | default('true') }}"
+        home: "{{ galaxy_user.home | default(omit) }}"
+        shell: "{{ galaxy_user.shell | default(omit) }}"
+        system: "{{ galaxy_user.system | default('true') }}"
+        local: "{{ galaxy_user.local | default(omit) }}"
+      when: galaxy_create_user
+
+    - name: Create Galaxy privilege separation user
+      user:
+        name: "{{ galaxy_privsep_user.name | default(galaxy_privsep_user) }}"
+        uid: "{{ galaxy_privsep_user.uid | default(omit) }}"
+        group: "{{ (galaxy_group | default({})).name | default(galaxy_group) | default(omit) }}"
+        comment: "{{ galaxy_privsep_user.comment | default('Galaxy server privilege separation') }}"
+        create_home: "{{ galaxy_privsep_user.create_home | default('true') }}"
+        home: "{{ galaxy_privsep_user.home | default(omit) }}"
+        shell: "{{ galaxy_privsep_user.shell | default(omit) }}"
+        system: "{{ galaxy_privsep_user.system | default('true') }}"
+        local: "{{ galaxy_privsep_user.local | default(omit) }}"
+      when: galaxy_create_privsep_user
+
+  remote_user: "{{ galaxy_remote_users.root | default(omit) }}"
+  become: "{{ true if galaxy_become_users.root is defined else __galaxy_become }}"
+  become_user: "{{ galaxy_become_users.root | default(ansible_user_id) }}"

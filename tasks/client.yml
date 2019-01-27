@@ -1,0 +1,81 @@
+---
+
+- name: Build Galaxy client
+  block:
+
+    - name: Ensure client_build_hash.txt exists
+      copy:
+        content: "new-unbuilt"
+        dest: "{{ galaxy_static_dir }}/client_build_hash.txt"
+        force: no
+
+    - name: Get current client commit id
+      slurp:
+        src: "{{ galaxy_static_dir }}/client_build_hash.txt"
+      register: __galaxy_client_build_version_result
+
+    - name: Get current Galaxy commit id
+      git:
+        dest: "{{ galaxy_server_dir }}"
+        repo: "{{ galaxy_repo }}"
+        update: no
+      register: __galaxy_git_stat_result
+
+    - name: Set client build version fact
+      set_fact:
+        __galaxy_client_build_version: "{{ __galaxy_client_build_version_result.content | b64decode | trim }}"
+        __galaxy_current_commit_id: "{{ __galaxy_git_stat_result.after }}"
+
+    - name: Build Galaxy client if needed
+      block:
+
+        - name: Report client version mismatch
+          debug:
+            msg: "Galaxy client is out of date: {{ __galaxy_client_build_version }} != {{ __galaxy_current_commit_id }}"
+          changed_when: true
+
+        - name: Install node
+          command: "nodeenv -n {{ galaxy_node_version }} -p"
+          environment:
+            PATH: "{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
+            VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+          args:
+            creates: "{{ galaxy_venv_dir }}/bin/npm"
+
+        - name: Install yarn
+          npm:
+            executable: "{{ galaxy_venv_dir }}/bin/npm"
+            name: yarn
+            global: yes
+          environment:
+            PATH: "{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
+            VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+
+        - name: Build client
+          make:
+            chdir: "{{ galaxy_server_dir }}"
+            target: client-production-maps
+          environment:
+            PATH: "{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
+            VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+
+        - name: Fetch client version
+          slurp:
+            src: "{{ galaxy_static_dir }}/client_build_hash.txt"
+          register: __galaxy_client_build_version_result
+
+        - name: Set client build version fact
+          set_fact:
+            __galaxy_client_build_version: "{{ __galaxy_client_build_version_result.content | b64decode | trim }}"
+
+        - name: Ensure that client update succeeded
+          assert:
+            that:
+              - __galaxy_client_build_version == __galaxy_current_commit_id
+            msg: "Client build version does not match repo version after building: {{ __galaxy_client_build_version }} != {{ __galaxy_current_commit_id }}"
+
+      when: __galaxy_client_build_version != __galaxy_current_commit_id
+
+  remote_user: "{{ galaxy_remote_users.privsep | default(omit) }}"
+  become: "{{ true if galaxy_become_users.privsep is defined else __galaxy_become }}"
+  become_user: "{{ galaxy_become_users.privsep | default(ansible_user_id) }}"

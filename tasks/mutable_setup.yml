@@ -1,16 +1,23 @@
 ---
 # Instantiate mutable config files
 
-- name: Create mutable configuration file directories
-  file:
-    path: "{{ item }}"
-    state: directory
-  with_items:
-    - "{{ galaxy_mutable_config_dir }}"
-    - "{{ galaxy_tool_dependency_dir }}"
+- name: Mutable config setup
+  block:
 
-- name: Instantiate mutable configuration files
-  command: cp {{ item.src }} {{ item.dest }}
-  args:
-    creates: "{{ item.dest }}"
-  with_items: "{{ galaxy_mutable_configs }}"
+    - name: Create mutable configuration file directories
+      file:
+        path: "{{ item }}"
+        state: directory
+      with_items:
+        - "{{ galaxy_mutable_config_dir }}"
+        - "{{ galaxy_tool_dependency_dir }}"
+
+    - name: Instantiate mutable configuration files
+      command: cp {{ item.src }} {{ item.dest }}
+      args:
+        creates: "{{ item.dest }}"
+      with_items: "{{ galaxy_mutable_configs }}"
+
+  remote_user: "{{ galaxy_remote_users.galaxy | default(omit) }}"
+  become: "{{ true if galaxy_become_users.galaxy is defined else __galaxy_become }}"
+  become_user: "{{ galaxy_become_users.galaxy | default(ansible_user_id) }}"

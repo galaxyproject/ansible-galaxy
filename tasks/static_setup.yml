@@ -1,32 +1,80 @@
 ---
 # Manage static Galaxy configuration files
 
-- name: Create Galaxy config and shed tools directory
-  file:
-    path: "{{ item }}"
-    state: directory
-  with_items:
-    - "{{ galaxy_config_dir }}"
-    - "{{ galaxy_shed_tools_dir }}"
+- name: Static config setup
+  block:
 
-- name: Install additional Galaxy config files (static)
-  copy:
-    src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
-    backup: yes
-  with_items: "{{ galaxy_config_files }}"
+    - name: Create Galaxy config and shed tools directory
+      file:
+        path: "{{ item }}"
+        state: directory
+      with_items:
+        - "{{ galaxy_config_dir }}"
+        - "{{ galaxy_shed_tools_dir }}"
 
-- name: Install additional Galaxy config files (template)
-  template:
-    src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
-    backup: yes
-  with_items: "{{ galaxy_config_templates }}"
+    - name: Install additional Galaxy config files (static)
+      copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        backup: "{{ galaxy_backup_configfiles }}"
+      with_items: "{{ galaxy_config_files }}"
 
-- name: Create Galaxy configuration file
-  template:
-    src: "{{ galaxy_config_file_template }}"
-    dest: "{{ galaxy_config_file }}"
-    backup: yes
-  notify:
-    - restart galaxy
+    - name: Install additional Galaxy config files (template)
+      template:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        backup: "{{ galaxy_backup_configfiles }}"
+      with_items: "{{ galaxy_config_templates }}"
+
+    - name: Install local tools
+      copy:
+        src: "{{ galaxy_local_tools_src_dir }}/{{ item }}"
+        dest: "{{ galaxy_local_tools_dir }}/{{ item }}"
+      with_items: "{{ galaxy_local_tools | default([]) }}"
+      when: galaxy_local_tools is defined
+
+    - name: Install local_tool_conf.xml
+      template:
+        src: local_tool_conf.xml.j2
+        dest: "{{ galaxy_config_dir }}/local_tool_conf.xml"
+      when: galaxy_local_tools is defined
+
+    - name: Append local_tool_conf.xml to tool_config_file Galaxy config option
+      set_fact:
+        galaxy_tool_config_files: "{{ galaxy_tool_config_files }} + ['{{ galaxy_config_dir ~ '/local_tool_conf.xml' }}']"
+      when: galaxy_local_tools is defined
+
+    - name: Ensure dynamic job rules paths exists
+      file:
+        path: "{{ galaxy_dynamic_job_rules_dir }}/{{ item | dirname }}"
+        state: directory
+      loop_control:
+        label: "{{ galaxy_dynamic_job_rules_dir }}/{{ item | dirname }}"
+      with_items: "{{ galaxy_dynamic_job_rules }}"
+
+    - name: Install dynamic job rules
+      copy:
+        src: "{{ galaxy_dynamic_job_rules_src_dir }}/{{ item }}"
+        dest: "{{ galaxy_dynamic_job_rules_dir }}/{{ item }}"
+      with_items: "{{ galaxy_dynamic_job_rules }}"
+
+    - name: Ensure dynamic rule __init__.py's exist
+      copy:
+        content: ""
+        dest: "{{ galaxy_dynamic_job_rules_dir }}/{{ item | dirname }}/__init__.py"
+        force: no
+      loop_control:
+        label: "{{ galaxy_dynamic_job_rules_dir }}/{{ ((item | dirname) != '') | ternary ((item | dirname) ~ '/', '') }}__init__.py"
+      with_items: "{{ galaxy_dynamic_job_rules }}"
+
+    - name: Create Galaxy configuration file
+      template:
+        src: "{{ galaxy_config_file_template }}"
+        dest: "{{ galaxy_config_file }}"
+        backup: "{{ galaxy_backup_configfiles }}"
+      notify:
+        - restart galaxy
+
+  remote_user: "{{ galaxy_remote_users.privsep | default(omit) }}"
+  become: "{{ true if galaxy_become_users.privsep is defined else __galaxy_become }}"
+  become_user: "{{ galaxy_become_users.privsep | default(ansible_user_id) }}"
