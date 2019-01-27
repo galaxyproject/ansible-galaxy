@@ -97,6 +97,19 @@ galaxy_privsep_dirs:
   - "{{ galaxy_venv_dir }}"
   - "{{ galaxy_server_dir }}"
   - "{{ galaxy_config_dir }}"
+  - "{{ galaxy_local_tools_dir }}"
+
+# Local (relative to playbook) path to local tools
+galaxy_local_tools_src_dir: files/galaxy/tools
+
+# Local (relative to playbook) path to dynamic job rules
+galaxy_dynamic_job_rules_src_dir: files/galaxy/dynamic_job_rules
+
+# Remote path to dynamic job rules (must be on Galaxy's $PYTHONPATH if not the default)
+galaxy_dynamic_job_rules_dir: "{{ galaxy_server_dir }}/lib/galaxy/jobs/rules"
+
+# List of dynamic rules to install
+galaxy_dynamic_job_rules: []
 
 #
 # Version control
@@ -124,6 +137,11 @@ galaxy_download_url: "{{ galaxy_repo | replace('.git', '') }}/archive/{{ galaxy_
 
 # Directory layout for deployment (legacy is the default)
 #galaxy_layout: legacy
+
+# List of tool configs to load
+galaxy_tool_config_files:
+  - "{{ galaxy_server_dir }}/config/tool_conf.xml.sample"
+  - "{{ galaxy_shed_tool_conf_file }}"
 
 # The shed tool conf path is needed separate from the value of tool_conf for instantiation
 galaxy_shed_tool_conf_file: "{{ galaxy_mutable_config_dir }}/shed_tool_conf.xml"
@@ -176,7 +194,7 @@ galaxy_app_config_default:
   tool_dependency_dir: "{{ galaxy_tool_dependency_dir }}"
 
   # Static config files
-  tool_config_file: "{{ galaxy_server_dir }}/config/tool_conf.xml.sample,{{ galaxy_shed_tool_conf_file }}"
+  tool_config_file: "{{ galaxy_tool_config_files | join(',') }}"
 
   # Everything else
   visualization_plugins_directory: "config/plugins/visualizations"
