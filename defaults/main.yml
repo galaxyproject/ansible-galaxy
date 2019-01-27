@@ -42,14 +42,14 @@ galaxy_backup_configfiles: yes
 __galaxy_privsep_user: "{{ galaxy_privsep_user if galaxy_separate_privileges else galaxy_user }}"
 # this goes through two levels of variables since there's no "else if"
 __galaxy_default_root_become_users:
-  galaxy: "{{ galaxy_user }}"
-  privsep: "{{ __galaxy_privsep_user }}"
+  galaxy: "{{ __galaxy_user_name }}"
+  privsep: "{{ __galaxy_privsep_user_name }}"
 __galaxy_default_nonroot_become_users:
   root: root
-  galaxy: "{{ galaxy_user }}"
-  privsep: "{{ __galaxy_privsep_user }}"
+  galaxy: "{{ __galaxy_user_name }}"
+  privsep: "{{ __galaxy_privsep_user_name }}"
 __galaxy_default_become_users: "{{ __galaxy_default_root_become_users if ansible_user_uid == 0 else __galaxy_default_nonroot_become_users }}"
-galaxy_become_users: "{{ {} if ansible_user_id == galaxy_user and not galaxy_separate_privileges else __galaxy_default_become_users }}"
+galaxy_become_users: "{{ {} if ansible_user_id == __galaxy_user_name and not galaxy_separate_privileges else __galaxy_default_become_users }}"
 
 # Some sites do not allow the use of passwordless `sudo` and require logging directly in to accounts using `ssh`, this
 # variable works like `galaxy_become_users` and accommodates such scenarios (if using you probably want to set
@@ -75,8 +75,12 @@ galaxy_privsep_user: root
 # on most Linux systems, just set this to the same value as `galaxy_user` if you want to enable this feature.
 #galaxy_group:
 
+# Because these vars can be either a bare username or a dict
+__galaxy_user_name: "{{ galaxy_user.name | default(galaxy_user) }}"
+__galaxy_privsep_user_name: "{{ galaxy_privsep_user.name | default(galaxy_privsep_user) }}"
+
 # If `galaxy_create_user` is enabled, the privsep user will also be created, but you can override this behavior
-galaxy_create_privsep_user: "{{ galaxy_create_user if galaxy_privsep_user != 'root' else false }}"
+galaxy_create_privsep_user: "{{ galaxy_create_user if __galaxy_privsep_user_name != 'root' else false }}"
 
 # Directories to create as the Galaxy user if galaxy_manage_paths is enabled
 galaxy_dirs:

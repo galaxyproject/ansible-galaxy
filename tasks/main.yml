@@ -8,6 +8,13 @@
     msg: "Variables galaxy_manage_clone and galaxy_manage_download cannot both be true."
   when: galaxy_manage_clone and galaxy_manage_download
 
+# To my knowledge there is no other way to know whether or not the consumer of this role has set `become: true` outside
+# this role, and `become: {{ foo | default(omit) }}` on a task/block actually clobbers the higher level use of `become`.
+# This is a temporary solution.
+- name: Determine if become is in use
+  set_fact:
+    __galaxy_become: "{{ ansible_env.SUDO_USER is defined }}"
+
 - name: Import layout variable tasks
   import_tasks: layout.yml
   tags: always
