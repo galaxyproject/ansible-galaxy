@@ -23,6 +23,7 @@
       environment:
         PYTHONPATH: "{{ galaxy_server_dir }}/lib"
       register: conditional_dependencies
+      changed_when: no
 
     - name: Install Galaxy conditional dependencies
       pip:
