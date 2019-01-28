@@ -73,7 +73,7 @@
         dest: "{{ galaxy_config_file }}"
         backup: "{{ galaxy_backup_configfiles }}"
       notify:
-        - restart galaxy
+        - "{{ galaxy_restart_handler_name | default('default restart galaxy handler') }}"
 
   remote_user: "{{ galaxy_remote_users.privsep | default(omit) }}"
   become: "{{ true if galaxy_become_users.privsep is defined else __galaxy_become }}"

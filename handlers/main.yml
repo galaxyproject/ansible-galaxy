@@ -2,9 +2,9 @@
 # defaults file for galaxyproject.galaxy
 
 # TODO: Magical restarters depending on how you're running Galaxy.
-- name: restart galaxy
+- name: default restart galaxy handler
   debug:
-    msg: "RESTARTER NOT IMPLEMENTED - Please restart Galaxy manually"
+    msg: "RESTARTER NOT IMPLEMENTED - Please restart Galaxy manually. You can define your own handler and enable it with `galaxy_restart_handler_name`"
 
 - name: email administrator with commit id
   mail:

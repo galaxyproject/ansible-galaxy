@@ -194,6 +194,9 @@ user if deemed necessary. Overriding this behavior is discussed in the [defaults
 
 **Miscellaneous options**
 
+- `galaxy_restart_handler_name`: The role doesn't restart Galaxy since it doesn't control how Galaxy is started and
+  stopped. Because of this, you can write your own restart handler and inform the role of your handler's name with this
+  variable. See the examples
 - `galaxy_admin_email_to`: If set, email this address when Galaxy has been updated. Assumes mail is properly configured
   on the managed host.
 - `galaxy_admin_email_from`: Address to send the aforementioned email from.
@@ -236,6 +239,7 @@ Install Galaxy as per the current production server best practices:
 - PostgreSQL is used as the backing database
 - The 18.01+ style YAML configuration is used
 - Two [job handler mules][deployment-options] are started
+- When the Galaxy code or configs are updated by Ansible, Galaxy will be restarted using `supervisorctl`
 
 [deployment-options]: https://docs.galaxyproject.org/en/master/admin/scaling.html#deployment-options
 
@@ -252,6 +256,7 @@ Install Galaxy as per the current production server best practices:
     galaxy_user: galaxy
     galaxy_privsep_user: gxpriv
     galaxy_group: galaxy
+    galaxy_restart_handler_name: Restart Galaxy
     postgresql_objects_users:
       - name: galaxy
         password: null
@@ -301,6 +306,11 @@ Install Galaxy as per the current production server best practices:
       become: yes
       become_user: postgres
     - role: galaxyproject.galaxy
+  handlers:
+    - name: Restart Galaxy
+      supervisorctl:
+        name: galaxy
+        state: restarted
 ```
 
 License

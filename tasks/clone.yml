@@ -13,7 +13,7 @@
         executable: "{{ git_executable | default(omit) }}"
       register: __galaxy_git_update_result
       notify:
-        - restart galaxy
+        - "{{ galaxy_restart_handler_name | default('default restart galaxy handler') }}"
         - email administrator with commit id
 
     - name: Report Galaxy version change
