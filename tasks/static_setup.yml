@@ -18,6 +18,8 @@
         dest: "{{ item.dest }}"
         backup: "{{ galaxy_backup_configfiles }}"
       with_items: "{{ galaxy_config_files }}"
+      notify:
+        - "{{ galaxy_restart_handler_name | default('default restart galaxy handler') }}"
 
     - name: Install additional Galaxy config files (template)
       template:
@@ -25,6 +27,8 @@
         dest: "{{ item.dest }}"
         backup: "{{ galaxy_backup_configfiles }}"
       with_items: "{{ galaxy_config_templates }}"
+      notify:
+        - "{{ galaxy_restart_handler_name | default('default restart galaxy handler') }}"
 
     - name: Install local tools
       copy:
