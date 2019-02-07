@@ -251,7 +251,7 @@ Install Galaxy as per the current production server best practices:
     galaxy_root: /srv/galaxy
     galaxy_commit_id: release_18.09
     galaxy_separate_privileges: yes
-    galaxy_create_users: yes
+    galaxy_create_user: yes
     galaxy_manage_paths: yes
     galaxy_user: galaxy
     galaxy_privsep_user: gxpriv
