@@ -254,6 +254,6 @@ galaxy_uwsgi_config_default:
 # Client build settings
 #
 
-# Options include: client / client-production (default) / client-production-maps  
-galaxy_client_make_target: client-production
+# Options include: client / client-production / client-production-maps (default)
+galaxy_client_make_target: client-production-maps
 

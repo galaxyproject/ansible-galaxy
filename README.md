@@ -126,7 +126,7 @@ Several variables control which functions this role will perform (all default to
 - `galaxy_manage_database`: Upgrade the database schema as necessary, when new schema versions become available.
 - `galaxy_fetch_dependencies`: Fetch Galaxy dependent modules to the Galaxy virtualenv.
 - `galaxy_build_client`: Build the Galaxy client application (web UI).
-- `galaxy_client_make_target` (default: `client-production`): Set the client build type. Options include: `client`, 
+- `galaxy_client_make_target` (default: `client-production-maps`): Set the client build type. Options include: `client`, 
   `client-production` and `client-production-maps`. See [Galaxy client readme][client-build] for details.
 - `galaxy_manage_errordocs` (default: `no`): Install Galaxy-styled 413 and 502 HTTP error documents for nginx. Requires
   write privileges for the nginx error document directory.
