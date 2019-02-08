@@ -249,3 +249,11 @@ galaxy_uwsgi_config_default:
 
 # TODO: Implement something like this for starter/restarter
 #galaxy_server_type: paste_singleprocess
+
+#
+# Client build settings
+#
+
+# Options include: client / client-production (default) / client-production-maps  
+galaxy_client_make_target: client-production
+

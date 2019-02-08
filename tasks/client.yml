@@ -54,7 +54,7 @@
         - name: Build client
           make:
             chdir: "{{ galaxy_server_dir }}"
-            target: client-production-maps
+            target: "{{ galaxy_client_make_target }}"
           environment:
             PATH: "{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
             VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
