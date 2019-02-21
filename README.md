@@ -39,7 +39,7 @@ the same play as this role:
 ```
 
 If your `git` executable is not on `$PATH`, you can specify its location with the `git_executable` variable. Likewise
-with the `virtualenv` executable and corresponding `pip_virtualenv_command` variable.
+with the `virtualenv` executable and corresponding `galaxy_virtualenv_command` variable.
 
 [git]: http://git-scm.com/
 [venv]: http://virtualenv.readthedocs.org/

@@ -13,7 +13,7 @@
         requirements: "{{ galaxy_requirements_file }}"
         extra_args: "--index-url https://wheels.galaxyproject.org/simple/ --extra-index-url https://pypi.python.org/simple {{ pip_extra_args | default('') }}"
         virtualenv: "{{ galaxy_venv_dir }}"
-        virtualenv_command: "{{ pip_virtualenv_command | default( 'virtualenv' ) }}"
+        virtualenv_command: "{{ galaxy_virtualenv_command | default(pip_virtualenv_command | default(omit)) }}"
       environment:
         PYTHONPATH: null
         VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
@@ -30,7 +30,7 @@
         name: "{{ conditional_dependencies.stdout_lines }}"
         extra_args: "--index-url https://wheels.galaxyproject.org/simple/ --extra-index-url https://pypi.python.org/simple {{ pip_extra_args | default('') }}"
         virtualenv: "{{ galaxy_venv_dir }}"
-        virtualenv_command: "{{ pip_virtualenv_command | default( 'virtualenv' ) }}"
+        virtualenv_command: "{{ galaxy_virtualenv_command | default(pip_virtualenv_command | default(omit)) }}"
       environment:
         PYTHONPATH: null
         VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
