@@ -18,6 +18,7 @@ galaxy_fetch_dependencies: yes
 galaxy_build_client: yes
 galaxy_manage_errordocs: no
 galaxy_backup_configfiles: yes
+galaxy_build_fifo_plugin: no
 
 #
 # Access method control

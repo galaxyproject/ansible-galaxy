@@ -52,6 +52,12 @@
   tags:
     - galaxy_fetch_dependencies
 
+- name: Include fifo tasks
+  include_tasks: fifo.yml
+  when: galaxy_build_fifo_plugin
+  tags:
+    - galaxy_build_fifo_plugin
+
 - name: Include mutable config setup tasks
   include_tasks: mutable_setup.yml
   when: galaxy_manage_mutable_setup

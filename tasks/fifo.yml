@@ -1,0 +1,19 @@
+---
+- name: Deploy spinningfifo.c
+  copy:
+    src: spinningfifo.c
+    dest: "{{ galaxy_mutable_config_dir }}/spinningfifo.c"
+    mode: 0440
+  register: fifo_copy
+
+- name: Ensure uwsgi plugin dir exists
+  file:
+    path: "{{ galaxy_venv_dir }}/lib/uwsgi/plugins"
+    state: directory
+
+- name: Build spinninfifo plugin
+  command: "{{ galaxy_venv_dir }}/bin/uwsgi --build-plugin {{ galaxy_mutable_config_dir }}/spinningfifo.c"
+  args:
+    chdir: "{{ galaxy_venv_dir }}/lib/uwsgi/plugins"
+    creates: "{{ galaxy_venv_dir }}/lib/uwsgi/plugins/spinningfifo_plugin.so"
+  when: fifo_copy is changed
