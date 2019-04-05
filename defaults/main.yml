@@ -81,6 +81,8 @@ __galaxy_privsep_user_name: "{{ galaxy_privsep_user.name | default(galaxy_privse
 
 # If `galaxy_create_user` is enabled, the privsep user will also be created, but you can override this behavior
 galaxy_create_privsep_user: "{{ galaxy_create_user if __galaxy_privsep_user_name != 'root' else false }}"
+# Set galaxy root directory permissions. This nearly always needs to be world readable to nginx can read the static artifacts.
+__galaxy_dir_perms: 0755
 
 # Directories to create as the Galaxy user if galaxy_manage_paths is enabled
 galaxy_dirs:

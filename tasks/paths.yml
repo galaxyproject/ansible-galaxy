@@ -28,10 +28,6 @@
         __galaxy_user_group: "{{ ((galaxy_group | default({})).name | default(galaxy_group)) if galaxy_group is defined else (__galaxy_group_result.results[0].ansible_facts.getent_group.keys() | first) }}"
         __galaxy_privsep_user_group: "{{ ((galaxy_group | default({})).name | default(galaxy_group)) if galaxy_group is defined else (__galaxy_group_result.results[1].ansible_facts.getent_group.keys() | first) }}"
 
-    - name: Determine whether to restrict to group permissions
-      set_fact:
-        __galaxy_dir_perms: "{{ '0750' if __galaxy_user_group == __galaxy_privsep_user_group else '0755' }}"
-
     # try to become root. if you need something fancier, don't use the role and write your own
     - name: Create galaxy_root
       file:
