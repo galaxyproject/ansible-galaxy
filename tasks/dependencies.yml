@@ -34,7 +34,7 @@
       environment:
         PYTHONPATH: null
         VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
-      when: conditional_dependencies.stdout_lines | length > 0
+      when: (not ansible_check_mode) and conditional_dependencies.stdout_lines | length > 0
 
   remote_user: "{{ galaxy_remote_users.privsep | default(omit) }}"
   become: "{{ true if galaxy_become_users.privsep is defined else __galaxy_become }}"
