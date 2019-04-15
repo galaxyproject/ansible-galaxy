@@ -14,17 +14,32 @@
         src: "{{ galaxy_static_dir }}/client_build_hash.txt"
       register: __galaxy_client_build_version_result
 
+    - name: Check if Galaxy was checked out from git
+      stat:
+        path: "{{ galaxy_server_dir }}/.git"
+      register: __galaxy_from_git
+
     - name: Get current Galaxy commit id
       git:
         dest: "{{ galaxy_server_dir }}"
         repo: "{{ galaxy_repo }}"
         update: no
       register: __galaxy_git_stat_result
+      when: __galaxy_from_git.stat.exists
 
     - name: Set client build version fact
       set_fact:
         __galaxy_client_build_version: "{{ __galaxy_client_build_version_result.content | b64decode | trim }}"
+
+    - name: Set client build version fact
+      set_fact:
         __galaxy_current_commit_id: "{{ __galaxy_git_stat_result.after }}"
+      when: __galaxy_from_git.stat.exists
+
+    - name: Set client build version fact
+      set_fact:
+        __galaxy_current_commit_id: "none"
+      when: not __galaxy_from_git.stat.exists
 
     - name: Build Galaxy client if needed
       block:
@@ -33,6 +48,7 @@
           debug:
             msg: "Galaxy client is out of date: {{ __galaxy_client_build_version }} != {{ __galaxy_current_commit_id }}"
           changed_when: true
+          when: __galaxy_from_git.stat.exists
 
         - name: Install node
           command: "nodeenv -n {{ galaxy_node_version }} -p"
@@ -73,8 +89,9 @@
             that:
               - __galaxy_client_build_version == __galaxy_current_commit_id
             msg: "Client build version does not match repo version after building: {{ __galaxy_client_build_version }} != {{ __galaxy_current_commit_id }}"
+          when: __galaxy_from_git.stat.exists
 
-      when: __galaxy_client_build_version != __galaxy_current_commit_id
+      when: not __galaxy_from_git.stat.exists or (__galaxy_client_build_version != __galaxy_current_commit_id)
 
   remote_user: "{{ galaxy_remote_users.privsep | default(omit) }}"
   become: "{{ true if galaxy_become_users.privsep is defined else __galaxy_become }}"
