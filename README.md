@@ -98,15 +98,100 @@ Options below that control individual file or subdirectory placement can still o
   `galaxy`.
 - `galaxy_uwsgi_yaml_parser` (default: `internal`): Controls whether the `uwsgi` section of the Galaxy config file will
   be written in uWSGI-style YAML or real YAML. By default, uWSGI's internal YAML parser does not support real YAML. Set
-  to `libyaml` to write real YAML, if you are using uWSGI that has been compiled with libyaml. see
-  [unbit/uwsgi#863][uwsgi-863] for details.
-- To override the default uWSGI configuration, place your uWSGI options under the `uwsgi` key in the `galaxy_config`
-  dictionary explained below. Note that the defaults are not merged with your config, so you should fully define the
-  `uwsgi` section if you choose to set it. Note that **regardless of which `galaxy_uwsgi_yaml_parser` you use, this
-  should be written in real YAML** because Ansible parses it with libyaml, which does not support the uWSGI internal
-  parser's duplicate key syntax. This role will automatically convert the proper YAML to uWSGI-style YAML as necessary.
+  to `libyaml` to write real YAML, if you are using uWSGI that has been compiled with libyaml. see **YAML Syntax** below
+  and [unbit/uwsgi#863][uwsgi-863] for details.
+
+**YAML Syntax**
+
+To override the default uWSGI configuration, place your uWSGI options under the `uwsgi` key in the `galaxy_config`
+dictionary explained below. Note that the defaults are not merged with your config, so you should fully define the
+`uwsgi` section if you choose to set it.
+
+uWSGI's internal YAML parser expects YAML in an non-standards-conforming syntax:
+
+- Quotes are not supported: all values are read as strings
+- Multiple overlapping keys are used to specify multiple instances of an option
+- Despite appearing to be a YAML dictionary, the order of the dictionary keys in the config is preserved
+
+Note that **regardless of which `galaxy_uwsgi_yaml_parser` you use, `galaxy_config.uwsgi` should be written in real
+YAML** because Ansible parses it with libyaml, which does not support the uWSGI internal parser's invalid syntax. This
+role will automatically convert the proper YAML to uWSGI-style YAML as necessary.
+
+In order to specify repeititve uWSGI options, the value of the option should be a list. For example, multiple mules for
+Galaxy handlers are specified like so:
+
+```yaml
+galaxy_config:
+  uwsgi:
+    # a few example options
+    socket: 127.0.0.1:4001
+    master: true
+    # define mules
+    mule:
+      - lib/galaxy/main.py
+      - lib/galaxy/main.py
+    farm: job-handlers:1,2
+```
+
+This role will convert the above to the proper uWSGI-style representation in `galaxy.yml`:
+
+```yaml
+uwsgi:
+    farm: job-handlers:1,2
+    master: true
+    mule: lib/galaxy/main.py
+    mule: lib/galaxy/main.py
+    socket: 127.0.0.1:4001
+```
+
+The value of `galaxy_config.uwsgi` can be either a hash (dictionary) of option/value pairs, or a list of one-item
+option/value hashes. In the former case, the options will be written to galaxy.yml in sorted order, since hashes do not
+maintain order. In the latter case, order is preserved, and allows for use of uWSGI's [configuration
+logic][uwsgi-config-logic], for which the order matters.
+
+When specifying control logic such as `if-*` and `for`, the value of the option is a list where:
+
+- The first list member is the conditional
+- The remaining list members are the option/values in the control block
+- Do not specify the closing `endif` or `endfor`, the role will do this for you
+
+For example, to use `if-exists` as is commonly done for uWSGI Zerg Mode, use:
+
+```yaml
+galaxy_config:
+  uwsgi:
+    # a few example options
+    - socket: 127.0.0.1:4001
+    - master: true
+    # define master FIFOs
+    - master-fifo:
+      - /srv/galaxy/var/zerg-new.fifo
+      - /srv/galaxy/var/zerg-run.fifo
+      - /srv/galaxy/var/zerg-old.fifo
+    # control block
+    - if-exists:
+      - /srv/galaxy/var/zerg-run.fifo
+      - hook-accepting1-once: writefifo:/srv/galaxy/var/zerg-run.fifo 2q
+    - hook-accepting1-once: writefifo:/srv/galaxy/var/zerg-new.fifo 1
+```
+
+The role converts this to the following `galaxy.yml` contents:
+
+```yaml
+uwsgi:
+    socket: 127.0.0.1:4001
+    master: true
+    master-fifo: /srv/galaxy/var/zerg-new.fifo
+    master-fifo: /srv/galaxy/var/zerg-run.fifo
+    master-fifo: /srv/galaxy/var/zerg-old.fifo
+    if-exists: /srv/galaxy/var/zerg-run.fifo
+    hook-accepting1-once: writefifo:/srv/galaxy/var/zerg-run.fifo 2q
+    endif: null
+    hook-accepting1-once: spinningfifo:/srv/galaxy/var/zerg-new.fifo 1
+```
 
 [uwsgi-863]: https://github.com/unbit/uwsgi/issues/863
+[uwsgi-config-logic]: https://uwsgi-docs.readthedocs.io/en/latest/ConfigLogic.html
 
 **Feature control**
 
