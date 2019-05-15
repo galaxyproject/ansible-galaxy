@@ -17,6 +17,7 @@ galaxy_manage_database: yes
 galaxy_fetch_dependencies: yes
 galaxy_build_client: yes
 galaxy_manage_errordocs: no
+galaxy_conf_template_setup: no
 galaxy_backup_configfiles: yes
 
 #
@@ -257,3 +258,34 @@ galaxy_uwsgi_config_default:
 # Options include: client / client-production / client-production-maps (default)
 galaxy_client_make_target: client-production-maps
 
+#
+# Authentification configuration
+# authen_conf.xml
+# https://github.com/galaxyproject/galaxy/blob/dev/config/auth_conf.xml.sample
+#
+galaxy_auth:
+  authenticator:
+    localdb:
+      allow-password-change: True
+    ldap:
+      filter: '{email}'.endswith('@example.com')
+      allow-register: True
+      auto-register: False
+      allow-password-change: False
+      auto-create-roles: False
+      auto-create-groups: False
+      auto-assign-roles-to-groups-only: False
+      server: ldap://dc1.example.com
+      ldap-options: OPT_X_TLS_REQUIRE_CERT=OPT_X_TLS_ALLOW
+      login-use-username: False
+      continue-on-failure: False
+      search-fields: uid,mail
+      search-base: ou=People,dc=example,dc=com
+      search-filter: (mail={email})
+      search-user: cn=jsmith,ou=People,dc=domain,dc=com
+      search-password: mysecret
+      bind-user: {dn}
+      bind-password: {password}
+      auto-register-username: {uid}
+      auto-register-email: {mail}
+      auto-register-roles: {gid}

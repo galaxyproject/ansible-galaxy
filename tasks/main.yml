@@ -75,3 +75,9 @@
   when: galaxy_manage_errordocs
   tags:
     - galaxy_manage_errordocs
+
+- name: Include configuration files from templates setup
+  include_tasks: conf_template.yml
+  when: galaxy_conf_template_setup
+  tags:
+    - galaxy_conf_template_setup
