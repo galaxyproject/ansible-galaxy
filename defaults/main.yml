@@ -124,6 +124,9 @@ galaxy_repo: "{{ galaxy_git_repo | default('https://github.com/galaxyproject/gal
 # Automatically delete things in the repo that do not belong there
 galaxy_force_checkout: no
 
+# Git clone depth for the galaxy repository. Leave blank to ignore.
+galaxy_clone_depth:
+
 # This can be a tag (as shown here) but doing so will cause the revision check task to always report "changed".
 # Backwards compatibility with galaxy_changeset_id.
 galaxy_commit_id: "{{ galaxy_changeset_id | default('master') }}"

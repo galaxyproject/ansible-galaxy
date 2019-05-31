@@ -8,6 +8,7 @@
       git:
         dest: "{{ galaxy_server_dir }}"
         force: "{{ galaxy_force_checkout }}"
+        depth: "{{ galaxy_clone_depth }}"
         repo: "{{ galaxy_repo }}"
         version: "{{ galaxy_commit_id }}"
         executable: "{{ git_executable | default(omit) }}"

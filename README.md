@@ -242,6 +242,8 @@ Options for configuring Galaxy and controlling which version is installed.
   updated to. Specifying a branch will update to the latest commit on that branch. Using a real commit id is the only
   way to explicitly lock Galaxy at a specific version.
 - `galaxy_force_checkout` (default: `no`): If `yes`, any modified files in the Galaxy repository will be discarded.
+- `galaxy_clone_depth` (default: `null`): Depth to use when performing git clone. Leave unspecified to clone entire
+   history.
 
 **Path configuration**
 
