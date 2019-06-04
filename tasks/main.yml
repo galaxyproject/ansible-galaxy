@@ -4,7 +4,8 @@
 # Deploy a Galaxy server
 #   https://docs.galaxyproject.org/
 
-- fail:
+- name: Error
+  fail:
     msg: "Variables galaxy_manage_clone and galaxy_manage_download cannot both be true."
   when: galaxy_manage_clone and galaxy_manage_download
 
