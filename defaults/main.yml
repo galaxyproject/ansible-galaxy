@@ -17,7 +17,6 @@ galaxy_manage_database: yes
 galaxy_fetch_dependencies: yes
 galaxy_build_client: yes
 galaxy_manage_errordocs: no
-galaxy_conf_template_setup: no
 galaxy_backup_configfiles: yes
 
 #
