@@ -213,7 +213,7 @@ galaxy_mutable_configs:
     dest: "{{ galaxy_config_merged[galaxy_app_config_section].shed_tool_data_table_config }}"
 
 galaxy_mutable_config_templates:
-  - src: "shed_tool_conf.xml.sample"
+  - src: "shed_tool_conf.xml"
     dest: "{{ galaxy_shed_tool_conf_file }}"
 
 galaxy_config_error_email_to: "{{ galaxy_config_merged[galaxy_app_config_section].error_email_to | default('') }}"

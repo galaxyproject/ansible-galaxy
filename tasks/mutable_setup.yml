@@ -22,6 +22,7 @@
       template:
           src: "{{ item.src }}"
           dest: "{{ item.dest }}"
+          force: no # Will not template, if already exists. https://docs.ansible.com/ansible/latest/modules/template_module.html
       with_items: "{{ galaxy_mutable_config_templates }}"
 
   remote_user: "{{ galaxy_remote_users.galaxy | default(omit) }}"
