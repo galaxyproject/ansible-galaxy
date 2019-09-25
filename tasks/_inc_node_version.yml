@@ -15,7 +15,7 @@
 
     - name: Set Galaxy Node.js version fact
       set_fact:
-        galaxy_node_version: "{{ __galaxy_node_version_file['content'] | b64decode }}"
+        galaxy_node_version: "{{ __galaxy_node_version_file['content'] | b64decode | trim }}"
 
   rescue:
 
