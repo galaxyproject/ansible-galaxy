@@ -22,10 +22,10 @@ def _iter_values(k, v):
             raise AnsibleError(
                 "to_uwsgi_yaml value of '%s' must be a list (is type: %s, value: %s)" % (k, type(v), str(v)))
         vi = iter(v)
-        yield {k: vi.next()}
+        yield {k: next(vi)}
         for i in vi:
             # Recurse for logic block members containing lists
-            for _i in _iter_values(*(i.items()[0])):
+            for _i in _iter_values(*(list(i.items())[0])):
                 yield _i
         yield {'end' + k.split('-', 1)[0]: 'null'}
     elif isinstance(v, list):
@@ -46,7 +46,7 @@ def _iter_options(a):
             yield (k, a[k])
     elif isinstance(a, list):
         for i in a:
-            yield i.items()[0]
+            yield list(i.items())[0]
     else:
         raise AnsibleError(
             "|to_uwsgi_yaml value must be a dictionary (hash) or list (is type: %s, value: %s)" % (type(a), str(a)))
