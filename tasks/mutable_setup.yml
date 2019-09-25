@@ -4,6 +4,10 @@
 - name: Mutable config setup
   block:
 
+    - name: Ensure Galaxy version is set
+      include_tasks: _inc_galaxy_version.yml
+      when: __galaxy_major_version is undefined
+
     - name: Create mutable configuration file directories
       file:
         path: "{{ item }}"
@@ -17,6 +21,7 @@
       args:
         creates: "{{ item.dest }}"
       with_items: "{{ galaxy_mutable_configs }}"
+      when: __galaxy_major_version is version('19.09', '<')
 
     - name: Template mutable configuration files
       template:
