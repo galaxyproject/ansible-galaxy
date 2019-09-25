@@ -115,8 +115,8 @@ galaxy_dynamic_job_rules: []
 # Version control
 #
 
-# TODO: This needs to be read from Galaxy. Until we have a good solution for that, this is valid for 18.09 and older.
-galaxy_node_version: "9.11.1"
+# This is now automatically determined in tasks/_inc_node_version.yml, but it can be set to force a version
+#galaxy_node_version: "XX.YY.Z"
 
 # Where to clone Galaxy from. Backwards compatibility with galaxy_git_repo
 galaxy_repo: "{{ galaxy_git_repo | default('https://github.com/galaxyproject/galaxy.git') }}"
