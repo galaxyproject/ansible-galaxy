@@ -50,6 +50,10 @@
           changed_when: true
           when: __galaxy_from_git.stat.exists
 
+        - name: Ensure galaxy_node_version is set
+          include_tasks: _inc_node_version.yml
+          when: galaxy_node_version is undefined
+
         - name: Install node
           command: "nodeenv -n {{ galaxy_node_version }} -p"
           environment:

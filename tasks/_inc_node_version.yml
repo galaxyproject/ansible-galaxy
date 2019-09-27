@@ -1,0 +1,39 @@
+---
+# Determine preferred Node.js version
+
+# Galaxy 18.09 and older prefer 9.11.1
+# Galaxy 19.01 prefers 10.13.0
+# Galaxy 19.05 and newer provide client/.node_version
+
+- name: Determine preferred Node.js version
+  block:
+
+    - name: Collect Galaxy Node.js version file
+      slurp:
+        src: "{{ galaxy_server_dir }}/client/.node_version"
+      register: __galaxy_node_version_file
+
+    - name: Set Galaxy Node.js version fact
+      set_fact:
+        galaxy_node_version: "{{ __galaxy_node_version_file['content'] | b64decode | trim }}"
+
+  rescue:
+
+    - name: Ensure Galaxy version is set
+      include_tasks: _inc_galaxy_version.yml
+      when: __galaxy_major_version is undefined
+
+    - name: Sanity check whether .node_version should be present
+      assert:
+        that:
+          - __galaxy_major_version is version('19.09', '<')
+        fail_msg: "Galaxy version {{ __galaxy_major_version }} >= 19.09 but client/.node_version file missing!"
+        success_msg: "Galaxy version {{ __galaxy_major_version }} < 19.09, will use hardcoded Node.js version default"
+
+    - name: Set Galaxy Node.js version fact
+      set_fact:
+        galaxy_node_version: "{{ '9.11.1' if (__galaxy_major_version is version('19.01', '<')) else '10.13.0' }}"
+
+- name: Report preferred Node.js version
+  debug:
+    var: galaxy_node_version
