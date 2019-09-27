@@ -256,8 +256,7 @@ galaxy_uwsgi_config_default:
 # Client build settings
 #
 
-# Set galaxy_client_make_target to use Galaxy's provided Makefile for building the client. By default, these are
-# implemented as separate Ansible tasks for greater transparency
-# Options include: client / client-production / client-production-maps (default)
-#galaxy_client_make_target: client-production-maps
+# Options include: client / client-production / client-production-maps (default). Set to null to invoke each step of the
+# build separately, but this is not guaranteed to work for all version of Galaxy - using `make` is the safer choice.
+galaxy_client_make_target: client-production-maps
 

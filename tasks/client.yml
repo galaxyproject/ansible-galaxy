@@ -67,7 +67,7 @@
             VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
 
         - name: Include client build process
-          import_tasks: "_inc_client_build_{{ 'make' if galaxy_client_make_target is defined else 'steps' }}.yml"
+          import_tasks: "_inc_client_build_{{ 'make' if galaxy_client_make_target | bool else 'steps' }}.yml"
 
       when: not __galaxy_from_git.stat.exists or (__galaxy_client_build_version != __galaxy_current_commit_id)
 
