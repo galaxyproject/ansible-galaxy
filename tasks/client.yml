@@ -33,13 +33,8 @@
 
     - name: Set client build version fact
       set_fact:
-        __galaxy_current_commit_id: "{{ __galaxy_git_stat_result.after }}"
+        __galaxy_current_commit_id: "{{ __galaxy_git_stat_result.after if __galaxy_from_git.stat.exists else 'none' }}"
       when: __galaxy_from_git.stat.exists
-
-    - name: Set client build version fact
-      set_fact:
-        __galaxy_current_commit_id: "none"
-      when: not __galaxy_from_git.stat.exists
 
     - name: Build Galaxy client if needed
       block:
@@ -71,29 +66,8 @@
             PATH: "{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
             VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
 
-        - name: Build client
-          make:
-            chdir: "{{ galaxy_server_dir }}"
-            target: "{{ galaxy_client_make_target }}"
-          environment:
-            PATH: "{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
-            VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
-
-        - name: Fetch client version
-          slurp:
-            src: "{{ galaxy_static_dir }}/client_build_hash.txt"
-          register: __galaxy_client_build_version_result
-
-        - name: Set client build version fact
-          set_fact:
-            __galaxy_client_build_version: "{{ __galaxy_client_build_version_result.content | b64decode | trim }}"
-
-        - name: Ensure that client update succeeded
-          assert:
-            that:
-              - __galaxy_client_build_version == __galaxy_current_commit_id
-            msg: "Client build version does not match repo version after building: {{ __galaxy_client_build_version }} != {{ __galaxy_current_commit_id }}"
-          when: __galaxy_from_git.stat.exists
+        - name: Include client build process
+          import_tasks: "_inc_client_build_{{ 'make' if galaxy_client_make_target is defined else 'steps' }}.yml"
 
       when: not __galaxy_from_git.stat.exists or (__galaxy_client_build_version != __galaxy_current_commit_id)
 

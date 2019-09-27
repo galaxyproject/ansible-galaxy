@@ -1,0 +1,32 @@
+---
+
+- name: Install packages with yarn
+  yarn:
+    executable: "yarn --network-timeout 300000 --check-files"
+    path: "{{ galaxy_server_dir }}/client"
+  environment:
+    PATH: "{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
+    VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+
+- name: Run gulp
+  command: gulp
+  args:
+    chdir: "{{ galaxy_server_dir }}/client"
+  environment:
+    PATH: "{{ galaxy_server_dir }}/client/node_modules/.bin:{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
+    VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+    NODE_ENV: production
+
+- name: Run webpack
+  command: webpack -p
+  args:
+    chdir: "{{ galaxy_server_dir }}/client"
+  environment:
+    PATH: "{{ galaxy_server_dir }}/client/node_modules/.bin:{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
+    VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+    GXY_BUILD_SOURCEMAPS: 1
+
+- name: Store client version
+  copy:
+    content: "{{ __galaxy_current_commit_id }}"
+    dest: "{{ galaxy_static_dir }}/client_build_hash.txt"
