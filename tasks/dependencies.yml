@@ -36,6 +36,6 @@
         VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
       when: (not ansible_check_mode) and conditional_dependencies.stdout_lines | length > 0
 
-  remote_user: "{{ galaxy_remote_users.privsep | default(omit) }}"
+  remote_user: "{{ galaxy_remote_users.privsep | default(__galaxy_remote_user) }}"
   become: "{{ true if galaxy_become_users.privsep is defined else __galaxy_become }}"
-  become_user: "{{ galaxy_become_users.privsep | default(ansible_user_id) }}"
+  become_user: "{{ galaxy_become_users.privsep | default(__galaxy_become_user) }}"

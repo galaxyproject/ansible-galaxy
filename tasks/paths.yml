@@ -61,6 +61,6 @@
       with_items: "{{ galaxy_dirs }}"
 
   # TODO: for root squashing it might be useful for this to be separate from other root tasks
-  remote_user: "{{ galaxy_remote_users.root | default(omit) }}"
+  remote_user: "{{ galaxy_remote_users.root | default(__galaxy_remote_user) }}"
   become: "{{ true if galaxy_become_users.root is defined else __galaxy_become }}"
-  become_user: "{{ galaxy_become_users.root | default(ansible_user_id) }}"
+  become_user: "{{ galaxy_become_users.root | default(__galaxy_become_user) }}"
