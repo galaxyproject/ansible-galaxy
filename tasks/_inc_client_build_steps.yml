@@ -9,16 +9,20 @@
     VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
 
 - name: Run gulp
-  command: gulp
+  command: yarn run gulp {{ item }}
   args:
     chdir: "{{ galaxy_server_dir }}/client"
+  with_items:
+    - fonts
+    - stageLibs
+    - plugins
   environment:
     PATH: "{{ galaxy_server_dir }}/client/node_modules/.bin:{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
     VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
     NODE_ENV: production
 
 - name: Run webpack
-  command: webpack -p
+  command: yarn run webpack-production
   args:
     chdir: "{{ galaxy_server_dir }}/client"
   environment:
