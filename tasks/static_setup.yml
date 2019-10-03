@@ -11,6 +11,7 @@
       with_items:
         - "{{ galaxy_config_dir }}"
         - "{{ galaxy_shed_tools_dir }}"
+      when: item is not none
 
     - name: Install additional Galaxy config files (static)
       copy:
