@@ -7,6 +7,12 @@
     - name: Include virtualenv setup tasks
       import_tasks: virtualenv.yml
 
+    - name: Copy libyaml.ini file
+      copy:
+        src: "libyaml.ini"
+        dest: "{{ galaxy_config_dir }}/libyaml.ini"
+      when: galaxy_uwsgi_yaml_parser == "libyaml"
+
     # virtualenv_command is still required if `virtualenv` isn't on $PATH, even if the venv already exists.
     - name: Install Galaxy base dependencies
       pip:
@@ -17,6 +23,13 @@
       environment:
         PYTHONPATH: null
         VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+        UWSGI_PROFILE: "{{ (galaxy_config_dir + '/libyaml.ini') if galaxy_uwsgi_yaml_parser == 'libyaml' else '' }}"
+
+    - name: Remove libyaml.ini
+      file:
+        state: absent
+        path: "{{ galaxy_config_dir }}/libyaml.ini"
+      when: galaxy_uwsgi_yaml_parser == "libyaml"
 
     - name: Collect Galaxy conditional dependency requirement strings
       command: "{{ galaxy_venv_dir }}/bin/python -c \"import galaxy.dependencies; print('\\n'.join(galaxy.dependencies.optional('{{ galaxy_config_file }}')))\""
