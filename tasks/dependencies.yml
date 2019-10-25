@@ -7,12 +7,6 @@
     - name: Include virtualenv setup tasks
       import_tasks: virtualenv.yml
 
-    - name: Copy libyaml.ini file
-      copy:
-        src: "libyaml.ini"
-        dest: "{{ galaxy_config_dir }}/libyaml.ini"
-      when: galaxy_uwsgi_yaml_parser == "libyaml"
-
     # virtualenv_command is still required if `virtualenv` isn't on $PATH, even if the venv already exists.
     - name: Install Galaxy base dependencies
       pip:
@@ -23,7 +17,31 @@
       environment:
         PYTHONPATH: null
         VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
-        UWSGI_PROFILE: "{{ (galaxy_config_dir + '/libyaml.ini') if galaxy_uwsgi_yaml_parser == 'libyaml' else '' }}"
+
+    # recompile uwsgi with libyaml when galaxy_uwsgi_yaml_parser == 'libyaml'
+    # xref: https://github.com/galaxyproject/galaxy/issues/8558
+    - name: Copy libyaml.ini file
+      copy:
+        src: "libyaml.ini"
+        dest: "{{ galaxy_config_dir }}/libyaml.ini"
+      when: galaxy_uwsgi_yaml_parser == "libyaml"
+
+    - name: Get currently installed version of uwsgi
+      shell: "{{ galaxy_venv_dir }}/bin/uwsgi --version"
+      register: uwsgi_output
+      when: galaxy_uwsgi_yaml_parser == "libyaml"
+
+    - name: Install same version of uwsgi as in galaxy requirements, but with libyaml (libyaml-dev package required)
+      pip:
+        name: "uwsgi=={{ uwsgi_output.stdout }}"
+        extra_args: "{{ pip_extra_args | default('') }}"
+        virtualenv: "{{ galaxy_venv_dir }}"
+        virtualenv_command: "{{ galaxy_virtualenv_command | default(pip_virtualenv_command | default(omit)) }}"
+      environment:
+        PYTHONPATH: null
+        VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+        UWSGI_PROFILE: "{{ galaxy_config_dir }}/libyaml.ini"
+      when: galaxy_uwsgi_yaml_parser == "libyaml"
 
     - name: Remove libyaml.ini
       file:
