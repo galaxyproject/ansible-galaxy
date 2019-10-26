@@ -251,6 +251,7 @@ Options for controlling where certain Galaxy components are placed on the filesy
 
 - `galaxy_venv_dir` (default: `<galaxy_server_dir>/.venv`): The role will create a [virtualenv][virtualenv] from which
   Galaxy will run, this controls where the virtualenv will be placed.
+- `galaxy_venv_python` (default: `2.7`): The python version to use when creating the virtualenv. Must be 2.7 or higher.
 - `galaxy_config_dir` (default: `<galaxy_server_dir>`): Directory that will be used for "static" configuration files.
 - `galaxy_mutable_config_dir` (default: `<galaxy_server_dir>`): Directory that will be used for "mutable" configuration
   files, must be writable by the user running Galaxy.
