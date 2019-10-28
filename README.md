@@ -11,8 +11,7 @@ An [Ansible][ansible] role for installing and managing [Galaxy][galaxyproject] s
 Requirements
 ------------
 
-This role has the same dependencies as the git module. In addition, [Python virtualenv][venv] is required (as is
-[pip][pip], but pip will be automatically installed with virtualenv). These can easily be installed via a pre-task in
+This role has the same dependencies as the git module. In addition, [pip][pip] and [Python virtualenv][venv] are required. These can easily be installed via a pre-task in
 the same play as this role:
 
 ```yaml
@@ -25,6 +24,7 @@ the same play as this role:
       when: ansible_os_family == 'Debian'
       with_items:
         - git
+        - python-pip
         - python-virtualenv
     - name: Install Dependencies
       yum:
@@ -32,7 +32,7 @@ the same play as this role:
       become: yes
       when: ansible_os_family == 'RedHat'
       with_items:
-        - mercurial
+        - git
         - python-virtualenv
   roles:
     - galaxyproject.galaxy
