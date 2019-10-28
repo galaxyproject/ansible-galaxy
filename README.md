@@ -225,7 +225,7 @@ Options for configuring Galaxy and controlling which version is installed.
 - `galaxy_config`: The contents of the Galaxy configuration file (`galaxy.ini` by default) are controlled by this
   variable. It is a hash of hashes (or dictionaries) that will be translated in to the configuration
   file. See the Example Playbooks below for usage.
-- `galaxy_config_files`: List of hashes (with `src` and `dest` keys) of files to copy from the control machine. To set destinations, you can use the `galaxy_config_dir` variable followed by the file name. Make sure to add the appropriate setup within `galaxy_config` for each file added here (so, if adding `tool_conf.xml` make sure that `galaxy_config.galaxy.job_config_file` points to that file).
+- `galaxy_config_files`: List of hashes (with `src` and `dest` keys) of files to copy from the control machine. For example, to set job destinations, you can use the `galaxy_config_dir` variable followed by the file name as the `dest`, e.g. `dest: "{{ galaxy_config_dir }}/job_conf.xml"`. Make sure to add the appropriate setup within `galaxy_config` for each file added here (so, if adding `job_conf.xml` make sure that `galaxy_config.galaxy.job_config_file` points to that file).
 - `galaxy_config_templates`: List of hashes (with `src` and `dest` keys) of templates to fill from the control machine.
 - `galaxy_local_tools`: List of local tool files or directories to copy from the control machine, relative to
   `galaxy_local_tools_src_dir` (default: `files/galaxy/tools` in the playbook).
