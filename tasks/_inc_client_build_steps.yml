@@ -8,14 +8,22 @@
     PATH: "{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
     VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
 
+- name: Ensure Galaxy version is set
+  include_tasks: _inc_galaxy_version.yml
+  when: __galaxy_major_version is undefined
+
+- name: Ensure deconstructed build is supported
+  assert:
+    that:
+      - __galaxy_major_version is version('19.09', '>=')
+    success_msg: "Deconstructed client build is supported"
+    fail_msg: "Deconstructed client build is not supported for Galaxy version {{ __galaxy_major_version }}, please set 'galaxy_client_make_target'"
+
 - name: Run gulp
   command: yarn run gulp {{ item }}
   args:
     chdir: "{{ galaxy_server_dir }}/client"
-  with_items:
-    - fonts
-    - stageLibs
-    - plugins
+  with_items: "{{ galaxy_client_build_steps[__galaxy_major_version] | default(galaxy_client_build_steps.default) }}"
   environment:
     PATH: "{{ galaxy_server_dir }}/client/node_modules/.bin:{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
     VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
