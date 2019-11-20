@@ -52,7 +52,7 @@ def _iter_options(a):
             "|to_uwsgi_yaml value must be a dictionary (hash) or list (is type: %s, value: %s)" % (type(a), str(a)))
 
 
-def to_uwsgi_yaml(a, indent=4, *args, **kwargs):
+def to_uwsgi_yaml(a, indent=4, width=9999, *args, **kwargs):
     # uWSGI's internal YAML parser is not real YAML - all values are expected to be strings, and lists are created by
     # repeating keys
     if not isinstance(a, dict):
@@ -63,7 +63,7 @@ def to_uwsgi_yaml(a, indent=4, *args, **kwargs):
         items = []
         for k, v in _iter_options(pv):
             for d in _iter_values(k, v):
-                items.append(_strip_quotes(to_nice_yaml(d, indent=indent, *args, **kwargs)))
+                items.append(_strip_quotes(to_nice_yaml(d, indent=indent, width=width, *args, **kwargs)))
         r.append((' ' * indent).join(items))
     return (':\n' + ' ' * indent).join(r)
 
