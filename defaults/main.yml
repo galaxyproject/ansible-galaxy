@@ -266,7 +266,7 @@ galaxy_client_build_steps:
   default:
     - client
     - plugins
-  19.09:
+  "19.09":
     - fonts
     - stageLibs
     - plugins
