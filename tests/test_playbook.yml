@@ -6,7 +6,7 @@
   connection: local
   remote_user: travis
   vars:
-    galaxy_commit_id: release_18.09
+    galaxy_commit_id: release_19.09
     galaxy_create_user: yes
     galaxy_manage_paths: yes
     galaxy_manage_clone: yes
