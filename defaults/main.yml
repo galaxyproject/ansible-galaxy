@@ -219,9 +219,9 @@ galaxy_mutable_config_templates:
   - src: "shed_tool_conf.xml"
     dest: "{{ galaxy_shed_tool_conf_file }}"
   - src: "shed_data_manager_conf.xml"
-    dest: "{{ galaxy_server_dir }}/config/shed_data_manager_conf.xml"
+    dest: "{{ galaxy_mutable_config_dir }}/shed_data_manager_conf.xml"
   - src: "shed_tool_data_table.xml"
-    dest: "{{ galaxy_server_dir }}/config/shed_tool_data_table_conf.xml"
+    dest: "{{ galaxy_mutable_config_dir }}/shed_tool_data_table_conf.xml"
 
 galaxy_config_error_email_to: "{{ galaxy_config_merged[galaxy_app_config_section].error_email_to | default('') }}"
 galaxy_config_instance_resource_url: "{{ galaxy_config_merged[galaxy_app_config_section].instance_resource_url | default('') }}"
