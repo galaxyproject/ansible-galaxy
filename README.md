@@ -341,7 +341,7 @@ Install Galaxy as per the current production server best practices:
     galaxy_config_style: yaml
     galaxy_layout: root-dir
     galaxy_root: /srv/galaxy
-    galaxy_commit_id: release_18.09
+    galaxy_commit_id: release_19.09
     galaxy_separate_privileges: yes
     galaxy_create_user: yes
     galaxy_manage_paths: yes
