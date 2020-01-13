@@ -24,3 +24,13 @@
   environment:
     PYTHONPATH: null
     VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+
+- name: pin setuptools to 44.0.0
+  pip:
+    name: setuptools
+    version: 44.0.0
+    virtualenv: "{{ galaxy_venv_dir }}"
+    virtualenv_command: "{{ galaxy_virtualenv_command | default(pip_virtualenv_command | default(omit)) }}"
+  environment:
+    PYTHONPATH: null
+    VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
