@@ -2,7 +2,7 @@
 # Travis CI test playbook
 
 - hosts: localhost
-  gather_facts: False
+  gather_facts: True
   connection: local
   remote_user: travis
   vars:

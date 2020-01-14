@@ -34,3 +34,4 @@
   environment:
     PYTHONPATH: null
     VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+  when: ansible_python_version is version('3', '<')
