@@ -17,6 +17,7 @@
     galaxy_separate_privileges: yes
     galaxy_user: galaxy
     galaxy_privsep_user: gxpriv
+    galaxy_venv_python: 2.7
     galaxy_config:
       galaxy:
         database_connection: sqlite:///{{ galaxy_mutable_data_dir }}/universe.sqlite
