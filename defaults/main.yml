@@ -144,7 +144,6 @@ galaxy_download_url: "{{ galaxy_repo | replace('.git', '') }}/archive/{{ galaxy_
 # List of tool configs to load
 galaxy_tool_config_files:
   - "{{ galaxy_server_dir }}/config/tool_conf.xml.sample"
-  - "{{ galaxy_shed_tool_conf_file }}"
 
 # The shed tool conf path is needed separate from the value of tool_conf for instantiation
 galaxy_shed_tool_conf_file: "{{ galaxy_mutable_config_dir }}/shed_tool_conf.xml"
@@ -188,8 +187,6 @@ galaxy_app_config_default:
   # Mutable config files
   integrated_tool_panel_config: "{{ galaxy_mutable_config_dir }}/integrated_tool_panel.xml"
   migrated_tools_config: "{{ galaxy_mutable_config_dir }}/migrated_tools_conf.xml"
-  shed_data_manager_config_file: "{{ galaxy_mutable_config_dir }}/shed_data_manager_conf.xml"
-  shed_tool_data_table_config: "{{ galaxy_mutable_config_dir }}/shed_tool_data_table_conf.xml"
 
   # Directories that would often be stored outside the mutable data dir, these values are either from the layout or set by the user
   file_path: "{{ galaxy_file_path }}"
@@ -202,9 +199,17 @@ galaxy_app_config_default:
   # Everything else
   visualization_plugins_directory: "config/plugins/visualizations"
 
+# These are only used on Galaxy < 19.09
+galaxy_legacy_mutable_config:
+  shed_data_manager_config_file: "{{ galaxy_mutable_config_dir }}/shed_data_manager_conf.xml"
+  shed_tool_data_table_config: "{{ galaxy_mutable_config_dir }}/shed_tool_data_table_conf.xml"
+
+galaxy_legacy_config: "{{ galaxy_legacy_mutable_config if (galaxy_commit_id | replace('release_', '') | float() < 19.09) else {} }}"
+  
 # Need to set galaxy_config_default[galaxy_app_config_section] dynamically but Ansible/Jinja2 does not make this easy
 galaxy_config_default: "{{ {} | combine({galaxy_app_config_section: galaxy_app_config_default}) }}"
-galaxy_config_merged: "{{ galaxy_config_default | combine(galaxy_config | default({}), recursive=True) }}"
+galaxy_config_with_legacy: "{{ galaxy_config_default | combine(galaxy_legacy_config | default({}), recursive=True) }} "
+galaxy_config_merged: "{{ galaxy_config_with_legacy | combine(galaxy_config | default({}), recursive=True) }}"
 
 # Automatically instantiate mutable config files if they don't exist (dest will not be overwritten if it exists)
 galaxy_mutable_configs:
