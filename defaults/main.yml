@@ -144,6 +144,7 @@ galaxy_download_url: "{{ galaxy_repo | replace('.git', '') }}/archive/{{ galaxy_
 # List of tool configs to load
 galaxy_tool_config_files:
   - "{{ galaxy_server_dir }}/config/tool_conf.xml.sample"
+  - "{{ galaxy_shed_tool_conf_file }}"
 
 # The shed tool conf path is needed separate from the value of tool_conf for instantiation
 galaxy_shed_tool_conf_file: "{{ galaxy_mutable_config_dir }}/shed_tool_conf.xml"
@@ -187,6 +188,8 @@ galaxy_app_config_default:
   # Mutable config files
   integrated_tool_panel_config: "{{ galaxy_mutable_config_dir }}/integrated_tool_panel.xml"
   migrated_tools_config: "{{ galaxy_mutable_config_dir }}/migrated_tools_conf.xml"
+  shed_data_manager_config_file: "{{ galaxy_mutable_config_dir }}/shed_data_manager_conf.xml"
+  shed_tool_data_table_config: "{{ galaxy_mutable_config_dir }}/shed_tool_data_table_conf.xml"
 
   # Directories that would often be stored outside the mutable data dir, these values are either from the layout or set by the user
   file_path: "{{ galaxy_file_path }}"
@@ -199,20 +202,12 @@ galaxy_app_config_default:
   # Everything else
   visualization_plugins_directory: "config/plugins/visualizations"
 
-# These are only used on Galaxy < 19.09
-galaxy_legacy_mutable_config:
-  shed_data_manager_config_file: "{{ galaxy_mutable_config_dir }}/shed_data_manager_conf.xml"
-  shed_tool_data_table_config: "{{ galaxy_mutable_config_dir }}/shed_tool_data_table_conf.xml"
-
-galaxy_legacy_config: "{{ galaxy_legacy_mutable_config if (galaxy_commit_id | replace('release_', '') | float() < 19.09) else {} }}"
-  
 # Need to set galaxy_config_default[galaxy_app_config_section] dynamically but Ansible/Jinja2 does not make this easy
 galaxy_config_default: "{{ {} | combine({galaxy_app_config_section: galaxy_app_config_default}) }}"
-galaxy_config_with_legacy: "{{ galaxy_config_default | combine(galaxy_legacy_config | default({}), recursive=True) }} "
-galaxy_config_merged: "{{ galaxy_config_with_legacy | combine(galaxy_config | default({}), recursive=True) }}"
+galaxy_config_merged: "{{ galaxy_config_default | combine(galaxy_config | default({}), recursive=True) }}"
 
 # Automatically instantiate mutable config files if they don't exist (dest will not be overwritten if it exists)
-galaxy_mutable_configs:
+galaxy_legacy_mutable_configs:
   - src: "{{ galaxy_server_dir }}/config/migrated_tools_conf.xml.sample"
     dest: "{{ galaxy_config_merged[galaxy_app_config_section].migrated_tools_config }}"
   - src: "{{ galaxy_server_dir }}/config/shed_data_manager_conf.xml.sample"
@@ -220,9 +215,25 @@ galaxy_mutable_configs:
   - src: "{{ galaxy_server_dir }}/config/shed_tool_data_table_conf.xml.sample"
     dest: "{{ galaxy_config_merged[galaxy_app_config_section].shed_tool_data_table_config }}"
 
-galaxy_mutable_config_templates:
+galaxy_base_mutable_config_templates:
   - src: "shed_tool_conf.xml"
     dest: "{{ galaxy_shed_tool_conf_file }}"
+
+# Automatically instantiate mutable config files from copies in role if they don't exist (for Galaxy 19.09 and later)
+galaxy_mutable_configs:
+  - src: "{{ role_path }}/files/shed_data_manager_conf.xml"
+    dest: "{{ galaxy_config_merged[galaxy_app_config_section].shed_data_manager_config_file }}"
+  - src: "{{ role_path }}/files/shed_tool_data_table_conf.xml"
+    dest: "{{ galaxy_config_merged[galaxy_app_config_section].shed_tool_data_table_config }}"
+    
+# required for Galaxy release 19.09 and later
+galaxy_extra_mutable_config_templates:
+  - src: "migrated_tools_conf.xml.j2"
+    dest: "{{ galaxy_config_merged[galaxy_app_config_section].migrated_tools_config }}"
+
+# produce the galaxy_mutable_config_templates differently depending on Galaxy release
+# older versions used the value from galaxy_base_mutable_config_templates, newer versions combine that with galaxy_extra_mutable_config_templates
+galaxy_mutable_config_templates: "{{ (galaxy_base_mutable_config_templates + galaxy_extra_mutable_config_templates) if (galaxy_commit_id | replace('release_', '') | float() >= 19.09) else galaxy_base_mutable_config_templates | default([]) }}"    
 
 galaxy_config_error_email_to: "{{ galaxy_config_merged[galaxy_app_config_section].error_email_to | default('') }}"
 galaxy_config_instance_resource_url: "{{ galaxy_config_merged[galaxy_app_config_section].instance_resource_url | default('') }}"

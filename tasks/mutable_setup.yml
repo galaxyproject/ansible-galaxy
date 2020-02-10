@@ -20,8 +20,16 @@
       command: cp {{ item.src }} {{ item.dest }}
       args:
         creates: "{{ item.dest }}"
-      with_items: "{{ galaxy_mutable_configs }}"
+      with_items: "{{ galaxy_legacy_mutable_configs }}"
       when: __galaxy_major_version is version('19.09', '<')
+
+    - name: Instantiate mutable configuration files (19.09 and later)
+      copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        force: no
+      with_items: "{{ galaxy_mutable_configs }}"
+      when: __galaxy_major_version is version('19.09', '>=')
 
     - name: Template mutable configuration files
       template:

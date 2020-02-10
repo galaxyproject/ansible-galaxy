@@ -44,11 +44,6 @@
         dest: "{{ galaxy_config_dir }}/local_tool_conf.xml"
       when: galaxy_local_tools is defined
 
-    - name: Append shed tool config file
-      set_fact:
-        galaxy_tool_config_files: "{{ galaxy_tool_config_files }} + [ '{{ galaxy_shed_tool_conf_file }}' ]"
-      when: galaxy_commit_id | replace("release_", "") | float()  < 19.09
-
     - name: Append local_tool_conf.xml to tool_config_file Galaxy config option
       set_fact:
         galaxy_tool_config_files: "{{ galaxy_tool_config_files }} + ['{{ galaxy_config_dir ~ '/local_tool_conf.xml' }}']"
