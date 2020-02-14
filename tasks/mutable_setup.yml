@@ -8,26 +8,19 @@
       include_tasks: _inc_galaxy_version.yml
       when: __galaxy_major_version is undefined
 
-    - name: Create mutable configuration file directories
-      file:
-        path: "{{ item }}"
-        state: directory
-      with_items:
-        - "{{ galaxy_mutable_config_dir }}"
-        - "{{ galaxy_tool_dependency_dir }}"
-
+    # force: no in the following 2 tasks will not overwrite existing configs
     - name: Instantiate mutable configuration files
-      command: cp {{ item.src }} {{ item.dest }}
-      args:
-        creates: "{{ item.dest }}"
-      with_items: "{{ galaxy_mutable_configs }}"
-      when: __galaxy_major_version is version('19.09', '<')
+      copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        force: no
+      with_items: "{{ galaxy_mutable_config_files }}"
 
-    - name: Template mutable configuration files
+    - name: Instantiate mutable configuration templates
       template:
-          src: "{{ item.src }}"
-          dest: "{{ item.dest }}"
-          force: no # Will not template, if already exists. https://docs.ansible.com/ansible/latest/modules/template_module.html
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        force: no
       with_items: "{{ galaxy_mutable_config_templates }}"
 
   remote_user: "{{ galaxy_remote_users.galaxy | default(__galaxy_remote_user) }}"

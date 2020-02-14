@@ -30,6 +30,7 @@
     - tool_dependency_dir
     - file_path
     - job_working_directory
+    - shed_tool_config_file
 
 - name: Set any unset variables corresponding to Galaxy config options from galaxy_config or layout defaults
   set_fact:
