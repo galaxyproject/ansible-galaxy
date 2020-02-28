@@ -15,7 +15,7 @@
 # This is a temporary solution.
 - name: Set privilege separation default variables
   set_fact:
-    __galaxy_remote_user: "{{ ansible_user | default(omit) }}"
+    __galaxy_remote_user: "{{ ansible_user_id | default(omit) }}"
     __galaxy_become: "{{ ansible_env.SUDO_USER is defined }}"
     __galaxy_become_user: "{{ ansible_user_id | default(omit) }}"
 
