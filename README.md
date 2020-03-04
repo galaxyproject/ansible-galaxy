@@ -90,12 +90,10 @@ Options below that control individual file or subdirectory placement can still o
 
 **New options for Galaxy 18.01 and later**
 
-- `galaxy_config_style` (default: `ini-paste`): The type of Galaxy configuration file to write, `ini-paste` for the
-  traditional PasteDeploy-style INI file, or `yaml` for the YAML format supported by uWSGI.
+- `galaxy_config_style` (default: `yaml`): The type of Galaxy configuration file to write, `yaml` for the YAML format supported by uWSGI or `ini-paste` for the traditional PasteDeploy-style INI file
 - `galaxy_app_config_section` (default: depends on `galaxy_config_style`): The config file section under which the
   Galaxy config should be placed (and the key in `galaxy_config` in which the Galaxy config can be found. If
-  `galaxy_config_style` is `ini-paste` the default is `app:main`. If `galaxy_config_style` is `yaml`, the default is
-  `galaxy`.
+  `galaxy_config_style` is `yaml` the default is `galaxy`. If `galaxy_config_style` is `ini-paste`, the default is `app:main`.
 - `galaxy_uwsgi_yaml_parser` (default: `internal`): Controls whether the `uwsgi` section of the Galaxy config file will
   be written in uWSGI-style YAML or real YAML. By default, uWSGI's internal YAML parser does not support real YAML. Set
   to `libyaml` to write real YAML, if you are using uWSGI that has been compiled with libyaml. see **YAML Syntax** below
