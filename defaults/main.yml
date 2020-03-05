@@ -12,7 +12,7 @@ galaxy_manage_paths: no
 galaxy_manage_clone: yes
 galaxy_manage_download: no
 galaxy_manage_static_setup: yes
-galaxy_manage_mutable_setup: yes
+galaxy_manage_managed_setup: yes
 galaxy_manage_database: yes
 galaxy_fetch_dependencies: yes
 galaxy_build_client: yes
@@ -84,8 +84,8 @@ galaxy_create_privsep_user: "{{ galaxy_create_user if __galaxy_privsep_user_name
 
 # Directories to create as the Galaxy user if galaxy_manage_paths is enabled
 galaxy_dirs:
-  - "{{ galaxy_mutable_data_dir }}"
-  - "{{ galaxy_mutable_config_dir }}"
+  - "{{ galaxy_managed_data_dir }}"
+  - "{{ galaxy_managed_config_dir }}"
   - "{{ galaxy_cache_dir }}"
   - "{{ galaxy_shed_tools_dir }}"
   - "{{ galaxy_tool_dependency_dir }}"
@@ -147,7 +147,7 @@ galaxy_tool_config_files:
 
 # The shed tool conf path is needed separate from the value of tool_conf for instantiation. The 'conf' version is a
 # legacy variable name and should not be used.
-galaxy_shed_tool_conf_file: "{{ galaxy_mutable_config_dir }}/shed_tool_conf.xml"
+galaxy_shed_tool_conf_file: "{{ galaxy_managed_config_dir }}/shed_tool_conf.xml"
 galaxy_shed_tool_config_file: "{{ galaxy_shed_tool_conf_file }}"
 
 # The Python `requirements.txt` file that should be used to install Galaxy dependent modules using pip
@@ -184,17 +184,17 @@ galaxy_app_config_default:
   openid_consumer_cache_path: "{{ galaxy_cache_dir }}/openid_consumer_cache"
   citation_cache_data_dir: "{{ galaxy_cache_dir }}/citations/data"
   citation_cache_lock_dir: "{{ galaxy_cache_dir }}/citations/locks"
-  new_file_path: "{{ galaxy_mutable_data_dir }}/tmp"
-  mulled_resolution_cache_data_dir: "{{ galaxy_mutable_data_dir }}/mulled/data"
-  mulled_resolution_cache_lock_dir: "{{ galaxy_mutable_data_dir }}/mulled/lock"
+  new_file_path: "{{ galaxy_managed_data_dir }}/tmp"
+  mulled_resolution_cache_data_dir: "{{ galaxy_managed_data_dir }}/mulled/data"
+  mulled_resolution_cache_lock_dir: "{{ galaxy_managed_data_dir }}/mulled/lock"
 
-  # Mutable config files
-  integrated_tool_panel_config: "{{ galaxy_mutable_config_dir }}/integrated_tool_panel.xml"
-  migrated_tools_config: "{{ galaxy_mutable_config_dir }}/migrated_tools_conf.xml"
-  shed_data_manager_config_file: "{{ galaxy_mutable_config_dir }}/shed_data_manager_conf.xml"
-  shed_tool_data_table_config: "{{ galaxy_mutable_config_dir }}/shed_tool_data_table_conf.xml"
+  # Managed config files
+  integrated_tool_panel_config: "{{ galaxy_managed_config_dir }}/integrated_tool_panel.xml"
+  migrated_tools_config: "{{ galaxy_managed_config_dir }}/migrated_tools_conf.xml"
+  shed_data_manager_config_file: "{{ galaxy_managed_config_dir }}/shed_data_manager_conf.xml"
+  shed_tool_data_table_config: "{{ galaxy_managed_config_dir }}/shed_tool_data_table_conf.xml"
 
-  # Directories that would often be stored outside the mutable data dir, these values are either from the layout or set by the user
+  # Directories that would often be stored outside the managed data dir, these values are either from the layout or set by the user
   file_path: "{{ galaxy_file_path }}"
   job_working_directory: "{{ galaxy_job_working_directory }}"
   tool_dependency_dir: "{{ galaxy_tool_dependency_dir }}"
@@ -210,13 +210,13 @@ galaxy_app_config_default:
 galaxy_config_default: "{{ {} | combine({galaxy_app_config_section: galaxy_app_config_default}) }}"
 galaxy_config_merged: "{{ galaxy_config_default | combine(galaxy_config | default({}), recursive=True) }}"
 
-# Automatically instantiate mutable config files from copies in role if they don't exist
-galaxy_mutable_config_files:
+# Automatically instantiate managed config files from copies in role if they don't exist
+galaxy_managed_config_files:
   - src: "shed_data_manager_conf.xml"
     dest: "{{ galaxy_config_merged[galaxy_app_config_section].shed_data_manager_config_file }}"
   - src: "shed_tool_data_table_conf.xml"
     dest: "{{ galaxy_config_merged[galaxy_app_config_section].shed_tool_data_table_config }}"
-galaxy_mutable_config_templates:
+galaxy_managed_config_templates:
   - src: "shed_tool_conf.xml.j2"
     dest: "{{ galaxy_config_merged[galaxy_app_config_section].migrated_tools_config }}"
   - src: "shed_tool_conf.xml.j2"
@@ -227,7 +227,7 @@ galaxy_config_instance_resource_url: "{{ galaxy_config_merged[galaxy_app_config_
 galaxy_errordocs_server_name: Galaxy
 galaxy_errordocs_prefix: /error
 
-# These are lists of hashes in the same format as galaxy_mutable_configs that can be used to cause extra files and
+# These are lists of hashes in the same format as galaxy_managed_configs that can be used to cause extra files and
 # templates to be installed on the managed host.
 galaxy_config_files: []
 galaxy_config_templates: []

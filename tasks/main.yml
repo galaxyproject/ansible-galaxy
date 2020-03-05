@@ -56,11 +56,11 @@
   tags:
     - galaxy_fetch_dependencies
 
-- name: Include mutable config setup tasks
-  include_tasks: mutable_setup.yml
-  when: galaxy_manage_mutable_setup
+- name: Include managed config setup tasks
+  include_tasks: managed_setup.yml
+  when: galaxy_manage_managed_setup
   tags:
-    - galaxy_manage_mutable_setup
+    - galaxy_manage_managed_setup
 
 - name: Include database management tasks
   include_tasks: database.yml
