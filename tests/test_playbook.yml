@@ -19,7 +19,7 @@
     galaxy_privsep_user: gxpriv
     galaxy_config:
       galaxy:
-        database_connection: sqlite:///{{ galaxy_mutable_data_dir }}/universe.sqlite
+        database_connection: sqlite:///{{ galaxy_managed_data_dir }}/universe.sqlite
     # needed because we've disabled facts
     ansible_user_uid: "{{ lookup('env', 'UID') }}"
     ansible_user_id: "{{ lookup('env', 'USER') }}"

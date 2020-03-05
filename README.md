@@ -11,8 +11,8 @@ An [Ansible][ansible] role for installing and managing [Galaxy][galaxyproject] s
 Requirements
 ------------
 
-This role has the same dependencies as the git module. In addition, [pip][pip] and [Python virtualenv][venv] are required. These can easily be installed via a pre-task in
-the same play as this role:
+This role has the same dependencies as the git module. In addition, [pip][pip] and [Python virtualenv][venv] are required.
+These can easily be installed via a pre-task in the same play as this role:
 
 ```yaml
 - hosts: galaxyservers
@@ -206,8 +206,8 @@ Several variables control which functions this role will perform (all default to
   well as set up a [virtualenv][virtualenv] from which it can be run.
 - `galaxy_manage_static_setup`: Manage "static" Galaxy configuration files - ones which are not modifiable by the Galaxy
   server itself. At a minimum, this is the primary Galaxy configuration file, `galaxy.ini`.
-- `galaxy_manage_mutable_setup`: Manage "mutable" Galaxy configuration files - ones which are modifiable by Galaxy (e.g.
-  as you install tools from the Galaxy Tool Shed).
+- `galaxy_manage_managed_setup`: Manage "managed" Galaxy configuration files - ones which are modifiable by Galaxy
+  (e.g. as you install tools from the Galaxy Tool Shed).
 - `galaxy_manage_database`: Upgrade the database schema as necessary, when new schema versions become available.
 - `galaxy_fetch_dependencies`: Fetch Galaxy dependent modules to the Galaxy virtualenv.
 - `galaxy_build_client`: Build the Galaxy client application (web UI).
@@ -225,7 +225,10 @@ Options for configuring Galaxy and controlling which version is installed.
 - `galaxy_config`: The contents of the Galaxy configuration file (`galaxy.ini` by default) are controlled by this
   variable. It is a hash of hashes (or dictionaries) that will be translated in to the configuration
   file. See the Example Playbooks below for usage.
-- `galaxy_config_files`: List of hashes (with `src` and `dest` keys) of files to copy from the control machine. For example, to set job destinations, you can use the `galaxy_config_dir` variable followed by the file name as the `dest`, e.g. `dest: "{{ galaxy_config_dir }}/job_conf.xml"`. Make sure to add the appropriate setup within `galaxy_config` for each file added here (so, if adding `job_conf.xml` make sure that `galaxy_config.galaxy.job_config_file` points to that file).
+- `galaxy_config_files`: List of hashes (with `src` and `dest` keys) of files to copy from the control machine. For example,
+  to set job destinations, you can use the `galaxy_config_dir` variable followed by the file name as the `dest`, e.g.
+  `dest: "{{ galaxy_config_dir }}/job_conf.xml"`. Make sure to add the appropriate setup within `galaxy_config` for each file
+  added here (so, if adding `job_conf.xml` make sure that `galaxy_config.galaxy.job_config_file` points to that file).
 - `galaxy_config_templates`: List of hashes (with `src` and `dest` keys) of templates to fill from the control machine.
 - `galaxy_local_tools`: List of local tool files or directories to copy from the control machine, relative to
   `galaxy_local_tools_src_dir` (default: `files/galaxy/tools` in the playbook).
@@ -257,9 +260,9 @@ Options for controlling where certain Galaxy components are placed on the filesy
   to use when creating the virtualenv. For Galaxy < 20.01, use python2.7 (if it is not the default), for Galaxy >=
   20.01, use `python3.5` or higher.
 - `galaxy_config_dir` (default: `<galaxy_server_dir>`): Directory that will be used for "static" configuration files.
-- `galaxy_mutable_config_dir` (default: `<galaxy_server_dir>`): Directory that will be used for "mutable" configuration
+- `galaxy_managed_config_dir` (default: `<galaxy_server_dir>`): Directory that will be used for "managed" configuration
   files, must be writable by the user running Galaxy.
-- `galaxy_mutable_data_dir` (default: `<galaxy_server_dir>/database`): Directory that will be used for "mutable" data
+- `galaxy_managed_data_dir` (default: `<galaxy_server_dir>/database`): Directory that will be used for "managed" data
   and caches, must be writable by the user running Galaxy.
 - `galaxy_config_file` (default: `<galaxy_config_dir>/galaxy.ini`): Galaxy's primary configuration file.
 
@@ -329,7 +332,7 @@ $ sh run.sh
 
 Install Galaxy as per the current production server best practices:
 
-- Galaxy code (clone) is "clean": no configs or mutable data live underneath the clone
+- Galaxy code (clone) is "clean": no configs or managed data live underneath the clone
 - Galaxy code and static configs are privilege separated: not owned/writeable by the user that runs Galaxy
 - Configuration files are not world-readable
 - PostgreSQL is used as the backing database
