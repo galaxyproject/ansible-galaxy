@@ -21,12 +21,6 @@
       changed_when: no
       when: not ansible_check_mode
 
-    - name: Create Galaxy DB
-      command: "{{ galaxy_venv_dir }}/bin/python {{ galaxy_server_dir }}/scripts/create_db.py -c {{ galaxy_config_file }}"
-      args:
-        chdir: "{{ galaxy_server_dir }}"
-      when: "(not ansible_check_mode) and 'migrate.exceptions.DatabaseNotControlledError' in current_db_version.stderr"
-
     - name: Report current and max Galaxy database
       debug:
         msg: "Current database version is {{ current_db_version.stdout }} and the maxiumum version is {{ max_db_version.stdout }}."
