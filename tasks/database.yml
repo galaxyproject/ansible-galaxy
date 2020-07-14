@@ -23,7 +23,7 @@
 
     - name: Report current and max Galaxy database
       debug:
-        msg: "Current database version is {{ current_db_version.stdout }} and the maxiumum version is {{ max_db_version.stdout }}."
+        msg: "Current database version is {{ current_db_version.stdout }} and the maximum version is {{ max_db_version.stdout }}."
       changed_when: True
       when: "(not ansible_check_mode) and (current_db_version.stdout != max_db_version.stdout and 'migrate.exceptions.DatabaseNotControlledError' not in current_db_version.stderr)"
 
