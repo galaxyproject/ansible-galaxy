@@ -4,6 +4,8 @@ Galaxy
 An [Ansible][ansible] role for installing and managing [Galaxy][galaxyproject] servers.  Despite the name confusion,
 [Galaxy][galaxyproject] bears no relation to [Ansible Galaxy][ansiblegalaxy].
 
+Getting started with this module? Check out our [Tutorial](https://training.galaxyproject.org/training-material/topics/admin/tutorials/ansible-galaxy/tutorial.html)
+
 [ansible]: http://www.ansible.com/
 [galaxyproject]: https://galaxyproject.org/
 [ansiblegalaxy]: https://galaxy.ansible.com/
@@ -211,7 +213,7 @@ Several variables control which functions this role will perform (all default to
 - `galaxy_manage_database`: Upgrade the database schema as necessary, when new schema versions become available.
 - `galaxy_fetch_dependencies`: Fetch Galaxy dependent modules to the Galaxy virtualenv.
 - `galaxy_build_client`: Build the Galaxy client application (web UI).
-- `galaxy_client_make_target` (default: `client-production-maps`): Set the client build type. Options include: `client`, 
+- `galaxy_client_make_target` (default: `client-production-maps`): Set the client build type. Options include: `client`,
   `client-production` and `client-production-maps`. See [Galaxy client readme][client-build] for details.
 - `galaxy_manage_errordocs` (default: `no`): Install Galaxy-styled 413 and 502 HTTP error documents for nginx. Requires
   write privileges for the nginx error document directory.
