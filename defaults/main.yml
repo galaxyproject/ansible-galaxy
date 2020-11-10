@@ -11,6 +11,7 @@ galaxy_create_user: no
 galaxy_manage_paths: no
 galaxy_manage_clone: yes
 galaxy_manage_download: no
+galaxy_manage_existing: no
 galaxy_manage_static_setup: yes
 galaxy_manage_mutable_setup: yes
 galaxy_manage_database: yes

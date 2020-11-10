@@ -7,8 +7,9 @@
 - name: Ensure that mutually exclusive options are not set
   assert:
     that:
-      - not (galaxy_manage_clone and galaxy_manage_download)
-    fail_msg: "Variables galaxy_manage_clone and galaxy_manage_download cannot both be true."
+      - [galaxy_manage_clone | bool, galaxy_manage_download | bool, galaxy_manage_existing | bool].count(True) == 1
+    fail_msg: |
+      "Only one of variables galaxy_manage_clone, galaxy_manage_download and galaxy_manage_existing can be true."
 
 # To my knowledge there is no other way to know whether or not the consumer of this role has set `become: true` outside
 # this role, and `become: {{ foo | default(omit) }}` on a task/block actually clobbers the higher level use of `become`.
@@ -44,6 +45,11 @@
   include_tasks: download.yml
   when: galaxy_manage_download
   tags: galaxy_manage_download
+
+- name: Include manage existing galaxy tasks
+  include_tasks: existing.yml
+  when: galaxy_manage_existing
+  tags: galaxy_manage_existing
 
 - name: Include static config setup tasks
   include_tasks: static_setup.yml
