@@ -157,7 +157,7 @@ galaxy_requirements_file: "{{ galaxy_server_dir }}/lib/galaxy/dependencies/pinne
 galaxy_static_dir: "{{ galaxy_server_dir }}/static"
 
 # Galaxy config file can either be 'ini-paste' (old style) or 'yaml'
-galaxy_config_style: "ini-paste"
+galaxy_config_style: "yaml"
 galaxy_config_file_basename: "galaxy.{{ 'yml' if galaxy_config_style in ('yaml', 'yml') else 'ini' }}"
 galaxy_config_file_template: "{{ galaxy_config_file_basename }}.j2"
 galaxy_config_file: "{{ galaxy_config_dir }}/{{ galaxy_config_file_basename }}"
