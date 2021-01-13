@@ -7,7 +7,7 @@
 - name: Ensure that mutually exclusive options are not set
   assert:
     that:
-      - [galaxy_manage_clone | bool, galaxy_manage_download | bool, galaxy_manage_existing | bool].count(True) == 1
+      - "(galaxy_manage_clone + galaxy_manage_download + galaxy_manage_existing) == 1"
     fail_msg: |
       "Only one of variables galaxy_manage_clone, galaxy_manage_download and galaxy_manage_existing can be true."
 
