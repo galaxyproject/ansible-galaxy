@@ -1,0 +1,6 @@
+---
+
+- name: Remove orphaned .pyc files and compile bytecode
+  script: "makepyc.py {{ galaxy_server_dir }}/lib"
+  environment:
+    PATH: "{{ galaxy_venv_dir }}/bin"

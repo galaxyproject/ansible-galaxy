@@ -204,6 +204,11 @@ Several variables control which functions this role will perform (all default to
   superuser privileges.
 - `galaxy_manage_clone`: Clone Galaxy from the source repository and maintain it at a specified version (commit), as
   well as set up a [virtualenv][virtualenv] from which it can be run.
+- `galaxy_manage_download`: Download and unpack Galaxy from a remote archive url, as
+  well as set up a [virtualenv][virtualenv] from which it can be run.
+- `galaxy_manage_existing`: Take over a Galaxy directory that already exists, as
+  well as set up a [virtualenv][virtualenv] from which it can be run. `galaxy_server_dir` must point to the path which
+  already contains the source code of Galaxy.
 - `galaxy_manage_static_setup`: Manage "static" Galaxy configuration files - ones which are not modifiable by the Galaxy
   server itself. At a minimum, this is the primary Galaxy configuration file, `galaxy.ini`.
 - `galaxy_manage_mutable_setup`: Manage "mutable" Galaxy configuration files - ones which are modifiable by Galaxy (e.g.
