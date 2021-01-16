@@ -17,6 +17,33 @@
       set_fact:
         galaxy_node_version: "{{ __galaxy_node_version_file['content'] | b64decode | trim }}"
 
+    # if the client build is being executed independently, nodeenv may not be already installed.
+    # If so, setup a virtualenv with nodeenv installed.
+    - name: Check whether nodeenv is available
+      command: "which nodeenv"
+      environment:
+        PATH: "{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
+        VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+      register: nodeenv_exists
+      changed_when: nodeenv_exists.rc != 0
+      ignore_errors: true
+
+    - name: Setup nodeenv if required
+      block:
+        - name: Include virtualenv setup tasks
+          import_tasks: virtualenv.yml
+
+        - name: Install nodeenv if it doesn't exist
+          pip:
+            name: nodeenv
+            virtualenv: "{{ galaxy_venv_dir }}"
+            extra_args: "{{ pip_extra_args | default('') }}"
+            virtualenv_command: "{{ galaxy_virtualenv_command | default(pip_virtualenv_command | default(omit)) }}"
+            virtualenv_python: "{{ galaxy_virtualenv_python | default(omit) }}"
+          environment:
+            VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+      when: nodeenv_exists.rc != 0
+
   rescue:
 
     - name: Ensure Galaxy version is set

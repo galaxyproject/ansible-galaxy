@@ -10,6 +10,7 @@
       - "(galaxy_manage_clone + galaxy_manage_download + galaxy_manage_existing) == 1"
     fail_msg: |
       "Only one of variables galaxy_manage_clone, galaxy_manage_download and galaxy_manage_existing can be true."
+  tags: always
 
 # To my knowledge there is no other way to know whether or not the consumer of this role has set `become: true` outside
 # this role, and `become: {{ foo | default(omit) }}` on a task/block actually clobbers the higher level use of `become`.
@@ -19,6 +20,7 @@
     __galaxy_remote_user: "{{ ansible_user_id | default(omit) }}"
     __galaxy_become: "{{ ansible_env.SUDO_USER is defined }}"
     __galaxy_become_user: "{{ ansible_user_id | default(omit) }}"
+  tags: always
 
 - name: Import layout variable tasks
   import_tasks: layout.yml
