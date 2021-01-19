@@ -323,7 +323,7 @@ Install Galaxy on your local system with all the default options:
      - galaxyproject.galaxy
 ```  
   
-If your Ansible version >= 2.10.4, then you must indicate explicitly ansible_user in your hosts file, otherwise you will gen an error  
+If your Ansible version >= 2.10.4, then when you run `ansible-playbook playbook.yml` you should supply an extra argument `-u $USER`, otherwise you will get an error.
   
 Once installed, you can start with:
 
