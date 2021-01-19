@@ -323,17 +323,7 @@ Install Galaxy on your local system with all the default options:
      - galaxyproject.galaxy
 ```  
   
-If your Ansible version >= 2.10.4, then  
-```yaml
-- hosts: localhost
-  vars:
-    galaxy_server_dir: /srv/galaxy
-    ansible_user: 'anyname'
-  connection: local
-  roles:
-     - galaxyproject.galaxy
-```  
-otherwise you will gen an error  
+If your Ansible version >= 2.10.4, then you must indicate explicitly ansible_user in your hosts file, otherwise you will gen an error  
   
 Once installed, you can start with:
 
