@@ -320,9 +320,21 @@ Install Galaxy on your local system with all the default options:
     galaxy_server_dir: /srv/galaxy
   connection: local
   roles:
-     - galaxy
-```
-
+     - galaxyproject.galaxy
+```  
+  
+If your Ansible version >= 2.10.4, then  
+```yaml
+- hosts: localhost
+  vars:
+    galaxy_server_dir: /srv/galaxy
+    ansible_user: 'anyname'
+  connection: local
+  roles:
+     - galaxyproject.galaxy
+```  
+otherwise you will gen an error  
+  
 Once installed, you can start with:
 
 ```console
