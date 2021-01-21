@@ -190,6 +190,7 @@ galaxy_app_config_default:
   mulled_resolution_cache_lock_dir: "{{ galaxy_mutable_data_dir }}/mulled/lock"
   tool_cache_data_dir: "{{ galaxy_cache_dir }}/tool_cache"
   tool_search_index_dir: "{{ galaxy_cache_dir }}/tool_search_index"
+  container_image_cache_path: "{{ galaxy_cache_dir }}/container_cache"
 
   # Mutable config files
   integrated_tool_panel_config: "{{ galaxy_mutable_config_dir }}/integrated_tool_panel.xml"
