@@ -10,6 +10,7 @@
       - "(galaxy_manage_clone + galaxy_manage_download + galaxy_manage_existing) == 1"
     fail_msg: |
       "Only one of variables galaxy_manage_clone, galaxy_manage_download and galaxy_manage_existing can be true."
+  tags: always
 
 # To my knowledge there is no other way to know whether or not the consumer of this role has set `become: true` outside
 # this role, and `become: {{ foo | default(omit) }}` on a task/block actually clobbers the higher level use of `become`.
@@ -19,69 +20,103 @@
     __galaxy_remote_user: "{{ ansible_user_id | default(omit) }}"
     __galaxy_become: "{{ ansible_env.SUDO_USER is defined }}"
     __galaxy_become_user: "{{ ansible_user_id | default(omit) }}"
+  tags: always
 
 - name: Import layout variable tasks
   import_tasks: layout.yml
   tags: always
 
 - name: Include user creation tasks
-  include_tasks: user.yml
+  include_tasks:
+    file: user.yml
+    apply:
+      tags: galaxy_create_user
   when: galaxy_create_user or galaxy_create_privsep_user
   tags:
     - galaxy_create_user
 
 - name: Include path management tasks
-  include_tasks: paths.yml
+  include_tasks:
+    file: paths.yml
+    apply:
+      tags: galaxy_manage_paths
   when: galaxy_manage_paths
   tags:
     - galaxy_manage_paths
 
 - name: Include clone tasks
-  include_tasks: clone.yml
+  include_tasks:
+    file: clone.yml
+    apply:
+      tags: galaxy_manage_clone
   when: galaxy_manage_clone
   tags: galaxy_manage_clone
 
 - name: Include download tasks
-  include_tasks: download.yml
+  include_tasks:
+    file: download.yml
+    apply:
+      tags: galaxy_manage_download
   when: galaxy_manage_download
   tags: galaxy_manage_download
 
 - name: Include manage existing galaxy tasks
-  include_tasks: existing.yml
+  include_tasks:
+    file: existing.yml
+    apply:
+      tags: galaxy_manage_existing
   when: galaxy_manage_existing
   tags: galaxy_manage_existing
 
 - name: Include static config setup tasks
-  include_tasks: static_setup.yml
+  include_tasks:
+    file: static_setup.yml
+    apply:
+      tags: galaxy_config_files
   when: galaxy_manage_static_setup
   tags: galaxy_config_files
 
 - name: Include dependency setup tasks
-  include_tasks: dependencies.yml
+  include_tasks:
+    file: dependencies.yml
+    apply:
+      tags: galaxy_fetch_dependencies
   when: galaxy_fetch_dependencies
   tags:
     - galaxy_fetch_dependencies
 
 - name: Include mutable config setup tasks
-  include_tasks: mutable_setup.yml
+  include_tasks:
+    file: mutable_setup.yml
+    apply:
+      tags: galaxy_manage_mutable_setup
   when: galaxy_manage_mutable_setup
   tags:
     - galaxy_manage_mutable_setup
 
 - name: Include database management tasks
-  include_tasks: database.yml
+  include_tasks:
+    file: database.yml
+    apply:
+      tags: galaxy_manage_database
   when: galaxy_manage_database
   tags:
     - galaxy_manage_database
 
 - name: Include client build tasks
-  include_tasks: client.yml
+  include_tasks:
+    file: client.yml
+    apply:
+      tags: galaxy_build_client
   when: galaxy_build_client
   tags:
     - galaxy_build_client
 
 - name: Include error document setup tasks
-  include_tasks: errordocs.yml
+  include_tasks:
+    file: errordocs.yml
+    apply:
+      tags: galaxy_manage_errordocs
   when: galaxy_manage_errordocs
   tags:
     - galaxy_manage_errordocs
