@@ -20,13 +20,9 @@
     # if the client build is being executed independently, nodeenv may not be already installed.
     # If so, setup a virtualenv with nodeenv installed.
     - name: Check whether nodeenv is available
-      command: "which nodeenv"
-      environment:
-        PATH: "{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
-        VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
-      register: nodeenv_exists
-      changed_when: nodeenv_exists.rc != 0
-      ignore_errors: true
+      stat:
+        path: "{{ galaxy_venv_dir }}/bin/nodeenv"
+      register: nodeenv_availability
 
     - name: Setup nodeenv if required
       block:
@@ -42,7 +38,7 @@
             virtualenv_python: "{{ galaxy_virtualenv_python | default(omit) }}"
           environment:
             VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
-      when: nodeenv_exists.rc != 0
+      when: not nodeenv_availability.stat.exists
 
   rescue:
 
