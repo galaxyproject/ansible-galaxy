@@ -27,10 +27,10 @@
   environment:
     PATH: "{{ galaxy_server_dir }}/client/node_modules/.bin:{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
     VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
-    NODE_ENV: production
+    NODE_ENV: "{{ galaxy_client_node_env }}"
 
 - name: Run webpack
-  command: yarn run webpack-production
+  command: "yarn run webpack{{ (galaxy_client_node_env == 'production') | ternary('-production', '') }}"
   args:
     chdir: "{{ galaxy_server_dir }}/client"
   environment:
