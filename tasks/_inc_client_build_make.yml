@@ -7,6 +7,7 @@
   environment:
     PATH: "{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
     VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+    NODE_ENV: "{{ galaxy_client_node_env }}"
 
 - name: Fetch client version
   slurp:
