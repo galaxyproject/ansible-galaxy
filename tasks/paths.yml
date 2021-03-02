@@ -50,6 +50,7 @@
         group: "{{ __galaxy_privsep_user_group }}"
         mode: "{{ __galaxy_dir_perms }}"
       with_items: "{{ galaxy_privsep_dirs }}"
+      when: item | default(False)
 
     - name: Create additional directories
       file:
