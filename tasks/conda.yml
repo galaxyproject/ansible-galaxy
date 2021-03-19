@@ -25,6 +25,16 @@
       -f -b 
   when: conda_installed.stat.exists == False
 
+  # Install pycryptosat before setting new channel priorities. These will
+  # trigger a reinstall of the entire prefix if a package is installed. And
+  # pycryptosat should be installed before that, so it can help with the 
+  # resolving.
+- name: Install pycryptosat
+  command: "{{ galaxy_conda_prefix }}/bin/conda install -y -n base pycryptosat"
+  register: conda_install_pycryptosat
+  changed_when: "'All requested packages already installed.' not in conda_install_pycryptosat.stdout"
+
+
 - name: Create administrative .condarc 
   blockinfile:
     create: yes 
@@ -39,16 +49,13 @@
       channel_priority: strict
       sat_solver: pycryptosat
 
+      # Always copy otherwise created environments may not work properly.
+      always_copy: yes
+      
+      # Always yes to pr 
+      always_yes: yes
 
-- name: Install pycryptosat
-  command: >-
-    {{ galaxy_conda_prefix }}/bin/conda 
-    install -y -n base pycryptosat
-  register: conda_install_pycryptosat
-  changed_when: 'All requested packages already installed.' not in conda_install_pycryptosat.stdout 
-
-- name: update conda on first install 
-  command: conda update -y -n base conda
-  register: conda_update_conda
-  changed_when: 'All requested packages already installed.' not in conda_update_conda.stdout 
-  when: conda_installed.stat.exists == False
+- name: update conda
+  command: "{{ galaxy_conda_prefix }}/bin/conda update -n base conda"
+  register: conda_update
+  changed_when: "'All requested packages already installed.' not in conda_update.stdout"

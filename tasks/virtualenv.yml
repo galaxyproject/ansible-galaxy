@@ -4,6 +4,15 @@
 # once with $PYTHONPATH set (in case it's needed for virtualenv) and then once
 # the venv is created we upgrade pip with $PYTHONPATH unset
 
+- name: Include conda tasks if desired
+  include: conda.yml
+  when: galaxy_install_conda
+
+- name: Set conda python to be venv python 
+  set_fact:
+    galaxy_virtualenv_python: "{{ galaxy_conda_prefix }}/bin/python"
+  when: galaxy_install_conda
+
 - name: Create Galaxy virtualenv
   pip:
     name: pip
@@ -14,9 +23,11 @@
   environment:
     VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
 
-- name: Ensure pip is the latest release
+- name: Ensure pip and setuptools are the latest release
   pip:
-    name: pip
+    name:
+      - pip
+      - setuptools
     state: latest
     extra_args: "{{ pip_extra_args | default('') }}"
     virtualenv: "{{ galaxy_venv_dir }}"
