@@ -8,6 +8,7 @@
 # Control which tasks are included, in case you need to perform different options on different hosts or server
 # directories.
 galaxy_create_user: no
+galaxy_install_conda: no
 galaxy_manage_paths: no
 galaxy_manage_clone: yes
 galaxy_manage_download: no
@@ -99,6 +100,7 @@ galaxy_privsep_dirs:
   - "{{ galaxy_server_dir }}"
   - "{{ galaxy_config_dir }}"
   - "{{ galaxy_local_tools_dir }}"
+  - "{{ galaxy_conda_prefix }}"
 
 # Local (relative to playbook) path to local tools
 galaxy_local_tools_src_dir: files/galaxy/tools
@@ -112,6 +114,11 @@ galaxy_dynamic_job_rules_dir: "{{ galaxy_server_dir }}/lib/galaxy/jobs/rules"
 # List of dynamic rules to install
 galaxy_dynamic_job_rules: []
 
+#
+# Conda
+# 
+galaxy_miniconda_download_url: https://repo.anaconda.com/miniconda/Miniconda3-py37_4.9.2-Linux-x86_64.sh
+galaxy_miniconda_download_location: /tmp/miniconda.sh
 #
 # Version control
 #

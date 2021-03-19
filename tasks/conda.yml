@@ -1,0 +1,54 @@
+---
+
+# Based on:
+# https://github.com/robinandeer/ansible-miniconda/blob/master/tasks/install.yml
+
+- name: Check if conda is already installed 
+  stat: 
+    path: "{{ galaxy_conda_prefix }}/bin/conda"
+  register: conda_installed
+  changed_when: conda_installed.stat.exists == False
+
+- name: Download conda 
+  get_url:
+    url: "{{ galaxy_miniconda_download_url }}"
+    dest: "{{ galaxy_miniconda_download_location}}"
+  when: conda_installed.stat.exists == False
+
+- name: Install miniconda 
+  # Install in batch mode (-b). The prefix should already be created if 
+  # galaxy_manage_paths: yes. So we use -f to force installing on an existing
+  # directory.
+  command: >-
+    bash {{ galaxy_miniconda_download_location }}
+      -p {{ galaxy_conda_prefix }}
+      -f -b 
+  when: conda_installed.stat.exists == False
+
+- name: Create administrative .condarc 
+  blockinfile:
+    create: yes 
+    path: "{{ galaxy_conda_prefix }}/.condarc"
+    block: |
+      channels:
+        - conda-forge
+        - bioconda
+        - defaults
+      # Pycroptosat and strict channel priority are important for faster dependency resolution.
+      # https://github.com/bioconda/bioconda-recipes/issues/13774
+      channel_priority: strict
+      sat_solver: pycryptosat
+
+
+- name: Install pycryptosat
+  command: >-
+    {{ galaxy_conda_prefix }}/bin/conda 
+    install -y -n base pycryptosat
+  register: conda_install_pycryptosat
+  changed_when: 'All requested packages already installed.' not in conda_install_pycryptosat.stdout 
+
+- name: update conda on first install 
+  command: conda update -y -n base conda
+  register: conda_update_conda
+  changed_when: 'All requested packages already installed.' not in conda_update_conda.stdout 
+  when: conda_installed.stat.exists == False
