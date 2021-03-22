@@ -6,12 +6,12 @@
 
 - name: Include conda tasks if desired
   include: conda.yml
-  when: galaxy_install_conda
+  when: galaxy_use_conda_python
 
 - name: Set conda python to be venv python 
   set_fact:
     galaxy_virtualenv_python: "{{ galaxy_conda_prefix }}/bin/python"
-  when: galaxy_install_conda
+  when: galaxy_use_conda_python
 
 - name: Create Galaxy virtualenv
   pip:

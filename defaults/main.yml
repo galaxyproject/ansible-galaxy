@@ -8,7 +8,7 @@
 # Control which tasks are included, in case you need to perform different options on different hosts or server
 # directories.
 galaxy_create_user: no
-galaxy_install_conda: no
+galaxy_use_conda_python: no
 galaxy_manage_paths: no
 galaxy_manage_clone: yes
 galaxy_manage_download: no
