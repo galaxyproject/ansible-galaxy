@@ -214,6 +214,11 @@ Several variables control which functions this role will perform (all default to
 - `galaxy_manage_mutable_setup`: Manage "mutable" Galaxy configuration files - ones which are modifiable by Galaxy (e.g.
   as you install tools from the Galaxy Tool Shed).
 - `galaxy_manage_database`: Upgrade the database schema as necessary, when new schema versions become available.
+- `galaxy_use_conda_python`: Do not use system python but instead download miniconda and use 
+  its python interpreter. This is useful on systems which only have older python versions in
+  their repository.
+- `galaxy_miniconda_download_url`: Which miniconda installation package to download. By
+  default a python 3.7 miniconda installer is downloaded.
 - `galaxy_fetch_dependencies`: Fetch Galaxy dependent modules to the Galaxy virtualenv.
 - `galaxy_build_client`: Build the Galaxy client application (web UI).
 - `galaxy_client_make_target` (default: `client-production-maps`): Set the client build type. Options include: `client`,
