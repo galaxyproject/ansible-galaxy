@@ -11,7 +11,7 @@ __galaxy_mutable_config_dir: "{{ galaxy_mutable_data_dir }}/config"
 __galaxy_cache_dir: "{{ galaxy_mutable_data_dir }}/cache"
 __galaxy_local_tools_dir: null
 __galaxy_shed_tools_dir: "{{ galaxy_mutable_data_dir }}/shed_tools"
-__galaxy_conda_prefix: null
+__galaxy_conda_root_prefix: null
 
 # These correspond to galaxy config options
 __galaxy_tool_dependency_dir: "{{ galaxy_mutable_data_dir }}/dependencies"

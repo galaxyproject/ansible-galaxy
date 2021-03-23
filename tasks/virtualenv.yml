@@ -10,7 +10,7 @@
 
 - name: Set conda python to be venv python 
   set_fact:
-    galaxy_virtualenv_python: "{{ galaxy_conda_prefix }}/bin/python"
+    galaxy_virtualenv_python: "{{ galaxy_conda_root_prefix }}/bin/python"
   when: galaxy_use_conda_python
 
 - name: Create Galaxy virtualenv

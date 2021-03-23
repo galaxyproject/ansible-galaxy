@@ -100,7 +100,7 @@ galaxy_privsep_dirs:
   - "{{ galaxy_server_dir }}"
   - "{{ galaxy_config_dir }}"
   - "{{ galaxy_local_tools_dir }}"
-  - "{{ galaxy_conda_prefix }}"
+  - "{{ galaxy_conda_root_prefix }}"
 
 # Local (relative to playbook) path to local tools
 galaxy_local_tools_src_dir: files/galaxy/tools

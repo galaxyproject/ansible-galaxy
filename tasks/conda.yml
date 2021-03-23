@@ -5,7 +5,7 @@
 
 - name: Check if conda is already installed 
   stat: 
-    path: "{{ galaxy_conda_prefix }}/bin/conda"
+    path: "{{ galaxy_conda_root_prefix }}/bin/conda"
   register: conda_installed
   changed_when: conda_installed.stat.exists == False
 
@@ -21,7 +21,7 @@
   # directory.
   command: >-
     bash {{ galaxy_miniconda_download_location }}
-      -p {{ galaxy_conda_prefix }}
+      -p {{ galaxy_conda_root_prefix }}
       -f -b 
   when: conda_installed.stat.exists == False
 
@@ -30,15 +30,14 @@
   # pycryptosat should be installed before that, so it can help with the 
   # resolving.
 - name: Install pycryptosat
-  command: "{{ galaxy_conda_prefix }}/bin/conda install -y -n base pycryptosat"
+  command: "{{ galaxy_conda_root_prefix }}/bin/conda install -y -n base pycryptosat"
   register: conda_install_pycryptosat
   changed_when: "'All requested packages already installed.' not in conda_install_pycryptosat.stdout"
-
 
 - name: Create administrative .condarc 
   blockinfile:
     create: yes 
-    path: "{{ galaxy_conda_prefix }}/.condarc"
+    path: "{{ galaxy_conda_root_prefix }}/.condarc"
     block: |
       channels:
         - conda-forge
@@ -56,6 +55,6 @@
       always_yes: yes
 
 - name: update conda
-  command: "{{ galaxy_conda_prefix }}/bin/conda update -n base conda"
+  command: "{{ galaxy_conda_root_prefix }}/bin/conda update -n base conda"
   register: conda_update
   changed_when: "'All requested packages already installed.' not in conda_update.stdout"
