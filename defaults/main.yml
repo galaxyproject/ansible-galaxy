@@ -20,6 +20,10 @@ galaxy_build_client: yes
 galaxy_manage_errordocs: no
 galaxy_backup_configfiles: yes
 
+# Control whether to output verbose task diffs (e.g. when performing a git update) when running Ansible with --diff.
+# Only suppresses diff on tasks that are likely to be verbose, not all tasks
+galaxy_diff_mode_verbose: "{{ ansible_diff_mode }}"
+
 #
 # Access method control
 #
