@@ -12,6 +12,7 @@
         repo: "{{ galaxy_repo }}"
         version: "{{ galaxy_commit_id }}"
         executable: "{{ git_executable | default(omit) }}"
+      diff: "{{ galaxy_diff_mode_verbose }}"
       register: __galaxy_git_update_result
       notify:
         - "{{ galaxy_restart_handler_name | default('default restart galaxy handler') }}"
