@@ -22,3 +22,4 @@ script:
   #   https://docs.ansible.com/ansible/latest/user_guide/become.html#becoming-an-unprivileged-user
   # On a real system, you would want to use one of the workarounds in the docs (of which this is the third)
   - sudo $VIRTUAL_ENV/bin/ansible-playbook -i "localhost, " -c local tests/test_playbook.yml
+  - curl http://127.0.0.1:8080/api/version
