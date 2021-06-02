@@ -9,7 +9,7 @@ sudo: required
 
 install:
   # Install git
-  - sudo apt-get install git
+  - sudo apt-get install git python3-venv python3-virtualenv
 
   # Install Ansible
   - pip3 install 'ansible<2.10'
