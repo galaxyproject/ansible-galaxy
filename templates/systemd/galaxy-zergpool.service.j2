@@ -6,7 +6,7 @@ After=time-sync.target
 [Service]
 UMask=022
 Type=simple
-User={{ galaxy_user.name }}
+User={{ __galaxy_user_name }}
 Group={{ __galaxy_user_group }}
 WorkingDirectory={{ galaxy_server_dir }}
 TimeoutStartSec=10
