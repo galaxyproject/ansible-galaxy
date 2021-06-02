@@ -19,5 +19,5 @@ jobs:
 
       - name: Run Test
         run: |
-          sudo $VIRTUAL_ENV/bin/ansible-playbook -i "localhost, " -c local tests/test_playbook.yml
+          ansible-playbook -i "localhost, " -c local tests/test_playbook.yml
           curl http://127.0.0.1:8080/api/version
