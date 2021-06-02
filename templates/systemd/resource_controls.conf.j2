@@ -1,0 +1,31 @@
+;;
+;; This file is managed by Ansible.  ALL CHANGES WILL BE OVERWRITTEN.
+;;
+{% if item.real_memory_limit is defined %}
+{% set memlim = item.real_memory_limit %}
+{% elif item.real_memory_limit_percent is defined and item.real_memory_limit_percent > 1.0 %}
+{% set memlim = ((item.real_memory_limit_percent / 100.0) * ansible_memory_mb.real.total) | int ~ "M" %}
+{% elif item.real_memory_limit_percent is defined %}
+{% set memlim = (item.real_memory_limit_percent * ansible_memory_mb.real.total) | int ~ "M" %}
+{% else %}
+{% set memlim = none %}
+{% endif -%}
+
+{%- set memlim_mb = memlim | default(ansible_memory_mb.real.total * 1024 * 1024) | human_to_bytes / 1024 // 1024 %}
+{% if item.swap_limit is defined %}
+{% set memswlim = (memlim_mb + (item.swap_limit | human_to_bytes / 1024 // 1024)) ~ "M" %}
+{% elif item.swap_limit_percent is defined and item.swap_limit_percent > 1.0 %}
+{% set memswlim = (memlim_mb + (item.swap_limit_percent / 100.0) * ansible_memory_mb.swap.total) | int ~ "M" %}
+{% elif item.swap_limit_percent is defined %}
+{% set memswlim = (memlim_mb + item.swap_limit_percent * ansible_memory_mb.swap.total) | int ~ "M" %}
+{% else %}
+{% set memswlim = none %}
+{% endif -%}
+
+[{{ item.unit_type | default("service") | title }}]
+{% if memlim is not none %}
+MemoryLimit={{ memlim }}
+{% endif %}
+{% if memswlim is not none %}
+ExecStartPost=/bin/bash -c "echo {{ memswlim }} > /sys/fs/cgroup/memory/system.slice/{{ item.name }}.{{ item.unit_type | default('service') | lower }}/memory.memsw.limit_in_bytes"
+{% endif %}

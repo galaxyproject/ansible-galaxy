@@ -120,3 +120,30 @@
   when: galaxy_manage_errordocs
   tags:
     - galaxy_manage_errordocs
+
+#- name: Include systemd unit setup tasks (Zerg Mode)
+  #include_tasks:
+    #file: systemd-zerg.yml
+    #apply:
+      #tags: galaxy_manage_systemd
+  #when: galaxy_systemd.mode == "zerg"
+  #tags:
+    #- galaxy_manage_systemd
+
+- name: Include systemd unit setup tasks (Mules)
+  include_tasks:
+    file: systemd-mule.yml
+    apply:
+      tags: galaxy_manage_systemd
+  when: galaxy_systemd.mode == "mule"
+  tags:
+    - galaxy_manage_systemd
+
+- name: Include systemd unit setup tasks (Reports)
+  include_tasks:
+    file: systemd-reports.yml
+    apply:
+      tags: galaxy_manage_systemd_reports
+  when: galaxy_manage_systemd_reports
+  tags:
+    - galaxy_manage_systemd_reports

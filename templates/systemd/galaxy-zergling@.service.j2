@@ -1,0 +1,24 @@
+[Unit]
+Description=Galaxy Zerglings
+After=network.target
+After=time-sync.target
+
+[Service]
+UMask=022
+Type=simple
+User={{ galaxy_user.name }}
+Group={{ __galaxy_user_group }}
+WorkingDirectory={{ galaxy_server_dir }}
+TimeoutStartSec=10
+ExecStart={{ galaxy_venv_dir }}/bin/uwsgi {{ '--yaml' if galaxy_systemd_zergling_uwsgi_config_style in ('yaml', 'yml') else '--ini' }} {{ galaxy_systemd_zergling_uwsgi_config_file }} --stats 127.0.0.1:401%I {% if galaxy_zergpool %}--zerg {{ galaxy_zergpool_listen_path }}{% else %}--socket 127.0.0.1:400%I{% endif %}
+
+Environment=HOME={{ galaxy_root }} VIRTUAL_ENV={{ galaxy_venv_dir }} PATH={{ galaxy_venv_dir }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin DOCUTILSCONFIG='' PYTHONPATH={{ galaxy_dynamic_job_rules_dir }} {{ galaxy_systemd.env }}
+MemoryLimit={{ galaxy_systemd.memory_limit.zergling }}G
+Restart=always
+
+MemoryAccounting=yes
+CPUAccounting=yes
+BlockIOAccounting=yes
+
+[Install]
+WantedBy=multi-user.target

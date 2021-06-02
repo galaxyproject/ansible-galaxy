@@ -1,0 +1,78 @@
+---
+
+- name: Manage Paths
+  block:
+
+    - name: Deploy Zergpool unit
+      template:
+        owner: root
+        group: root
+        mode: 0644
+        src: systemd/galaxy-zergpool.service.j2
+        dest: /etc/systemd/system/galaxy-zergpool.service
+      notify: daemon reload
+
+    - name: Deploy Zergling units
+      template:
+        owner: root
+        group: root
+        mode: 0644
+        src: systemd/galaxy-zergling@.service.j2
+        dest: /etc/systemd/system/galaxy-zergling@.service
+      notify: daemon reload
+
+    - name: Deploy handler units
+      template:
+        owner: root
+        group: root
+        mode: 0644
+        src: systemd/galaxy-handler@.service.j2
+        dest: /etc/systemd/system/galaxy-handler@.service
+      notify: daemon reload
+
+    - name: Deploy workflow units
+      template:
+        owner: root
+        group: root
+        mode: 0644
+        src: systemd/galaxy-workflow-scheduler@.service.j2
+        dest: /etc/systemd/system/galaxy-workflow-scheduler@.service
+      when: galaxy_systemd.processes.workflow > 0
+      notify: daemon reload
+
+    # TODO: In case of changes? Not sure this is necessary.
+    #- name: just force systemd to reread configs (2.4 and above)
+      #systemd:
+        #daemon_reload: yes
+
+    - name: Enable zergpool and ensure it is running
+      systemd:
+        name: galaxy-zergpool.service
+        enabled: yes
+        state: started
+
+    - name: Enable relevant zerglings
+      systemd:
+        name: "galaxy-zergling@{{ item }}.service"
+        enabled: yes
+        state: started
+      loop: "{{ range(0, galaxy_systemd.processes.zerglings) | list }}"
+
+    - name: Enable relevant handlers
+      systemd:
+        name: "galaxy-handler@{{ item }}.service"
+        enabled: yes
+        state: started
+      loop: "{{ range(0, galaxy_systemd.processes.handlers) | list }}"
+
+    - name: Enable relevant workflows
+      systemd:
+        name: "galaxy-workflow-scheduler@{{ item }}.service"
+        enabled: yes
+        state: started
+      loop: "{{ range(0, galaxy_systemd.processes.workflow) | list }}"
+      when: galaxy_systemd_workflow_schedulers > 0
+
+  remote_user: "{{ galaxy_remote_users.root | default(__galaxy_remote_user) }}"
+  become: "{{ true if galaxy_become_users.root is defined else __galaxy_become }}"
+  become_user: "{{ galaxy_become_users.root | default(__galaxy_become_user) }}"
