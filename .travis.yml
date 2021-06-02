@@ -3,7 +3,7 @@ language: python
 
 matrix:
   include:
-  - python: "3.9"
+  - python: "3.8"
 
 sudo: required
 

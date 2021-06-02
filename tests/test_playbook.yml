@@ -27,6 +27,6 @@
     ansible_user_id: "{{ lookup('env', 'USER') }}"
     ansible_env:
       PATH: "{{ lookup('env', 'PATH') }}"
-    pip_virtualenv_command: /usr/bin/python3 -m virtualenv
+    pip_virtualenv_command: /usr/bin/python3 -m venv
   roles:
     - role: ansible-galaxy
