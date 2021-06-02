@@ -279,6 +279,7 @@ galaxy_client_build_steps:
 
 
 # systemd options
+galaxy_restart_handler_name: "{{ 'systemd-handler' if galaxy_systemd.mode == 'mule' else 'default restart galaxy handler' }}"
 galaxy_systemd:
     env: "" #Any extra env vars
     mode: mule

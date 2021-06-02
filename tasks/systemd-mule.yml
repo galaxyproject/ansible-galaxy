@@ -12,7 +12,7 @@
         dest: /etc/systemd/system/galaxy.service
       notify:
         - daemon reload
-        - galaxy mule start
+        - galaxy mule restart
 
     - name: Enable Galaxy Unit
       systemd:
