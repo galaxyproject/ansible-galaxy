@@ -11,6 +11,7 @@ Group={{ __galaxy_user_group }}
 WorkingDirectory={{ galaxy_server_dir }}
 TimeoutStartSec=10
 ExecStart={{ galaxy_venv_dir }}/bin/uwsgi {{ '--yaml' if galaxy_config_style in ('yaml', 'yml') else '--ini' }} {{ galaxy_config_file }} {% if galaxy_systemd.stats %}--stats 127.0.0.1:{{ galaxy_systemd.stats }}{% endif %}
+
 Environment=HOME={{ galaxy_root }} VIRTUAL_ENV={{ galaxy_venv_dir }} PATH={{ galaxy_venv_dir }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin DOCUTILSCONFIG= PYTHONPATH={{ galaxy_dynamic_job_rules_dir }} {{ galaxy_systemd.env }}
 MemoryLimit={{ galaxy_systemd.memory_limit.mule }}G
 Restart=always
