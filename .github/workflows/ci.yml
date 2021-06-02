@@ -21,4 +21,8 @@ jobs:
         run: |
             export ANSIBLE_STDOUT_CALLBACK=yaml
             ansible-playbook -i "localhost, " -c local tests/test_playbook.yml
+            systemctl status galaxy
+            sleep 10
+            systemctl status galaxy
+            sleep 10
             curl http://127.0.0.1:8080/api/version
