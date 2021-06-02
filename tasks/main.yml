@@ -126,7 +126,7 @@
     #file: systemd-zerg.yml
     #apply:
       #tags: galaxy_manage_systemd
-  #when: galaxy_systemd.mode == "zerg"
+  #when: galaxy_manage_systemd and galaxy_systemd.mode == "zerg"
   #tags:
     #- galaxy_manage_systemd
 
@@ -135,7 +135,7 @@
     file: systemd-mule.yml
     apply:
       tags: galaxy_manage_systemd
-  when: galaxy_systemd.mode == "mule"
+  when: galaxy_manage_systemd and galaxy_systemd.mode == "mule"
   tags:
     - galaxy_manage_systemd
 
