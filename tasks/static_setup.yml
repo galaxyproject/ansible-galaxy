@@ -72,6 +72,16 @@
         label: "{{ galaxy_dynamic_job_rules_dir }}/{{ ((item | dirname) != '') | ternary ((item | dirname) ~ '/', '') }}__init__.py"
       with_items: "{{ galaxy_dynamic_job_rules }}"
 
+    - name: Create Galaxy Job Metrics configuration file
+      copy:
+        dest: "{{ galaxy_config_merged[galaxy_app_config_section].job_metrics_config_file }}"
+        content: |
+          ---
+          ## This file is managed by Ansible.  ALL CHANGES WILL BE OVERWRITTEN.
+          {{ galaxy_job_metrics_plugins | to_nice_yaml }}
+        mode: "0644"
+      when: galaxy_job_metrics_plugins is defined
+
     - name: Create Galaxy configuration file
       template:
         src: "{{ galaxy_config_file_template }}"

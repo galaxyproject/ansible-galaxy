@@ -200,6 +200,9 @@ galaxy_app_config_default:
   tool_config_file: "{{ galaxy_tool_config_files | join(',') }}"
   shed_tool_config_file: "{{ galaxy_shed_tool_config_file }}"
 
+  # Static configs that default to .xml files in the config dir but the role writes as .yml if configured
+  job_metrics_config_file: "{{ galaxy_config_dir }}/job_metrics_conf.{{ 'yml' if galaxy_job_metrics_plugins is defined else 'xml' }}"
+
   # Everything else
   visualization_plugins_directory: "config/plugins/visualizations"
 
