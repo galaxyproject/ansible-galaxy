@@ -281,13 +281,13 @@ galaxy_client_build_steps:
 # systemd options
 galaxy_restart_handler_name: "{{ 'galaxy mule restart' if (galaxy_systemd.mode == 'mule' and galaxy_manage_systemd) else 'default restart galaxy handler' }}"
 galaxy_systemd:
-    env: "" #Any extra env vars
-    mode: mule
-    memory_limit:
-        mule: 16
-        reports: 5
-        #workflow: 5
-        #zergpool: 8
-        #zergling: 16
-        #handler: 5
-    stats: 4001 # Port for stats to listen on.
+  env: "" #Any extra env vars
+  mode: mule
+  memory_limit:
+    mule: 16
+    reports: 5
+    #workflow: 5
+    #zergpool: 8
+    #zergling: 16
+    #handler: 5
+  stats: 4001 # Port for stats to listen on.
