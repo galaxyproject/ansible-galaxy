@@ -1,0 +1,30 @@
+name: Test the role
+
+# https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#example-using-a-list-of-events
+on: [pull_request]
+
+jobs:
+  setup:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+
+      - name: Install dependencies
+        run: |
+            sudo apt-get install git python3 python3-virtualenv
+            pip3 install 'ansible<2.10'
+            printf '[defaults]\nroles_path = ../\ninterpreter_python = /usr/bin/python3' > ansible.cfg
+
+      - name: Run Test
+        run: |
+            export ANSIBLE_STDOUT_CALLBACK=yaml
+            ansible-playbook -i "localhost, " -c local tests/test_playbook.yml
+            systemctl status galaxy || true
+            journalctl -u galaxy
+            sleep 10
+            systemctl status galaxy
+            journalctl -u galaxy
+            sleep 10
+            curl http://127.0.0.1:8080/api/version

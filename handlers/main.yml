@@ -13,3 +13,17 @@
     subject: "Galaxy instance {{ galaxy_instance_hostname | default( inventory_hostname ) }} is at commit {{ galaxy_commit_id }}"
     body: " "
   when: galaxy_admin_email_to is defined
+
+- name: daemon reload
+  systemd:
+    daemon_reload: yes
+
+- name: galaxy mule start
+  systemd:
+      name: galaxy.service
+      state: started
+
+- name: galaxy mule restart
+  systemd:
+      name: galaxy.service
+      state: restarted

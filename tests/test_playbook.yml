@@ -2,16 +2,17 @@
 # Travis CI test playbook
 
 - hosts: localhost
-  gather_facts: False
   connection: local
-  remote_user: travis
+  become: true
+  remote_user: runner
   vars:
-    galaxy_commit_id: release_19.09
+    galaxy_commit_id: release_21.01
     galaxy_create_user: yes
     galaxy_manage_paths: yes
     galaxy_manage_clone: yes
     galaxy_manage_download: no
     galaxy_manage_existing: no
+    galaxy_manage_systemd: yes
     galaxy_config_style: yaml
     galaxy_layout: root-dir
     galaxy_root: /srv/galaxy
@@ -26,5 +27,6 @@
     ansible_user_id: "{{ lookup('env', 'USER') }}"
     ansible_env:
       PATH: "{{ lookup('env', 'PATH') }}"
+    pip_virtualenv_command: /usr/bin/python3 -m virtualenv
   roles:
     - role: ansible-galaxy
