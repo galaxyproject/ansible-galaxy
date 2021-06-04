@@ -277,17 +277,27 @@ galaxy_client_build_steps:
     - stageLibs
     - plugins
 
+# Restart handler is already set if using the systemd options in this role, otherwise you need to define one yourself
+galaxy_restart_handler_name: "{{ 'galaxy mule restart' if (galaxy_systemd_mode == 'mule' and galaxy_manage_systemd) else 'default restart galaxy handler' }}"
 
+#
 # systemd options
-galaxy_restart_handler_name: "{{ 'galaxy mule restart' if (galaxy_systemd.mode == 'mule' and galaxy_manage_systemd) else 'default restart galaxy handler' }}"
-galaxy_systemd:
-  env: "" #Any extra env vars
-  mode: mule
-  memory_limit:
-    mule: 16
-    reports: 5
-    #workflow: 5
-    #zergpool: 8
-    #zergling: 16
-    #handler: 5
-  stats: 4001 # Port for stats to listen on.
+#
+
+# Currently `mule` is the only systemd mode
+galaxy_systemd_mode: mule
+
+# Systemd will create cgroups to enforce these limits (sizes in GB), override individual limits by setting
+# `galaxy_systemd_memory_limit.<limit>` in your vars.
+__galaxy_systemd_memory_limit:
+  # This is for the entire group of uWSGI master, web worker, and mule processes
+  mule: 16
+  reports: 5
+  #workflow: 5
+  #zergpool: 8
+  #zergling: 16
+  #handler: 5
+__galaxy_systemd_memory_limit_merged: "{{ __galaxy_systemd_memory_limit | combine(galaxy_systemd_memory_limit | default({})) }}"
+
+# A list of KEY=val strings to be added as `Environment=KEY=val` to the systemd service unit
+galaxy_systemd_env: []

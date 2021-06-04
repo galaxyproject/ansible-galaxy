@@ -10,10 +10,17 @@ User={{ __galaxy_user_name }}
 Group={{ __galaxy_user_group }}
 WorkingDirectory={{ galaxy_server_dir }}
 TimeoutStartSec=10
-ExecStart={{ galaxy_venv_dir }}/bin/uwsgi {{ '--yaml' if galaxy_config_style in ('yaml', 'yml') else '--ini' }} {{ galaxy_config_file }} {% if galaxy_systemd.stats %}--stats 127.0.0.1:{{ galaxy_systemd.stats }}{% endif %}
+ExecStart={{ galaxy_venv_dir }}/bin/uwsgi {{ '--yaml' if galaxy_config_style in ('yaml', 'yml') else '--ini' }} {{ galaxy_config_file }}
 
-Environment=HOME={{ galaxy_root }} VIRTUAL_ENV={{ galaxy_venv_dir }} PATH={{ galaxy_venv_dir }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin DOCUTILSCONFIG= PYTHONPATH={{ galaxy_dynamic_job_rules_dir }} {{ galaxy_systemd.env }}
-MemoryLimit={{ galaxy_systemd.memory_limit.mule }}G
+Environment=HOME={{ galaxy_root }}
+Environment=VIRTUAL_ENV={{ galaxy_venv_dir }}
+Environment=PATH={{ galaxy_venv_dir }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin
+Environment=DOCUTILSCONFIG=
+Environment=PYTHONPATH={{ galaxy_dynamic_job_rules_dir }}
+{% for env in galaxy_systemd_env %}
+Environment={{ env }}
+{% endfor %}
+MemoryLimit={{ __galaxy_systemd_memory_limit_merged.mule }}G
 Restart=always
 
 MemoryAccounting=yes
