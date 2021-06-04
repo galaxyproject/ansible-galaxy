@@ -250,6 +250,40 @@ Options for configuring Galaxy and controlling which version is installed.
 - `galaxy_clone_depth` (default: unset): Depth to use when performing git clone. Leave unspecified to clone entire
    history.
 
+**Additional config files**
+
+Some optional configuration files commonly used in production Galaxy servers can be configured from variables:
+
+- `galaxy_dependency_resolvers`: Populate the `dependency_resolvers_conf.yml` file. See the [sample XML
+  configuration][dependency_resolvers_conf_sample] for options.
+- `galaxy_container_resolvers`: Populate the `container_resolvers_conf.yml` file. See the [sample XML
+  configuration][container_resolvers_conf_sample] for options.
+- `galaxy_job_metrics_plugins`: Populate the `job_metrics_conf.yml` file. See the [sample XML
+  configuration][job_metrics_conf_sample] for options.
+
+As of Galaxy 21.05 the sample configuration files for these features are in XML, but YAML is supported like so:
+
+```yaml
+galaxy_dependency_resolvers:
+  - type: <XML tag name>
+    <XML attribute name>: <XML attribute value>
+```
+
+For example:
+
+```yaml
+galaxy_dependency_resolvers:
+  - type: galaxy_packages
+  - type: conda
+    prefix: /srv/galaxy/conda
+    auto_init: true
+    auto_install: false
+```
+
+[dependency_resolvers_conf_sample]: https://github.com/galaxyproject/galaxy/blob/release_21.05/lib/galaxy/config/sample/dependency_resolvers_conf.xml.sample
+[container_resolvers_conf_sample]: https://github.com/galaxyproject/galaxy/blob/release_21.05/lib/galaxy/config/sample/container_resolvers_conf.xml.sample
+[job_metrics_conf_sample]: https://github.com/galaxyproject/galaxy/blob/release_21.05/lib/galaxy/config/sample/job_metrics_conf.xml.sample
+
 **Path configuration**
 
 Options for controlling where certain Galaxy components are placed on the filesystem.
