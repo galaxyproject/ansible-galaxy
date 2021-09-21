@@ -16,10 +16,19 @@
 
 - name: Ensure pip and setuptools are the latest release
   pip:
-    name: 
-      - pip
-      - setuptools
+    name: pip
     state: latest
+    extra_args: "{{ pip_extra_args | default('') }}"
+    virtualenv: "{{ galaxy_venv_dir }}"
+    virtualenv_command: "{{ galaxy_virtualenv_command | default(pip_virtualenv_command | default(omit)) }}"
+  environment:
+    PYTHONPATH: null
+    VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+
+- name: Ensure setuptools is latest working release (<58)
+  pip:
+    name: setuptools<58
+    state: present
     extra_args: "{{ pip_extra_args | default('') }}"
     virtualenv: "{{ galaxy_venv_dir }}"
     virtualenv_command: "{{ galaxy_virtualenv_command | default(pip_virtualenv_command | default(omit)) }}"
