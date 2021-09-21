@@ -25,10 +25,9 @@
     PYTHONPATH: null
     VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
 
-- name: Ensure setuptools is latest working release (57.5.0)
+- name: Ensure setuptools is latest working release (<58)
   pip:
-    name: setuptools
-    version: 57.5.0
+    name: setuptools<58
     state: present
     extra_args: "{{ pip_extra_args | default('') }}"
     virtualenv: "{{ galaxy_venv_dir }}"
