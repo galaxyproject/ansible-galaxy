@@ -99,6 +99,7 @@ galaxy_dirs:
   - "{{ galaxy_tool_dependency_dir }}"
   - "{{ galaxy_file_path }}"
   - "{{ galaxy_job_working_directory }}"
+  - "{{ galaxy_tool_data_path }}"
 
 # Directories to create as the privilege separated user if galaxy_manage_paths is enabled
 galaxy_privsep_dirs:
@@ -198,6 +199,7 @@ galaxy_app_config_default:
   file_path: "{{ galaxy_file_path }}"
   job_working_directory: "{{ galaxy_job_working_directory }}"
   tool_dependency_dir: "{{ galaxy_tool_dependency_dir }}"
+  tool_data_path: "{{ galaxy_tool_data_path }}"
 
   # Static config files
   tool_config_file: "{{ galaxy_tool_config_files | join(',') }}"
