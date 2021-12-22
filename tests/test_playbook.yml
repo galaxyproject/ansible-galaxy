@@ -18,6 +18,7 @@
     galaxy_root: /srv/galaxy
     galaxy_separate_privileges: yes
     galaxy_user: galaxy
+    galaxy_group: galaxy
     galaxy_privsep_user: gxpriv
     galaxy_config:
       galaxy:
