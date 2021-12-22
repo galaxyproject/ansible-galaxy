@@ -63,8 +63,6 @@
         dest: "{{ galaxy_dynamic_job_rules_dir }}/{{ item }}"
       with_items: "{{ galaxy_dynamic_job_rules }}"
       when: not item.endswith(".j2")
-      notify:
-        - "{{ galaxy_restart_handler_name }}"
 
     - name: Install dynamic job rules (template)
       template:
@@ -74,8 +72,6 @@
         regex: '\.j2$'
       with_items: "{{ galaxy_dynamic_job_rules }}"
       when: item.endswith(".j2")
-      notify:
-        - "{{ galaxy_restart_handler_name }}"
 
     - name: Ensure dynamic rule __init__.py's exist
       copy:
