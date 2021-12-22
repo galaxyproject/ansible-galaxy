@@ -62,14 +62,16 @@
         src: "{{ galaxy_dynamic_job_rules_src_dir }}/{{ item }}"
         dest: "{{ galaxy_dynamic_job_rules_dir }}/{{ item }}"
       with_items: "{{ galaxy_dynamic_job_rules }}"
-      when: item.endswith(".py")
+      when: not item.endswith(".j2")
 
     - name: Install dynamic job rules (template)
       template:
         src: "{{ galaxy_dynamic_job_rules_src_dir }}/{{ item }}"
-        dest: "{{ galaxy_dynamic_job_rules_dir }}/{{ item | regex_replace('.j2$') }}"
+        dest: "{{ galaxy_dynamic_job_rules_dir }}/{{ item | regex_replace(regex) }}"
+      vars:
+        regex: '\.j2$'
       with_items: "{{ galaxy_dynamic_job_rules }}"
-      when: item.endswith(".py.j2")
+      when: item.endswith(".j2")
 
     - name: Ensure dynamic rule __init__.py's exist
       copy:
