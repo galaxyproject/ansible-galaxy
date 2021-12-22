@@ -14,6 +14,7 @@
         src: "{{ item.src }}"
         dest: "{{ item.dest }}"
         force: no
+        mode: "{{ galaxy_config_perms }}"
       with_items: "{{ galaxy_mutable_config_files }}"
 
     - name: Instantiate mutable configuration templates
@@ -21,6 +22,7 @@
         src: "{{ item.src }}"
         dest: "{{ item.dest }}"
         force: no
+        mode: "{{ galaxy_config_perms }}"
       with_items: "{{ galaxy_mutable_config_templates }}"
 
   remote_user: "{{ galaxy_remote_users.galaxy | default(__galaxy_remote_user) }}"

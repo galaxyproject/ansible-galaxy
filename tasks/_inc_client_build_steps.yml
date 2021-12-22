@@ -19,7 +19,7 @@
     success_msg: "Deconstructed client build is supported"
     fail_msg: "Deconstructed client build is not supported for Galaxy version {{ __galaxy_major_version }}, please set 'galaxy_client_make_target'"
 
-- name: Run gulp
+- name: Run gulp  # noqa no-changed-when
   command: yarn run gulp {{ item }}
   args:
     chdir: "{{ galaxy_server_dir }}/client"
@@ -29,7 +29,7 @@
     VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
     NODE_ENV: "{{ galaxy_client_node_env }}"
 
-- name: Run webpack
+- name: Run webpack  # noqa no-changed-when
   command: "yarn run webpack{{ (galaxy_client_node_env == 'production') | ternary('-production', '') }}"
   args:
     chdir: "{{ galaxy_server_dir }}/client"
@@ -42,3 +42,4 @@
   copy:
     content: "{{ __galaxy_current_commit_id }}"
     dest: "{{ galaxy_static_dir }}/client_build_hash.txt"
+    mode: 0644

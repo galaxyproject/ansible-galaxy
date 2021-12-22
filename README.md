@@ -71,6 +71,11 @@ If using `root-dir`:
 
 ### Optional variables ###
 
+The `galaxy_config_perms` option controls the permissions that Galaxy configuration files will be set to. This option
+has been added in version 0.9.18 of the role and the default value is `0640` (user read-write, group read-only, other
+users have no permissions). **In older versions, the role did not control the permissions of configuration files, so be
+aware that your configuration file permissions may change as of 0.9.18 and later.**
+
 **Layout control**
 
 - `galaxy_layout`: available layouts can be found in the [vars/][vars] subdirectory and possible values include:

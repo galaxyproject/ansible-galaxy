@@ -172,6 +172,9 @@ galaxy_config_file_template: "{{ galaxy_config_file_basename }}.j2"
 galaxy_config_file: "{{ galaxy_config_dir }}/{{ galaxy_config_file_basename }}"
 galaxy_app_config_section: "{{ 'galaxy' if galaxy_config_style in ('yaml', 'yml') else 'app:main' }}"
 
+# Galaxy configuration files will be written with these permissions (mode argument to Ansible copy/template module)
+galaxy_config_perms: 0640
+
 # The default Galaxy configuration, ensures that Galaxy can find all of the configs if galaxy_config_dir !=
 # galaxy_server_dir
 galaxy_paste_app_factory: "galaxy.web.buildapp:app_factory"

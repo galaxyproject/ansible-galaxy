@@ -13,6 +13,7 @@
         src: "{{ item.src }}"
         dest: "{{ item.dest }}"
         backup: "{{ galaxy_backup_configfiles }}"
+        mode: "{{ galaxy_config_perms }}"
       with_items: "{{ galaxy_config_files }}"
       notify:
         - "{{ galaxy_restart_handler_name }}"
@@ -22,6 +23,7 @@
         src: "{{ item.src }}"
         dest: "{{ item.dest }}"
         backup: "{{ galaxy_backup_configfiles }}"
+        mode: "{{ galaxy_config_perms }}"
       with_items: "{{ galaxy_config_templates }}"
       notify:
         - "{{ galaxy_restart_handler_name }}"
@@ -30,6 +32,7 @@
       copy:
         src: "{{ galaxy_local_tools_src_dir }}/{{ item }}"
         dest: "{{ galaxy_local_tools_dir }}/{{ item }}"
+        mode: preserve
       with_items: "{{ galaxy_local_tools | default([]) }}"
       when: galaxy_local_tools is defined
 
@@ -37,6 +40,7 @@
       template:
         src: local_tool_conf.xml.j2
         dest: "{{ galaxy_config_dir }}/local_tool_conf.xml"
+        mode: "{{ galaxy_config_perms }}"
       when: galaxy_local_tools is defined
 
     - name: Append local_tool_conf.xml to tool_config_file Galaxy config option
@@ -53,6 +57,7 @@
       file:
         path: "{{ galaxy_dynamic_job_rules_dir }}/{{ item | dirname }}"
         state: directory
+        mode: 0755
       loop_control:
         label: "{{ galaxy_dynamic_job_rules_dir }}/{{ item | dirname }}"
       with_items: "{{ galaxy_dynamic_job_rules }}"
@@ -61,6 +66,7 @@
       copy:
         src: "{{ galaxy_dynamic_job_rules_src_dir }}/{{ item }}"
         dest: "{{ galaxy_dynamic_job_rules_dir }}/{{ item }}"
+        mode: 0644
       with_items: "{{ galaxy_dynamic_job_rules }}"
       when: not item.endswith(".j2")
 
@@ -68,6 +74,7 @@
       template:
         src: "{{ galaxy_dynamic_job_rules_src_dir }}/{{ item }}"
         dest: "{{ galaxy_dynamic_job_rules_dir }}/{{ item | regex_replace(regex) }}"
+        mode: 0644
       vars:
         regex: '\.j2$'
       with_items: "{{ galaxy_dynamic_job_rules }}"
@@ -78,6 +85,7 @@
         content: ""
         dest: "{{ galaxy_dynamic_job_rules_dir }}/{{ item | dirname }}/__init__.py"
         force: no
+        mode: 0644
       loop_control:
         label: "{{ galaxy_dynamic_job_rules_dir }}/{{ ((item | dirname) != '') | ternary ((item | dirname) ~ '/', '') }}__init__.py"
       with_items: "{{ galaxy_dynamic_job_rules }}"
@@ -117,6 +125,7 @@
         src: "{{ galaxy_config_file_template }}"
         dest: "{{ galaxy_config_file }}"
         backup: "{{ galaxy_backup_configfiles }}"
+        mode: "{{ galaxy_config_perms }}"
       notify:
         - "{{ galaxy_restart_handler_name }}"
 
