@@ -14,10 +14,10 @@
   environment:
     VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
 
-- name: Ensure pip and setuptools are the latest release
+- name: Ensure pip is the desired release
   pip:
     name: pip
-    state: latest
+    state: "{{ galaxy_pip_version | default('latest') }}"
     extra_args: "{{ pip_extra_args | default('') }}"
     virtualenv: "{{ galaxy_venv_dir }}"
     virtualenv_command: "{{ galaxy_virtualenv_command | default(pip_virtualenv_command | default(omit)) }}"

@@ -1,5 +1,7 @@
 ---
 galaxy_info:
+  namespace: galaxyproject
+  role_name: galaxy
   author: The Galaxy Project
   description: Install and manage a Galaxy (http://galaxyproject.org/) server.
   company: The Galaxy Project
@@ -7,44 +9,31 @@ galaxy_info:
   min_ansible_version: 2.7
   github_branch: main
   platforms:
-  - name: EL
-    versions:
-    - all
-  - name: GenericUNIX
-    versions:
-    - all
-    - any
-  - name: Fedora
-    versions:
-    - all
-  - name: opensuse
-    versions:
-    - all
-  - name: Amazon
-    versions:
-    - all
-  - name: GenericBSD
-    versions:
-    - all
-    - any
-  - name: FreeBSD
-    versions:
-    - all
-  - name: Ubuntu
-    versions:
-    - all
-  - name: SLES
-    versions:
-    - all
-  - name: GenericLinux
-    versions:
-    - all
-    - any
-  - name: Debian
-    versions:
-    - all
+    - name: EL
+      versions:
+        - all
+    - name: GenericUNIX
+      versions:
+        - all
+        - any
+    - name: Fedora
+      versions:
+        - all
+    - name: Amazon
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - all
+    - name: GenericLinux
+      versions:
+        - all
+        - any
+    - name: Debian
+      versions:
+        - all
   galaxy_tags:
-  - system
-  - web
+    - system
+    - web
 dependencies: []
 allow_duplicates: yes

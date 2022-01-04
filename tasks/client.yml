@@ -7,6 +7,7 @@
       copy:
         content: "new-unbuilt"
         dest: "{{ galaxy_static_dir }}/client_build_hash.txt"
+        mode: 0644
         force: no
 
     - name: Get current client commit id
@@ -19,7 +20,7 @@
         path: "{{ galaxy_server_dir }}/.git"
       register: __galaxy_from_git
 
-    - name: Get current Galaxy commit id
+    - name: Get current Galaxy commit id  # noqa git-latest
       git:
         dest: "{{ galaxy_server_dir }}"
         repo: "{{ galaxy_repo }}"
