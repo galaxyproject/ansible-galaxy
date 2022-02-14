@@ -61,6 +61,12 @@
           changed_when: false
           register: __galaxy_installed_node_version
 
+        - name: Remove node_modules directory when upgrading node
+          file:
+            path: "{{ galaxy_venv_dir }}/lib/node_modules"
+            state: absent
+          when: (not __galaxy_node_is_installed.stat.exists) or (('v' ~ galaxy_node_version) != __galaxy_installed_node_version.stdout)
+
         - name: Install or upgrade node
           command: "nodeenv -n {{ galaxy_node_version }} -p"
           environment:
