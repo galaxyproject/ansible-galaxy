@@ -15,15 +15,18 @@
   when: galaxy_admin_email_to is defined
 
 - name: daemon reload
+  become: true
   systemd:
     daemon_reload: yes
 
 - name: galaxy mule start
+  become: true
   systemd:
       name: galaxy.service
       state: started
 
 - name: galaxy mule restart
+  become: true
   systemd:
       name: galaxy.service
       state: restarted
