@@ -1,10 +1,13 @@
 ---
 # defaults file for galaxyproject.galaxy
 
-# TODO: Magical restarters depending on how you're running Galaxy.
 - name: default restart galaxy handler
   debug:
     msg: "RESTARTER NOT IMPLEMENTED - Please restart Galaxy manually. You can define your own handler and enable it with `galaxy_restart_handler_name`"
+
+- name: default galaxyctl update handler
+  debug:
+    msg: "No-op for non-Gravity-managed Galaxy, this can be ignored"
 
 - name: daemon reload
   systemd:
@@ -31,5 +34,10 @@
 
 - name: galaxy gravity restart
   command: "{{ galaxy_venv_dir }}/bin/galaxyctl graceful"
+  environment:
+    GRAVITY_STATE_DIR: "{{ galaxy_gravity_state_dir }}"
+
+- name: galaxyctl update
+  command: "{{ galaxy_venv_dir }}/bin/galaxyctl update"
   environment:
     GRAVITY_STATE_DIR: "{{ galaxy_gravity_state_dir }}"

@@ -91,6 +91,9 @@ __galaxy_privsep_user_name: "{{ galaxy_privsep_user.name | default(galaxy_privse
 # If `galaxy_create_user` is enabled, the privsep user will also be created, but you can override this behavior
 galaxy_create_privsep_user: "{{ galaxy_create_user if __galaxy_privsep_user_name != 'root' else false }}"
 
+# Where to write Galaxy logs to
+galaxy_log_dir: "{{ galaxy_mutable_data_dir }}/log"
+
 # Directories to create as the Galaxy user if galaxy_manage_paths is enabled
 galaxy_dirs:
   - "{{ galaxy_mutable_data_dir }}"
@@ -101,6 +104,7 @@ galaxy_dirs:
   - "{{ galaxy_file_path }}"
   - "{{ galaxy_job_working_directory }}"
   - "{{ galaxy_tool_data_path }}"
+  - "{{ galaxy_log_dir }}"
 
 # Directories to create as the privilege separated user if galaxy_manage_paths is enabled
 galaxy_privsep_dirs:
@@ -247,9 +251,11 @@ galaxy_config_templates: []
 galaxy_gravity_state_dir: "{{ (galaxy_mutable_data_dir, 'gravity') | path_join }}"
 galaxy_gravity_config_default:
   galaxy_root: "{{ galaxy_server_dir }}"
-  # TODO: log_dir
+  log_dir: "{{ galaxy_log_dir }}"
   virtualenv: "{{ galaxy_venv_dir }}"
   app_server: gunicorn
+  gunicorn:
+    bind: localhost:8080
 
 # Default uWSGI configuration
 galaxy_uwsgi_yaml_parser: internal
@@ -298,6 +304,7 @@ galaxy_client_build_steps:
 
 # Restart handler is already set if using the systemd options in this role, otherwise you need to define one yourself
 galaxy_restart_handler_name: "{{ 'galaxy ' ~ galaxy_systemd_mode ~ ' restart' if galaxy_manage_systemd else 'default restart galaxy handler' }}"
+galaxy_galaxyctl_update_handler_name: "{{ 'galaxyctl update' if galaxy_systemd_mode == 'gravity' else 'default galaxyctl update handler' }}"
 
 #
 # systemd options
