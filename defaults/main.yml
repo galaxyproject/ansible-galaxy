@@ -304,7 +304,6 @@ galaxy_client_build_steps:
 
 # Restart handler is already set if using the systemd options in this role, otherwise you need to define one yourself
 galaxy_restart_handler_name: "{{ 'galaxy ' ~ galaxy_systemd_mode ~ ' restart' if galaxy_manage_systemd else 'default restart galaxy handler' }}"
-galaxy_galaxyctl_update_handler_name: "{{ 'galaxyctl update' if galaxy_systemd_mode == 'gravity' else 'default galaxyctl update handler' }}"
 
 #
 # systemd options

@@ -127,7 +127,7 @@
         backup: "{{ galaxy_backup_configfiles }}"
         mode: "{{ galaxy_config_perms }}"
       notify:
-        - "{{ galaxy_galaxyctl_update_handler_name }}"
+        - galaxyctl update
         - "{{ galaxy_restart_handler_name }}"
 
   remote_user: "{{ galaxy_remote_users.privsep | default(__galaxy_remote_user) }}"

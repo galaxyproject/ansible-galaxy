@@ -5,10 +5,6 @@
   debug:
     msg: "RESTARTER NOT IMPLEMENTED - Please restart Galaxy manually. You can define your own handler and enable it with `galaxy_restart_handler_name`"
 
-- name: default galaxyctl update handler
-  debug:
-    msg: "No-op for non-Gravity-managed Galaxy, this can be ignored"
-
 - name: daemon reload
   systemd:
     daemon_reload: yes
@@ -41,3 +37,4 @@
   command: "{{ galaxy_venv_dir }}/bin/galaxyctl update"
   environment:
     GRAVITY_STATE_DIR: "{{ galaxy_gravity_state_dir }}"
+  when: "galaxy_systemd_mode == 'gravity'"
