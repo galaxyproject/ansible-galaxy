@@ -6,17 +6,20 @@ After=time-sync.target
 [Service]
 UMask=022
 Type=simple
+{% if galaxy_systemd_root %}
 User={{ __galaxy_user_name }}
 Group={{ __galaxy_user_group }}
+{% endif %}
 WorkingDirectory={{ galaxy_server_dir }}
 TimeoutStartSec=10
-ExecStart={{ galaxy_venv_dir }}/bin/uwsgi {{ '--yaml' if galaxy_config_style in ('yaml', 'yml') else '--ini' }} {{ galaxy_config_file }}
+ExecStart={{ galaxy_systemd_command }}
 
 Environment=HOME={{ galaxy_root }}
 Environment=VIRTUAL_ENV={{ galaxy_venv_dir }}
 Environment=PATH={{ galaxy_venv_dir }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin
 Environment=DOCUTILSCONFIG=
 Environment=PYTHONPATH={{ galaxy_dynamic_job_rules_dir }}
+Environment=GRAVITY_STATE_DIR={{ galaxy_gravity_state_dir }}
 {% for env in galaxy_systemd_env %}
 Environment={{ env }}
 {% endfor %}

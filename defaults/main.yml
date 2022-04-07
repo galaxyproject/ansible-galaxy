@@ -19,6 +19,7 @@ galaxy_fetch_dependencies: yes
 galaxy_build_client: yes
 galaxy_manage_errordocs: no
 galaxy_backup_configfiles: yes
+galaxy_manage_gravity: yes
 galaxy_manage_systemd: no # For Galaxy
 galaxy_manage_systemd_reports: no # For Reports
 
@@ -242,6 +243,14 @@ galaxy_errordocs_prefix: /error
 galaxy_config_files: []
 galaxy_config_templates: []
 
+# Default Gravity configuration
+galaxy_gravity_state_dir: "{{ (galaxy_mutable_data_dir, 'gravity') | path_join }}"
+galaxy_gravity_config_default:
+  galaxy_root: "{{ galaxy_server_dir }}"
+  # TODO: log_dir
+  virtualenv: "{{ galaxy_venv_dir }}"
+  app_server: gunicorn
+
 # Default uWSGI configuration
 galaxy_uwsgi_yaml_parser: internal
 galaxy_uwsgi_config_default:
@@ -288,14 +297,22 @@ galaxy_client_build_steps:
     - plugins
 
 # Restart handler is already set if using the systemd options in this role, otherwise you need to define one yourself
-galaxy_restart_handler_name: "{{ 'galaxy mule restart' if (galaxy_systemd_mode == 'mule' and galaxy_manage_systemd) else 'default restart galaxy handler' }}"
+galaxy_restart_handler_name: "{{ 'galaxy ' ~ galaxy_systemd_mode ~ ' restart' if galaxy_manage_systemd else 'default restart galaxy handler' }}"
 
 #
 # systemd options
 #
 
-# Currently `mule` is the only systemd mode
+# Currently `mule` (aka uWSGI) and `gravity` (runs Galaxy 22.01+ under gunicorn) are supported
 galaxy_systemd_mode: mule
+
+# Control whether the systemd service unit is installed/controlled as root or the Galaxy user
+galaxy_systemd_root: true
+
+galaxy_systemd_command: "{{ __galaxy_systemd_command[galaxy_systemd_mode] }}"
+__galaxy_systemd_command:
+  mule: "{{ galaxy_venv_dir }}/bin/uwsgi {{ '--yaml' if galaxy_config_style in ('yaml', 'yml') else '--ini' }} {{ galaxy_config_file }}"
+  gravity: "{{ galaxy_venv_dir }}/bin/galaxyctl start --foreground --quiet"
 
 # Systemd will create cgroups to enforce these limits (sizes in GB), override individual limits by setting
 # `galaxy_systemd_memory_limit.<limit>` in your vars.

@@ -6,24 +6,30 @@
   debug:
     msg: "RESTARTER NOT IMPLEMENTED - Please restart Galaxy manually. You can define your own handler and enable it with `galaxy_restart_handler_name`"
 
-- name: email administrator with commit id
-  mail:
-    from: "{{ galaxy_admin_email_from | default( 'root' ) }}"
-    to: "{{ galaxy_admin_email_to }}"
-    subject: "Galaxy instance {{ galaxy_instance_hostname | default( inventory_hostname ) }} is at commit {{ galaxy_commit_id }}"
-    body: " "
-  when: galaxy_admin_email_to is defined
-
 - name: daemon reload
   systemd:
     daemon_reload: yes
+    scope: "{{ galaxy_systemd_root | ternary(omit, 'user') }}"
 
 - name: galaxy mule start
   systemd:
-      name: galaxy.service
-      state: started
+    name: galaxy.service
+    state: started
+    scope: "{{ galaxy_systemd_root | ternary(omit, 'user') }}"
 
 - name: galaxy mule restart
   systemd:
-      name: galaxy.service
-      state: restarted
+    name: galaxy.service
+    state: restarted
+    scope: "{{ galaxy_systemd_root | ternary(omit, 'user') }}"
+
+- name: galaxy gravity start
+  systemd:
+    name: galaxy.service
+    state: started
+    scope: "{{ galaxy_systemd_root | ternary(omit, 'user') }}"
+
+- name: galaxy gravity restart
+  command: "{{ galaxy_venv_dir }}/bin/galaxyctl graceful"
+  environment:
+    GRAVITY_STATE_DIR: "{{ galaxy_gravity_state_dir }}"
