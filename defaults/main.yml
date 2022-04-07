@@ -314,6 +314,9 @@ __galaxy_systemd_command:
   mule: "{{ galaxy_venv_dir }}/bin/uwsgi {{ '--yaml' if galaxy_config_style in ('yaml', 'yml') else '--ini' }} {{ galaxy_config_file }}"
   gravity: "{{ galaxy_venv_dir }}/bin/galaxyctl start --foreground --quiet"
 
+# TimeoutStartSec is unfortunately also the timeout used for reload operations, which take longer
+galaxy_systemd_timeout_start_sec: "{{ (galaxy_systemd_mode == 'gravity') | ternary(60, 10) }}"
+
 # Systemd will create cgroups to enforce these limits (sizes in GB), override individual limits by setting
 # `galaxy_systemd_memory_limit.<limit>` in your vars.
 __galaxy_systemd_memory_limit:

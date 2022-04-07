@@ -11,8 +11,12 @@ User={{ __galaxy_user_name }}
 Group={{ __galaxy_user_group }}
 {% endif %}
 WorkingDirectory={{ galaxy_server_dir }}
-TimeoutStartSec=10
+TimeoutStartSec={{ galaxy_systemd_timeout_start_sec }}
 ExecStart={{ galaxy_systemd_command }}
+{% if galaxy_systemd_mode == 'gravity' %}
+ExecReload={{ galaxy_venv_dir }}/bin/galaxyctl graceful
+ExecStop={{ galaxy_venv_dir }}/bin/galaxyctl shutdown
+{% endif %}
 
 Environment=HOME={{ galaxy_root }}
 Environment=VIRTUAL_ENV={{ galaxy_venv_dir }}
