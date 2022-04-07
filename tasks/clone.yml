@@ -16,7 +16,6 @@
       register: __galaxy_git_update_result
       notify:
         - "{{ galaxy_restart_handler_name }}"
-        - email administrator with commit id
 
     - name: Report Galaxy version change
       debug:
