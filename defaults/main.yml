@@ -311,3 +311,6 @@ __galaxy_systemd_memory_limit_merged: "{{ __galaxy_systemd_memory_limit | combin
 
 # A list of KEY=val strings to be added as `Environment=KEY=val` to the systemd service unit
 galaxy_systemd_env: []
+
+# A list of additional python packages to install into galaxy's virtual environment
+galaxy_additional_venv_packages: []

@@ -36,6 +36,16 @@
         VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
       when: (not ansible_check_mode) and conditional_dependencies.stdout_lines | length > 0
 
+    - name: Install additional packages into galaxy's virtual environment
+      pip:
+        name: "{{ galaxy_additional_venv_packages }}"
+        virtualenv: "{{ galaxy_venv_dir }}"
+        virtualenv_command: "{{ galaxy_virtualenv_command | default(pip_virtualenv_command | default(omit)) }}"
+      environment:
+        PYTHONPATH: null
+        VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+      when: galaxy_additional_venv_packages
+
   remote_user: "{{ galaxy_remote_users.privsep | default(__galaxy_remote_user) }}"
   become: "{{ true if galaxy_become_users.privsep is defined else __galaxy_become }}"
   become_user: "{{ galaxy_become_users.privsep | default(__galaxy_become_user) }}"
