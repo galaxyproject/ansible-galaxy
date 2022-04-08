@@ -44,7 +44,7 @@
       environment:
         PYTHONPATH: null
         VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
-      when: galaxy_additional_venv_packages is not []
+      when: galaxy_additional_venv_packages
 
   remote_user: "{{ galaxy_remote_users.privsep | default(__galaxy_remote_user) }}"
   become: "{{ true if galaxy_become_users.privsep is defined else __galaxy_become }}"
