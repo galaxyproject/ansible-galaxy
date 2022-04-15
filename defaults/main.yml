@@ -302,19 +302,17 @@ galaxy_client_build_steps:
     - stageLibs
     - plugins
 
-# Restart handler is already set if using the systemd options in this role, otherwise you need to define one yourself
-galaxy_restart_handler_name: "{{ 'galaxy ' ~ galaxy_systemd_mode ~ ' restart' if galaxy_manage_systemd else 'default restart galaxy handler' }}"
-
 #
 # systemd options
 #
 
 # Currently `mule` (aka uWSGI) and `gravity` (runs Galaxy 22.01+ under gunicorn) are supported
-galaxy_systemd_mode: mule
+galaxy_systemd_mode: "{{ 'mule' if __galaxy_major_version is version('22.05', '<') else 'gravity' }}"
 
 # Control whether the systemd service unit is installed/controlled as root or the Galaxy user
 galaxy_systemd_root: true
 
+# The command that systemd will run to start Galaxy, depends on galaxy_systemd_mode or override
 galaxy_systemd_command: "{{ __galaxy_systemd_command[galaxy_systemd_mode] }}"
 __galaxy_systemd_command:
   mule: "{{ galaxy_venv_dir }}/bin/uwsgi {{ '--yaml' if galaxy_config_style in ('yaml', 'yml') else '--ini' }} {{ galaxy_config_file }}"

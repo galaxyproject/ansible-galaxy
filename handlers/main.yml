@@ -1,37 +1,33 @@
 ---
 # defaults file for galaxyproject.galaxy
 
-- name: default restart galaxy handler
-  debug:
-    msg: "RESTARTER NOT IMPLEMENTED - Please restart Galaxy manually. You can define your own handler and enable it with `galaxy_restart_handler_name`"
-
-- name: daemon reload
+- name: systemd daemon reload
   systemd:
     daemon_reload: yes
     scope: "{{ galaxy_systemd_root | ternary(omit, 'user') }}"
 
-- name: galaxy mule start
+- name: galaxy systemd start
   systemd:
     name: galaxy.service
     state: started
     scope: "{{ galaxy_systemd_root | ternary(omit, 'user') }}"
+  when: "galaxy_systemd_mode == 'gravity'"
+  listen: "start galaxy"
 
 - name: galaxy mule restart
   systemd:
     name: galaxy.service
     state: restarted
     scope: "{{ galaxy_systemd_root | ternary(omit, 'user') }}"
-
-- name: galaxy gravity start
-  systemd:
-    name: galaxy.service
-    state: started
-    scope: "{{ galaxy_systemd_root | ternary(omit, 'user') }}"
+  when: "galaxy_systemd_mode == 'mule'"
+  listen: "restart galaxy"
 
 - name: galaxy gravity restart
   command: "{{ galaxy_venv_dir }}/bin/galaxyctl graceful"
   environment:
     GRAVITY_STATE_DIR: "{{ galaxy_gravity_state_dir }}"
+  when: "galaxy_systemd_mode == 'gravity'"
+  listen: "restart galaxy"
 
 - name: galaxyctl update
   command: "{{ galaxy_venv_dir }}/bin/galaxyctl update"

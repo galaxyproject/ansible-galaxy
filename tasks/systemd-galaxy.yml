@@ -3,6 +3,10 @@
 - name: Manage Paths
   block:
 
+    - name: Ensure Galaxy version is set
+      include_tasks: _inc_galaxy_version.yml
+      when: __galaxy_major_version is undefined
+
     - name: Deploy Galaxy Unit
       template:
         owner: "{{ galaxy_systemd_root | ternary('root', omit) }}"
@@ -11,10 +15,11 @@
         src: systemd/galaxy.service.j2
         dest: "{{ galaxy_systemd_root | ternary('/etc/systemd/system/', ('~' ~ __galaxy_user_name ~ '/.config/systemd/user') | expanduser) }}/galaxy.service"
       notify:
-        - daemon reload
-        - "{{ galaxy_restart_handler_name }}"
+        - systemd daemon reload
+        - start galaxy
+        - restart galaxy
 
-    - name: Enable Galaxy Unit
+    - name: Enable Galaxy service unit
       systemd:
         name: galaxy.service
         enabled: yes

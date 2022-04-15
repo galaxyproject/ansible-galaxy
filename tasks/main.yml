@@ -134,9 +134,9 @@
   tags:
     - galaxy_manage_gravity
 
-- name: Include systemd unit setup tasks (Mules)
+- name: Include systemd unit setup tasks (Galaxy)
   include_tasks:
-    file: systemd-mule.yml
+    file: systemd-galaxy.yml
     apply:
       tags: galaxy_manage_systemd
   when: galaxy_manage_systemd and galaxy_systemd_mode in ["mule", "gravity"]
