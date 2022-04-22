@@ -5,6 +5,11 @@ on: [pull_request]
 
 jobs:
   setup:
+    strategy:
+      matrix:
+        galaxy-version:
+          - 21.01
+          - 22.01
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -20,7 +25,7 @@ jobs:
       - name: Run Test
         run: |
             export ANSIBLE_STDOUT_CALLBACK=yaml
-            ansible-playbook -i "localhost, " -c local tests/test_playbook.yml
+            ansible-playbook -i "localhost, " -c local tests/test_playbook.yml -e "galaxy_commit_id=release_${{ matrix.galaxy-version }}"
             systemctl status galaxy || true
             journalctl -u galaxy
             sleep 10
