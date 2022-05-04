@@ -1,4 +1,4 @@
-Galaxy
+Galaxy123
 ======
 
 An [Ansible][ansible] role for installing and managing [Galaxy][galaxyproject] servers.  Despite the name confusion,
