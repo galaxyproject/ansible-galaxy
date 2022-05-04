@@ -22,6 +22,11 @@ jobs:
             pip3 install 'ansible<2.11'
             printf '[defaults]\nroles_path = ../\ninterpreter_python = /usr/bin/python3' > ansible.cfg
 
+      - name: debug with tmate
+        uses: mxschmitt/action-tmate@v3
+        with:
+          limit-access-to-actor: true
+
       - name: Run Test
         run: |
             export ANSIBLE_STDOUT_CALLBACK=yaml
