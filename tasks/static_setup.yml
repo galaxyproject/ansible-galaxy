@@ -112,7 +112,7 @@
 
     - name: Create Galaxy container resolvers configuration file
       copy:
-        dest: "{{ galaxy_config_merged[galaxy_app_config_section].containers_resolvers_config_file }}"
+        dest: "{{ galaxy_config_merged[galaxy_app_config_section].container_resolvers_config_file }}"
         content: |
           ---
           ## This file is managed by Ansible.  ALL CHANGES WILL BE OVERWRITTEN.
