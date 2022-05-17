@@ -26,6 +26,7 @@
     galaxy_config:
       galaxy:
         database_connection: sqlite:///{{ galaxy_mutable_data_dir }}/universe.sqlite
+        conda_auto_init: false
     # needed because we've disabled facts
     ansible_user_uid: "{{ lookup('env', 'UID') }}"
     ansible_user_id: "{{ lookup('env', 'USER') }}"
