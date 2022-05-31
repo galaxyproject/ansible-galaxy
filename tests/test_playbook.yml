@@ -13,6 +13,9 @@
     galaxy_manage_download: no
     galaxy_manage_existing: no
     galaxy_manage_systemd: yes
+    # role default is < 22.05
+    galaxy_manage_gravity: "{{ false if __galaxy_major_version is version('22.01', '<') else true }}"
+    galaxy_systemd_mode: "{{ 'mule' if __galaxy_major_version is version('22.01', '<') else 'gravity' }}"
     galaxy_config_style: yaml
     galaxy_layout: root-dir
     galaxy_root: /srv/galaxy
@@ -23,6 +26,7 @@
     galaxy_config:
       galaxy:
         database_connection: sqlite:///{{ galaxy_mutable_data_dir }}/universe.sqlite
+        conda_auto_init: false
     # needed because we've disabled facts
     ansible_user_uid: "{{ lookup('env', 'UID') }}"
     ansible_user_id: "{{ lookup('env', 'USER') }}"

@@ -15,8 +15,7 @@
       diff: "{{ galaxy_diff_mode_verbose }}"
       register: __galaxy_git_update_result
       notify:
-        - "{{ galaxy_restart_handler_name }}"
-        - email administrator with commit id
+        - restart galaxy
 
     - name: Report Galaxy version change
       debug:

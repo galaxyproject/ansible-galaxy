@@ -16,7 +16,7 @@
         mode: "{{ galaxy_config_perms }}"
       with_items: "{{ galaxy_config_files }}"
       notify:
-        - "{{ galaxy_restart_handler_name }}"
+        - restart galaxy
 
     - name: Install additional Galaxy config files (template)
       template:
@@ -26,7 +26,7 @@
         mode: "{{ galaxy_config_perms }}"
       with_items: "{{ galaxy_config_templates }}"
       notify:
-        - "{{ galaxy_restart_handler_name }}"
+        - restart galaxy
 
     - name: Install local tools
       copy:
@@ -127,7 +127,8 @@
         backup: "{{ galaxy_backup_configfiles }}"
         mode: "{{ galaxy_config_perms }}"
       notify:
-        - "{{ galaxy_restart_handler_name }}"
+        - galaxyctl update
+        - restart galaxy
 
   remote_user: "{{ galaxy_remote_users.privsep | default(__galaxy_remote_user) }}"
   become: "{{ true if galaxy_become_users.privsep is defined else __galaxy_become }}"
