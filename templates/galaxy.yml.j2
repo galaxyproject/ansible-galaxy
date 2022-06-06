@@ -12,6 +12,8 @@
 {% set _gravity_config = galaxy_config.gravity | default(galaxy_gravity_config_default) -%}
 {{ {'gravity': _gravity_config} | to_nice_yaml(indent=4) }}
 
+
+{% if section %}
 {% set _uwsgi_config = galaxy_config.uwsgi | default(galaxy_uwsgi_config_default) -%}
 {% if galaxy_uwsgi_yaml_parser == 'libyaml' %}
 {{ {'uwsgi': _uwsgi_config} | to_nice_yaml(indent=4) }}
@@ -20,7 +22,7 @@
 {% endif %}
 
 {#- add any other defined sections -#}
-{% for section, val in galaxy_config | dictsort if section not in ('uwsgi', galaxy_app_config_section) %}
+{% for section, val in galaxy_config | dictsort if section not in ('uwsgi', 'gravity', galaxy_app_config_section) %}
 {{ {section: val} | to_nice_yaml(indent=4) }}
 {% endfor %}
 {{ {galaxy_app_config_section: galaxy_config_merged[galaxy_app_config_section]} | to_nice_yaml(indent=4) }}
