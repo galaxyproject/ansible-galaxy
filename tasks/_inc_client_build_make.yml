@@ -1,5 +1,9 @@
 ---
 
+- name: Set brand color
+  shell: sed -i -e 's/^\$brand-primary.*$/\$brand-primary={{ brand_primary }}/' {{ galaxy_server_dir }}/client/src/style/scss/theme/blue.scss
+  when: brand_primary is defined
+
 - name: Build client
   make:
     chdir: "{{ galaxy_server_dir }}"
