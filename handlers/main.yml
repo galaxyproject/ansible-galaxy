@@ -11,7 +11,7 @@
     name: galaxy.service
     state: started
     scope: "{{ galaxy_systemd_root | ternary(omit, 'user') }}"
-  when: "galaxy_systemd_mode == 'gravity'"
+  when: "galaxy_systemd_mode == 'gravity' and galaxy_manage_systemd"
   listen: "start galaxy"
 
 - name: galaxy mule restart
@@ -19,14 +19,14 @@
     name: galaxy.service
     state: restarted
     scope: "{{ galaxy_systemd_root | ternary(omit, 'user') }}"
-  when: "galaxy_systemd_mode == 'mule'"
+  when: "galaxy_systemd_mode == 'mule' and galaxy_manage_systemd"
   listen: "restart galaxy"
 
 - name: galaxy gravity restart
   command: "{{ galaxy_venv_dir }}/bin/galaxyctl graceful"
   environment:
     GRAVITY_STATE_DIR: "{{ galaxy_gravity_state_dir }}"
-  when: "galaxy_systemd_mode == 'gravity'"
+  when: "galaxy_systemd_mode == 'gravity' and galaxy_manage_systemd"
   listen: "restart galaxy"
 
 - name: galaxyctl update
