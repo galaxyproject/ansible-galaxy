@@ -14,6 +14,7 @@
         dest: "{{ item.dest }}"
         backup: "{{ galaxy_backup_configfiles }}"
         mode: "{{ galaxy_config_perms }}"
+        group: "{{ __galaxy_user_group }}"
       with_items: "{{ galaxy_config_files }}"
       notify:
         - restart galaxy
@@ -24,6 +25,7 @@
         dest: "{{ item.dest }}"
         backup: "{{ galaxy_backup_configfiles }}"
         mode: "{{ galaxy_config_perms }}"
+        group: "{{ __galaxy_user_group }}"
       with_items: "{{ galaxy_config_templates }}"
       notify:
         - restart galaxy
@@ -41,6 +43,7 @@
         src: local_tool_conf.xml.j2
         dest: "{{ galaxy_config_dir }}/local_tool_conf.xml"
         mode: "{{ galaxy_config_perms }}"
+        group: "{{ __galaxy_user_group }}"
       when: galaxy_local_tools is defined
 
     - name: Append local_tool_conf.xml to tool_config_file Galaxy config option
@@ -126,6 +129,7 @@
         dest: "{{ galaxy_config_file }}"
         backup: "{{ galaxy_backup_configfiles }}"
         mode: "{{ galaxy_config_perms }}"
+        group: "{{ __galaxy_user_group }}"
       notify:
         - galaxyctl update
         - restart galaxy
