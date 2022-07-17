@@ -48,12 +48,12 @@
 
     - name: Append local_tool_conf.xml to tool_config_file Galaxy config option
       set_fact:
-        galaxy_tool_config_files: "{{ galaxy_tool_config_files }} + ['{{ galaxy_config_dir ~ '/local_tool_conf.xml' }}']"
+        galaxy_tool_config_files: "{{ galaxy_tool_config_files + [galaxy_config_dir ~ '/local_tool_conf.xml'] }}"
       when: galaxy_local_tools is defined
 
     - name: Append shed_tool_conf.xml to tool_config_file Galaxy config option
       set_fact:
-        galaxy_tool_config_files: "{{ galaxy_tool_config_files }} + ['{{ galaxy_shed_tool_config_file }}']"
+        galaxy_tool_config_files: "{{ galaxy_tool_config_files + [galaxy_shed_tool_config_file] }}"
       when: __galaxy_major_version is version('19.09', '<') and galaxy_shed_tool_config_file not in galaxy_tool_config_files
 
     - name: Ensure dynamic job rules paths exists
