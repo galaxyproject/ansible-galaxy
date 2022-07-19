@@ -1,0 +1,34 @@
+[Unit]
+Description=Galaxy Celery Beat
+After=network.target
+After=time-sync.target
+
+[Service]
+UMask=022
+Type=simple
+{% if galaxy_systemd_root %}
+User={{ __galaxy_user_name }}
+Group={{ __galaxy_user_group }}
+{% endif %}
+WorkingDirectory={{ galaxy_server_dir }}
+TimeoutStartSec={{ galaxy_systemd_timeout_start_sec }}
+ExecStart=celery --app galaxy.celery worker --concurrency 2 --loglevel DEBUG --pool threads --queues celery,galaxy.internal,galaxy.external
+
+Environment=HOME={{ galaxy_root }}
+Environment=VIRTUAL_ENV={{ galaxy_venv_dir }}
+Environment=PATH={{ galaxy_venv_dir }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin
+Environment=DOCUTILSCONFIG=
+Environment=PYTHONPATH=lib
+Environment=GALAXY_CONFIG_FILE={{ galaxy_config_file }}
+{% for env in galaxy_systemd_env %}
+Environment={{ env }}
+{% endfor %}
+MemoryLimit={{ __galaxy_systemd_memory_limit_merged.celery }}G
+Restart=always
+
+MemoryAccounting=yes
+CPUAccounting=yes
+BlockIOAccounting=yes
+
+[Install]
+WantedBy=multi-user.target

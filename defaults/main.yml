@@ -316,6 +316,7 @@ galaxy_systemd_root: true
 galaxy_systemd_command: "{{ __galaxy_systemd_command[galaxy_systemd_mode] }}"
 __galaxy_systemd_command:
   mule: "{{ galaxy_venv_dir }}/bin/uwsgi {{ '--yaml' if galaxy_config_style in ('yaml', 'yml') else '--ini' }} {{ galaxy_config_file }}"
+  systemd: "gunicorn 'galaxy.webapps.galaxy.fast_factory:factory()' --timeout 300 --pythonpath lib -k galaxy.webapps.galaxy.workers.Worker -b {{ galaxy_config.galaxy.gravity.gunicorn.bind }} --workers={{ galaxy_config.galaxy.gravity.gunicorn.workers | default(2) }} {{ galaxy_config.galaxy.gravity.gunicorn.extra_args }}" 
   gravity: "{{ galaxy_venv_dir }}/bin/galaxyctl start --foreground --quiet"
 
 # TimeoutStartSec is unfortunately also the timeout used for reload operations, which take longer
