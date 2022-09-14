@@ -151,3 +151,12 @@
   when: galaxy_manage_systemd_reports
   tags:
     - galaxy_manage_systemd_reports
+
+- name: Include cleanup scheduling tasks
+  include_tasks:
+    file: cleanup.yml
+    apply:
+      tags: galaxy_manage_cleanup
+  when: galaxy_manage_cleanup
+  tags:
+    - galaxy_manage_cleanup

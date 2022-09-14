@@ -22,6 +22,7 @@ galaxy_backup_configfiles: yes
 galaxy_manage_gravity: "{{ false if __galaxy_major_version is version('22.05', '<') else true }}"
 galaxy_manage_systemd: no # For Galaxy
 galaxy_manage_systemd_reports: no # For Reports
+galaxy_manage_cleanup: no
 
 
 # Control whether to output verbose task diffs (e.g. when performing a git update) when running Ansible with --diff.
@@ -124,6 +125,72 @@ galaxy_dynamic_job_rules_dir: "{{ galaxy_server_dir }}/lib/galaxy/jobs/rules"
 
 # List of dynamic rules to install
 galaxy_dynamic_job_rules: []
+
+#
+# Cleanup
+#
+
+# Galaxy can leave behind certain job and execution artifacts that make debugging failures easier, but can consume a lot
+# of disk space. This option uses the standard tmpwatch (RedHat) or tmpreaper (Debian) utility to clean up files and
+# directories older than a given age in these direcotires.
+#
+# This utility must be installed on your Galaxy server. This role does not install it for you. See the utility's man
+# page for a more detailed understanding of the options below.
+
+# List of directories to clean
+galaxy_tmpclean_dirs:
+  - "{{ galaxy_job_working_directory }}"
+  - "{{ galaxy_config.galaxy.new_file_path | default((galaxy_mutable_data_dir, 'tmp') | path_join) }}"
+
+# Files and directories with a *modification time* older than this are removed
+galaxy_tmpclean_age: 30d
+
+# Log the command output, default (true) is cron mail, set to a path to log to file instead or YAML null to send to
+# /dev/null
+galaxy_tmpclean_log: true
+
+# File in /etc/cron.d to write the cron job, set to YAML null to use user crontab instead
+galaxy_tmpclean_cron_file: ansible_galaxy_tmpclean
+
+# Set the tmpwatch/tmpreaper -v option, which outputs a line for each deletion
+galaxy_tmpclean_verbose: false
+
+# When to run the cron job, hash keys correspond to the cron module options:
+#   https://docs.ansible.com/ansible/latest/collections/ansible/builtin/cron_module.html
+#
+#galaxy_tmpclean_time:
+#  special_time:
+#  hour:
+#  minute:
+#  day:
+#  month:
+#  weekday:
+#
+# Use @daily by default:
+galaxy_tmpclean_time:
+  special_time: daily
+
+# On Debian-based systems, the tmpreaper command has a maximum runtime to help avoid race conditions. This default of 20
+# hours is suitable for the default daily frequency above but should be adjusted if you run with a different frequency.
+galaxy_tmpclean_tmpreaper_runtime: "{{ 20 * 60 * 60 }}"
+
+# You generally shouldn't have to mess with the rest of the options in this section
+
+_galaxy_tmpclean_command:
+  redhat: "/usr/bin/tmpwatch -all --mtime --dirmtime"
+  debian: "/usr/sbin/tmpreaper --all --mtime --mtime-dir --runtime={{ galaxy_tmpclean_tmpreaper_runtime }}"
+
+galaxy_tmpclean_verbose_statement: "{{ galaxy_tmpclean_verbose | ternary(' -v', '') }}"
+galaxy_tmpclean_log_statement: >-
+  {{ (galaxy_tmpclean_log is not true) | ternary(
+      ((galaxy_tmpclean_log is none) | ternary(
+          '>/dev/null',
+          '>>' ~ galaxy_tmpclean_log
+      )),
+      ''
+  ) }}
+  
+galaxy_tmpclean_command: "{{ _galaxy_tmpclean_command[(ansible_os_family | lower)] }}{{ galaxy_tmpclean_verbose_statement }}"
 
 #
 # Version control
