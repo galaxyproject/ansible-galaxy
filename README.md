@@ -237,6 +237,9 @@ Several variables control which functions this role will perform (all default to
   system (and using the `systemctl` command).
 - `galaxy_manage_errordocs` (default: `no`): Install Galaxy-styled 413 and 502 HTTP error documents for nginx. Requires
   write privileges for the nginx error document directory.
+- `galaxy_manage_cleanup` (default: `no`): Install a cron job to clean up Galaxy framework and job execution temporary
+  files. Requires `tmpwatch(8)` on RedHat-based systems or `tmpreaper(8)` on Debian-based systems. See the
+  `galaxy_tmpclean_*` vars in the [defaults file][defaults] for details.
 
 [client-build]: https://github.com/galaxyproject/galaxy/blob/dev/client/README.md#complete-client-build
 [systemd]: https://www.freedesktop.org/wiki/Software/systemd/

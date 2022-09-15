@@ -1,0 +1,34 @@
+---
+
+- name: Schedule tmpclean cron job (root)
+  ansible.builtin.cron:
+    name: "galaxy_tmpclean"
+    job: "{{ galaxy_tmpclean_command }} {{ galaxy_tmpclean_age | quote }} {{ galaxy_tmpclean_dirs | map('quote') | join(' ') }} {{ galaxy_tmpclean_log_statement }}"
+    cron_file: "{{ galaxy_tmpclean_cron_file }}"
+    user: "{{ galaxy_user.name }}"
+    hour: "{{ galaxy_tmpclean_time.hour | default(omit) }}"
+    minute: "{{ galaxy_tmpclean_time.minute | default(omit) }}"
+    day: "{{ galaxy_tmpclean_time.day | default(omit) }}"
+    month: "{{ galaxy_tmpclean_time.month | default(omit) }}"
+    weekday: "{{ galaxy_tmpclean_time.weekday | default(omit) }}"
+    special_time: "{{ galaxy_tmpclean_time.special_time | default(omit) }}"
+  when: galaxy_tmpclean_cron_file is not none
+  remote_user: "{{ galaxy_remote_users.root | default(__galaxy_remote_user) }}"
+  become: "{{ true if galaxy_become_users.root is defined else __galaxy_become }}"
+  become_user: "{{ galaxy_become_users.root | default(__galaxy_become_user) }}"
+
+# In theory this could also run as root with the user param set, but I don't feel like adding a yet another config option and task for this scenario
+- name: Schedule tmpclean cron job (user)
+  ansible.builtin.cron:
+    name: "galaxy_tmpclean"
+    job: "{{ galaxy_tmpclean_command }} {{ galaxy_tmpclean_age | quote }} {{ galaxy_tmpclean_dirs | map('quote') | join(' ') }} {{ galaxy_tmpclean_log_statement }}"
+    hour: "{{ galaxy_tmpclean_time.hour | default(omit) }}"
+    minute: "{{ galaxy_tmpclean_time.minute | default(omit) }}"
+    day: "{{ galaxy_tmpclean_time.day | default(omit) }}"
+    month: "{{ galaxy_tmpclean_time.month | default(omit) }}"
+    weekday: "{{ galaxy_tmpclean_time.weekday | default(omit) }}"
+    special_time: "{{ galaxy_tmpclean_time.special_time | default(omit) }}"
+  when: galaxy_tmpclean_cron_file is none
+  remote_user: "{{ galaxy_remote_users.galaxy | default(__galaxy_remote_user) }}"
+  become: "{{ true if galaxy_become_users.galaxy is defined else __galaxy_become }}"
+  become_user: "{{ galaxy_become_users.galaxy | default(__galaxy_become_user) }}"
