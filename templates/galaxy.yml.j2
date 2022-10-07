@@ -12,12 +12,13 @@
 {% set _gravity_config = galaxy_config.gravity | default(galaxy_gravity_config_default) -%}
 {{ {'gravity': _gravity_config} | to_nice_yaml(indent=4) }}
 
-
+{% if __galaxy_major_version is version('22.05', '<') %}
 {% set _uwsgi_config = galaxy_config.uwsgi | default(galaxy_uwsgi_config_default) -%}
 {% if galaxy_uwsgi_yaml_parser == 'libyaml' %}
 {{ {'uwsgi': _uwsgi_config} | to_nice_yaml(indent=4) }}
 {% else %}
 {{ {'uwsgi': _uwsgi_config} | to_uwsgi_yaml(indent=4) }}
+{% endif %}
 {% endif %}
 
 {#- add any other defined sections -#}
