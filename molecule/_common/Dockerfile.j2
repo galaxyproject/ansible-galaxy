@@ -1,0 +1,18 @@
+FROM {{ item.image }}
+
+RUN \
+  if [ $(command -v apt-get) ]; then \
+    apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y systemd systemd-sysv python3 \
+    && apt-get clean; \
+  elif [ $(command -v dnf) ]; then \
+    dnf makecache \
+    && dnf --assumeyes install python3 \
+    && dnf clean all; \
+  elif [ $(command -v yum) ]; then \
+    yum makecache fast \
+    && yum install -y centos-release-scl \
+    && yum install -y rh-python38 \
+    && ln -s /opt/rh/rh-python38/root/usr/bin/python3 /usr/bin/python3 \
+    && yum clean all; \
+  fi

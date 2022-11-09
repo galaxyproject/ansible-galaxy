@@ -1,0 +1,22 @@
+---
+dependency:
+  name: galaxy
+  options:
+    force: false  # don't fetch every time
+    role-file: molecule/_common/requirements.yml
+    requirements-file: molecule/_common/requirements.yml
+driver:
+  name: docker
+platforms:
+  - name: galaxy-scenario-default-el-7
+    image: centos:7
+    command: /usr/lib/systemd/systemd
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    #privileged: true
+    dockerfile: ../_common/Dockerfile.j2
+    pre_build_image: false
+provisioner:
+  name: ansible
+verifier:
+  name: ansible
