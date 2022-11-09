@@ -1,0 +1,28 @@
+FROM {{ item.image }}
+
+RUN \
+  if [ $(command -v apt-get) ]; then \
+    apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y systemd systemd-sysv python3 \
+    && apt-get clean; \
+  elif [ $(command -v dnf) ]; then \
+    dnf makecache \
+    && dnf --assumeyes install python$(dnf info --available python38 >/dev/null 2>&1 && echo 38 || echo 3) \
+    && dnf clean all; \
+  elif [ $(command -v yum) ]; then \
+    yum makecache fast \
+    && yum install -y centos-release-scl python-setuptools \
+    && yum install -y rh-python38 rh-git227 \
+    && ln -s /opt/rh/rh-python38/root/usr/bin/python3 /usr/bin/python3 \
+    && printf '#!/bin/sh\nexec scl enable rh-git227 -- git "$@"\n' > /usr/bin/git \
+    && chmod +x /usr/bin/git \
+    && yum clean all; \
+  fi
+
+{% if item.image.startswith("centos:") or item.image.startswith("rockylinux:") %}
+CMD ["/usr/lib/systemd/systemd"]
+{% elif item.image.startswith("ubuntu:") %}
+CMD ["/lib/systemd/systemd"]
+{% else %}
+CMD ["/sbin/init"]
+{% endif %}
