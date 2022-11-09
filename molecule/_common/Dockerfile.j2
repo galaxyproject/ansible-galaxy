@@ -11,7 +11,7 @@ RUN \
     && dnf clean all; \
   elif [ $(command -v yum) ]; then \
     yum makecache fast \
-    && yum install -y centos-release-scl \
+    && yum install -y centos-release-scl python-setuptools \
     && yum install -y rh-python38 \
     && ln -s /opt/rh/rh-python38/root/usr/bin/python3 /usr/bin/python3 \
     && yum clean all; \

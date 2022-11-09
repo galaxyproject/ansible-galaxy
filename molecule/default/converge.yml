@@ -27,12 +27,6 @@
         conda_auto_init: false
     pip_virtualenv_command: /usr/bin/python3 -m venv
   pre_tasks:
-    - debug:
-        var: pip_virtualenv_command
-    - pip:
-        name: pip
-        virtualenv: /tmp/test
-        virtualenv_command: "{{ pip_virtualenv_command }}"
     - name: Install dependencies (yum)
       yum:
         name: [sudo, git, make, bzip2]
