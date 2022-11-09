@@ -14,7 +14,6 @@ jobs:
       matrix:
         scenario:
           - default
-          - create-destroy
     steps:
       - uses: actions/checkout@v2
 
