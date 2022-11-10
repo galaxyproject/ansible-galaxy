@@ -12,7 +12,9 @@ RUN \
   elif [ $(command -v yum) ]; then \
     yum makecache fast \
     && yum install -y centos-release-scl python-setuptools \
-    && yum install -y rh-python38 \
+    && yum install -y rh-python38 rh-git227 \
     && ln -s /opt/rh/rh-python38/root/usr/bin/python3 /usr/bin/python3 \
+    && printf '#!/bin/sh\nexec scl enable rh-git227 -- git "$@"\n' > /usr/bin/git \
+    && chmod +x /usr/bin/git \
     && yum clean all; \
   fi
