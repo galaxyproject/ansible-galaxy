@@ -18,3 +18,11 @@ RUN \
     && chmod +x /usr/bin/git \
     && yum clean all; \
   fi
+
+{% if item.image.startswith("centos:") or item.image.startswith("rockylinux:") %}
+CMD ["/usr/lib/systemd/systemd"]
+{% elif item.image.startswith("ubuntu:") %}
+CMD ["/lib/systemd/systemd"]
+{% else %}
+CMD ["/sbin/init"]
+{% endif %}

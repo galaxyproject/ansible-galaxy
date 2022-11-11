@@ -2,7 +2,7 @@
 - name: Converge
   hosts: all
   vars:
-    galaxy_commit_id: release_21.01
+    galaxy_commit_id: "{{ lookup('env', 'GALAXY_COMMIT_ID') }}"
     galaxy_create_user: yes
     galaxy_manage_paths: yes
     galaxy_manage_clone: yes

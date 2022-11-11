@@ -14,8 +14,15 @@ jobs:
       matrix:
         scenario:
           - default
+        molecule-image:
+          - centos:7
+        galaxy-version:
+          - '21.01'
+          - '22.01'
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
 
       - uses: actions/setup-python@v2
         with:
@@ -30,3 +37,4 @@ jobs:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'
           ANSIBLE_STDOUT_CALLBACK: yaml
+          GALAXY_COMMIT_ID: '${{ matrix.galaxy-version }}'
