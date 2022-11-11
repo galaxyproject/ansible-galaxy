@@ -14,8 +14,9 @@ jobs:
       matrix:
         scenario:
           - default
-        molecule-image:
+        from-image:
           - centos:7
+          - ubuntu:20.04
         galaxy-version:
           - '21.01'
           - '22.01'
@@ -28,8 +29,10 @@ jobs:
         with:
           python-version: '3.x'
 
+      # The molecule-docker pin can be removed after molecule-docker>2.1.0 is released, see:
+      # https://github.com/ansible-community/molecule/issues/3733
       - name: Install dependencies
-        run: pip3 install molecule[docker] ansible-core
+        run: pip3 install molecule[docker] ansible-core 'molecule-docker!=2.1.0'
 
       - name: Run molecule
         run: molecule test -s ${{ matrix.scenario }}
@@ -37,4 +40,5 @@ jobs:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'
           ANSIBLE_STDOUT_CALLBACK: yaml
+          FROM_IMAGE: '${{ matrix.from-image }}'
           GALAXY_COMMIT_ID: '${{ matrix.galaxy-version }}'
