@@ -7,7 +7,7 @@ RUN \
     && apt-get clean; \
   elif [ $(command -v dnf) ]; then \
     dnf makecache \
-    && dnf --assumeyes install python3 \
+    && dnf --assumeyes install python$(dnf info --available python38 >/dev/null 2>&1 && echo 38 || echo 3) \
     && dnf clean all; \
   elif [ $(command -v yum) ]; then \
     yum makecache fast \
