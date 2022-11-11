@@ -23,6 +23,12 @@ jobs:
         galaxy-version:
           - '21.01'
           - '22.01'
+        exclude:
+          # wheels often don't exist in the combination of old package versions in older galaxy releases for newer
+          # python versions in newer operating systems; nobody should be installing an old galaxy on a new os anyway, so
+          # we can just skip those combinations.
+          - from-image: ubuntu:22.04
+            galaxy-version: '21.01'
     steps:
       - uses: actions/checkout@v2
         with:
