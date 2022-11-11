@@ -32,5 +32,13 @@
         #name: [sudo, git, make, bzip2]
         name: [sudo, make, bzip2]
       when: ansible_os_family == "RedHat" and ansible_distribution_major_version is version("8", "<")
+    - name: Install dependencies (dnf)
+      dnf:
+        name: [sudo, git, make, bzip2]
+      when: ansible_os_family == "RedHat" and ansible_distribution_major_version is version("8", ">=")
+    - name: Install dependencies (apt)
+      apt:
+        name: [sudo, git, make, python3-venv, python3-setuptools]
+      when: ansible_os_family == "Debian"
   roles:
     - role: galaxyproject.galaxy
