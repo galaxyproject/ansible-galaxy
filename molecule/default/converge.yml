@@ -2,7 +2,6 @@
 - name: Converge
   hosts: all
   vars:
-    galaxy_commit_id: "{{ lookup('env', 'GALAXY_COMMIT_ID') }}"
     galaxy_create_user: yes
     galaxy_manage_paths: yes
     galaxy_manage_clone: yes
@@ -25,6 +24,7 @@
         conda_auto_init: false
     pip_virtualenv_command: /usr/bin/python3 -m venv
   pre_tasks:
+
     - name: Install dependencies (yum)
       yum:
         # For completeness this should include git, but on EL7 we install a newer git from SCL in the Dockerfile to deal
@@ -40,5 +40,23 @@
       apt:
         name: [sudo, git, make, python3-venv, python3-setuptools]
       when: ansible_os_family == "Debian"
+
+    # This is to cheat at idempotence, which will fail if a commit is merged between converge and idempotence.
+    - name: Check whether server dir exists
+      stat:
+        path: "{{ galaxy_root }}/server"
+      register: __molecule_dir_check
+    - name: Collect current commit id
+      git:
+        clone: false
+        dest: "{{ galaxy_root }}/server"
+        repo: https://github.com/galaxyproject/galaxy.git
+      changed_when: false
+      become: "{{ __molecule_dir_check.stat.exists }}"
+      become_user: "{{ galaxy_privsep_user }}"
+      register: __molecule_git_check
+    - name: Set galaxy_commit_id
+      set_fact:
+        galaxy_commit_id: "{{ __molecule_git_check.before or lookup('env', 'GALAXY_COMMIT_ID') }}"
   roles:
     - role: galaxyproject.galaxy
