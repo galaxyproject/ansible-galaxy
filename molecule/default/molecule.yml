@@ -20,6 +20,6 @@ platforms:
 provisioner:
   name: ansible
   env:
-    GALAXY_COMMIT_ID: ${GALAXY_COMMIT_ID:-dev}
+    GALAXY_VERSION: ${GALAXY_VERSION:-dev}
 verifier:
   name: ansible

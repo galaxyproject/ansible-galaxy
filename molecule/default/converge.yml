@@ -2,6 +2,7 @@
 - name: Converge
   hosts: all
   vars:
+    __galaxy_version: "{{ lookup('env', 'GALAXY_VERSION') }}"
     galaxy_create_user: yes
     galaxy_manage_paths: yes
     galaxy_manage_clone: yes
@@ -57,6 +58,6 @@
       register: __molecule_git_check
     - name: Set galaxy_commit_id
       set_fact:
-        galaxy_commit_id: "{{ __molecule_git_check.before or lookup('env', 'GALAXY_COMMIT_ID') }}"
+        galaxy_commit_id: "{{ __molecule_git_check.before or ((__galaxy_version == 'dev') | ternary('dev', 'release_' ~ __galaxy_version)) }}"
   roles:
     - role: galaxyproject.galaxy

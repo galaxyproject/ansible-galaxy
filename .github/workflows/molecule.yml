@@ -54,3 +54,4 @@ jobs:
           ANSIBLE_STDOUT_CALLBACK: yaml
           FROM_IMAGE: '${{ matrix.from-image }}'
           GALAXY_COMMIT_ID: 'release_${{ matrix.galaxy-version }}'
+          GALAXY_VERSION: '${{ matrix.galaxy-version }}'
