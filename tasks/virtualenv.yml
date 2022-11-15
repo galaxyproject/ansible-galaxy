@@ -8,7 +8,7 @@
   pip:
     name: pip
     virtualenv: "{{ galaxy_venv_dir }}"
-    extra_args: "{{ pip_extra_args | default('') }}"
+    extra_args: "{{ pip_extra_args | default(omit) }}"
     virtualenv_command: "{{ galaxy_virtualenv_command | default(pip_virtualenv_command | default(omit)) }}"
     virtualenv_python: "{{ galaxy_virtualenv_python | default(omit) }}"
   environment:
@@ -18,7 +18,6 @@
   pip:
     name:
       - pip
-      - setuptools
     state: "{{ galaxy_pip_version | default('latest') }}"
     extra_args: "{{ pip_extra_args | default('') }}"
     virtualenv: "{{ galaxy_venv_dir }}"
