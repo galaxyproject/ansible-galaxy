@@ -25,6 +25,7 @@ jobs:
           - '21.01'
           - '22.01'
           - '22.05'
+          - '23.0'
         exclude:
           # wheels often don't exist in the combination of old package versions in older galaxy releases for newer
           # python versions in newer operating systems; nobody should be installing an old galaxy on a new os anyway, so
