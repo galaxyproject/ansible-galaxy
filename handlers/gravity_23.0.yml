@@ -6,9 +6,13 @@
   environment:
     GRAVITY_STATE_DIR: "{{ galaxy_gravity_state_dir }}"
   listen: "restart galaxy"
+  become: yes
+  become_user: "{{ __galaxy_user_name }}"
 
 - name: galaxyctl update
   command: "{{ galaxy_venv_dir }}/bin/galaxyctl -c {{ galaxy_config_file }} update"
   environment:
     GRAVITY_STATE_DIR: "{{ galaxy_gravity_state_dir }}"
   listen: "galaxyctl update"
+  become: yes
+  become_user: "{{ __galaxy_user_name }}"
