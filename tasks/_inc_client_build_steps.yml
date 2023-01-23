@@ -38,8 +38,11 @@
     VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
     GXY_BUILD_SOURCEMAPS: 1
 
-- name: Store client version
-  copy:
-    content: "{{ __galaxy_current_commit_id }}"
-    dest: "{{ galaxy_static_dir }}/client_build_hash.txt"
-    mode: 0644
+- name: Stage built client
+  command: "yarn run stage-build"
+  args:
+    chdir: "{{ galaxy_server_dir }}/client"
+  environment:
+    PATH: "{{ galaxy_server_dir }}/client/node_modules/.bin:{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
+    VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+  when: "__galaxy_major_version is version('23.0', '>=')"
