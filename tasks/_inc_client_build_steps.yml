@@ -37,6 +37,17 @@
     PATH: "{{ galaxy_server_dir }}/client/node_modules/.bin:{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
     VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
     GXY_BUILD_SOURCEMAPS: 1
+  when: "__galaxy_major_version is version('23.0', '<')"
+
+- name: Run webpack  # noqa no-changed-when
+  command: "yarn run build{{ (galaxy_client_node_env == 'production') | ternary('-production', '') }}"
+  args:
+    chdir: "{{ galaxy_server_dir }}/client"
+  environment:
+    PATH: "{{ galaxy_server_dir }}/client/node_modules/.bin:{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
+    VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+    GXY_BUILD_SOURCEMAPS: 1
+  when: "__galaxy_major_version is version('23.0', '>=')"
 
 - name: Stage built client
   command: "yarn run stage-build"
