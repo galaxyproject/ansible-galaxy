@@ -19,6 +19,11 @@ galaxy_fetch_dependencies: yes
 galaxy_build_client: yes
 galaxy_manage_errordocs: no
 galaxy_backup_configfiles: yes
+galaxy_manage_gravity: "{{ false if __galaxy_major_version is version('22.05', '<') else true }}"
+galaxy_manage_systemd: no # For Galaxy
+galaxy_manage_systemd_reports: no # For Reports
+galaxy_manage_cleanup: no
+
 
 # Control whether to output verbose task diffs (e.g. when performing a git update) when running Ansible with --diff.
 # Only suppresses diff on tasks that are likely to be verbose, not all tasks
@@ -87,6 +92,9 @@ __galaxy_privsep_user_name: "{{ galaxy_privsep_user.name | default(galaxy_privse
 # If `galaxy_create_user` is enabled, the privsep user will also be created, but you can override this behavior
 galaxy_create_privsep_user: "{{ galaxy_create_user if __galaxy_privsep_user_name != 'root' else false }}"
 
+# Where to write Galaxy logs to
+galaxy_log_dir: "{{ galaxy_mutable_data_dir }}/log"
+
 # Directories to create as the Galaxy user if galaxy_manage_paths is enabled
 galaxy_dirs:
   - "{{ galaxy_mutable_data_dir }}"
@@ -96,6 +104,8 @@ galaxy_dirs:
   - "{{ galaxy_tool_dependency_dir }}"
   - "{{ galaxy_file_path }}"
   - "{{ galaxy_job_working_directory }}"
+  - "{{ galaxy_tool_data_path }}"
+  - "{{ galaxy_log_dir }}"
 
 # Directories to create as the privilege separated user if galaxy_manage_paths is enabled
 galaxy_privsep_dirs:
@@ -115,6 +125,72 @@ galaxy_dynamic_job_rules_dir: "{{ galaxy_server_dir }}/lib/galaxy/jobs/rules"
 
 # List of dynamic rules to install
 galaxy_dynamic_job_rules: []
+
+#
+# Cleanup
+#
+
+# Galaxy can leave behind certain job and execution artifacts that make debugging failures easier, but can consume a lot
+# of disk space. This option uses the standard tmpwatch (RedHat) or tmpreaper (Debian) utility to clean up files and
+# directories older than a given age in these direcotires.
+#
+# This utility must be installed on your Galaxy server. This role does not install it for you. See the utility's man
+# page for a more detailed understanding of the options below.
+
+# List of directories to clean
+galaxy_tmpclean_dirs:
+  - "{{ galaxy_job_working_directory }}"
+  - "{{ galaxy_config.galaxy.new_file_path | default((galaxy_mutable_data_dir, 'tmp') | path_join) }}"
+
+# Files and directories with a *modification time* older than this are removed
+galaxy_tmpclean_age: 30d
+
+# Log the command output, default (true) is cron mail, set to a path to log to file instead or YAML null to send to
+# /dev/null
+galaxy_tmpclean_log: true
+
+# File in /etc/cron.d to write the cron job, set to YAML null to use user crontab instead
+galaxy_tmpclean_cron_file: ansible_galaxy_tmpclean
+
+# Set the tmpwatch/tmpreaper -v option, which outputs a line for each deletion
+galaxy_tmpclean_verbose: false
+
+# When to run the cron job, hash keys correspond to the cron module options:
+#   https://docs.ansible.com/ansible/latest/collections/ansible/builtin/cron_module.html
+#
+#galaxy_tmpclean_time:
+#  special_time:
+#  hour:
+#  minute:
+#  day:
+#  month:
+#  weekday:
+#
+# Use @daily by default:
+galaxy_tmpclean_time:
+  special_time: daily
+
+# On Debian-based systems, the tmpreaper command has a maximum runtime to help avoid race conditions. This default of 20
+# hours is suitable for the default daily frequency above but should be adjusted if you run with a different frequency.
+galaxy_tmpclean_tmpreaper_runtime: "{{ 20 * 60 * 60 }}"
+
+# You generally shouldn't have to mess with the rest of the options in this section
+
+_galaxy_tmpclean_command:
+  redhat: "/usr/bin/tmpwatch -all --mtime --dirmtime"
+  debian: "/usr/sbin/tmpreaper --all --mtime --mtime-dir --runtime={{ galaxy_tmpclean_tmpreaper_runtime }}"
+
+galaxy_tmpclean_verbose_statement: "{{ galaxy_tmpclean_verbose | ternary(' -v', '') }}"
+galaxy_tmpclean_log_statement: >-
+  {{ (galaxy_tmpclean_log is not true) | ternary(
+      ((galaxy_tmpclean_log is none) | ternary(
+          '>/dev/null',
+          '>>' ~ galaxy_tmpclean_log
+      )),
+      ''
+  ) }}
+  
+galaxy_tmpclean_command: "{{ _galaxy_tmpclean_command[(ansible_os_family | lower)] }}{{ galaxy_tmpclean_verbose_statement }}"
 
 #
 # Version control
@@ -168,6 +244,9 @@ galaxy_config_file_template: "{{ galaxy_config_file_basename }}.j2"
 galaxy_config_file: "{{ galaxy_config_dir }}/{{ galaxy_config_file_basename }}"
 galaxy_app_config_section: "{{ 'galaxy' if galaxy_config_style in ('yaml', 'yml') else 'app:main' }}"
 
+# Galaxy configuration files will be written with these permissions (mode argument to Ansible copy/template module)
+galaxy_config_perms: 0640
+
 # The default Galaxy configuration, ensures that Galaxy can find all of the configs if galaxy_config_dir !=
 # galaxy_server_dir
 galaxy_paste_app_factory: "galaxy.web.buildapp:app_factory"
@@ -195,10 +274,16 @@ galaxy_app_config_default:
   file_path: "{{ galaxy_file_path }}"
   job_working_directory: "{{ galaxy_job_working_directory }}"
   tool_dependency_dir: "{{ galaxy_tool_dependency_dir }}"
+  tool_data_path: "{{ galaxy_tool_data_path }}"
 
   # Static config files
   tool_config_file: "{{ galaxy_tool_config_files | join(',') }}"
   shed_tool_config_file: "{{ galaxy_shed_tool_config_file }}"
+
+  # Static configs that default to .xml files in the config dir but the role writes as .yml if configured
+  job_metrics_config_file: "{{ galaxy_config_dir }}/job_metrics_conf.{{ (galaxy_job_metrics_plugins is defined) | ternary('yml', 'xml') }}"
+  dependency_resolvers_config_file: "{{ galaxy_config_dir }}/dependency_resolvers_conf.{{ (galaxy_dependency_resolvers is defined) | ternary('yml', 'xml') }}"
+  container_resolvers_config_file: "{{ (galaxy_container_resolvers is defined) | ternary(galaxy_config_dir ~ '/container_resolvers_conf.yml', none) }}"
 
   # Everything else
   visualization_plugins_directory: "config/plugins/visualizations"
@@ -228,6 +313,16 @@ galaxy_errordocs_prefix: /error
 # templates to be installed on the managed host.
 galaxy_config_files: []
 galaxy_config_templates: []
+
+# Default Gravity configuration
+galaxy_gravity_state_dir: "{{ (galaxy_mutable_data_dir, 'gravity') | path_join }}"
+galaxy_gravity_config_default:
+  galaxy_root: "{{ galaxy_server_dir }}"
+  log_dir: "{{ galaxy_log_dir }}"
+  virtualenv: "{{ galaxy_venv_dir }}"
+  app_server: gunicorn
+  gunicorn:
+    bind: localhost:8080
 
 # Default uWSGI configuration
 galaxy_uwsgi_yaml_parser: internal
@@ -274,3 +369,39 @@ galaxy_client_build_steps:
     - stageLibs
     - plugins
 
+#
+# systemd options
+#
+
+# Currently `mule` (aka uWSGI) and `gravity` (runs Galaxy 22.01+ under gunicorn) are supported
+galaxy_systemd_mode: "{{ 'mule' if __galaxy_major_version is version('22.05', '<') else 'gravity' }}"
+
+# Control whether the systemd service unit is installed/controlled as root or the Galaxy user
+galaxy_systemd_root: true
+
+# The command that systemd will run to start Galaxy, depends on galaxy_systemd_mode or override
+galaxy_systemd_command: "{{ __galaxy_systemd_command[galaxy_systemd_mode] }}"
+__galaxy_systemd_command:
+  mule: "{{ galaxy_venv_dir }}/bin/uwsgi {{ '--yaml' if galaxy_config_style in ('yaml', 'yml') else '--ini' }} {{ galaxy_config_file }}"
+  gravity: "{{ galaxy_venv_dir }}/bin/galaxyctl start --foreground --quiet"
+
+# TimeoutStartSec is unfortunately also the timeout used for reload operations, which take longer
+galaxy_systemd_timeout_start_sec: "{{ (galaxy_systemd_mode == 'gravity') | ternary(60, 10) }}"
+
+# Systemd will create cgroups to enforce these limits (sizes in GB), override individual limits by setting
+# `galaxy_systemd_memory_limit.<limit>` in your vars.
+__galaxy_systemd_memory_limit:
+  # This is for the entire group of uWSGI master, web worker, and mule processes
+  mule: 16
+  reports: 5
+  #workflow: 5
+  #zergpool: 8
+  #zergling: 16
+  #handler: 5
+__galaxy_systemd_memory_limit_merged: "{{ __galaxy_systemd_memory_limit | combine(galaxy_systemd_memory_limit | default({})) }}"
+
+# A list of KEY=val strings to be added as `Environment=KEY=val` to the systemd service unit
+galaxy_systemd_env: []
+
+# A list of additional python packages to install into galaxy's virtual environment
+galaxy_additional_venv_packages: []

@@ -1,0 +1,63 @@
+---
+- name: Converge
+  hosts: all
+  vars:
+    __galaxy_version: "{{ lookup('env', 'GALAXY_VERSION') }}"
+    galaxy_create_user: yes
+    galaxy_manage_paths: yes
+    galaxy_manage_clone: yes
+    galaxy_manage_download: no
+    galaxy_manage_existing: no
+    galaxy_manage_systemd: yes
+    # role default is < 22.05
+    galaxy_manage_gravity: "{{ false if __galaxy_major_version is version('22.01', '<') else true }}"
+    galaxy_systemd_mode: "{{ 'mule' if __galaxy_major_version is version('22.01', '<') else 'gravity' }}"
+    galaxy_config_style: yaml
+    galaxy_layout: root-dir
+    galaxy_root: /srv/galaxy
+    galaxy_separate_privileges: yes
+    galaxy_user: galaxy
+    galaxy_group: galaxy
+    galaxy_privsep_user: gxpriv
+    galaxy_config:
+      galaxy:
+        database_connection: sqlite:///{{ galaxy_mutable_data_dir }}/universe.sqlite
+        conda_auto_init: false
+    pip_virtualenv_command: /usr/bin/python3 -m venv
+  pre_tasks:
+
+    - name: Install dependencies (yum)
+      yum:
+        # For completeness this should include git, but on EL7 we install a newer git from SCL in the Dockerfile to deal
+        # with automatic line ending conversion in the default git 1.8 breaking idempotence
+        #name: [sudo, git, make, bzip2]
+        name: [sudo, make, bzip2]
+      when: ansible_os_family == "RedHat" and ansible_distribution_major_version is version("8", "<")
+    - name: Install dependencies (dnf)
+      dnf:
+        name: [sudo, git, make, bzip2]
+      when: ansible_os_family == "RedHat" and ansible_distribution_major_version is version("8", ">=")
+    - name: Install dependencies (apt)
+      apt:
+        name: [sudo, git, make, python3-venv, python3-setuptools]
+      when: ansible_os_family == "Debian"
+
+    # This is to cheat at idempotence, which will fail if a commit is merged between converge and idempotence.
+    - name: Check whether server dir exists
+      stat:
+        path: "{{ galaxy_root }}/server"
+      register: __molecule_dir_check
+    - name: Collect current commit id
+      git:
+        clone: false
+        dest: "{{ galaxy_root }}/server"
+        repo: https://github.com/galaxyproject/galaxy.git
+      changed_when: false
+      become: "{{ __molecule_dir_check.stat.exists }}"
+      become_user: "{{ galaxy_privsep_user }}"
+      register: __molecule_git_check
+    - name: Set galaxy_commit_id
+      set_fact:
+        galaxy_commit_id: "{{ __molecule_git_check.before or ((__galaxy_version == 'dev') | ternary('dev', 'release_' ~ __galaxy_version)) }}"
+  roles:
+    - role: galaxyproject.galaxy

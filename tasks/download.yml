@@ -13,6 +13,7 @@
       file:
         path: "{{ galaxy_server_dir }}"
         state: directory
+        mode: 0755
 
     - name: Install current version of Galaxy
       unarchive:
@@ -26,6 +27,7 @@
       file:
         path: "{{ galaxy_server_dir }}/{{ galaxy_commit_id }}_receipt"
         state: touch
+        mode: 0644
       when: not download_receipt.stat.exists
 
     - name: Include virtualenv setup tasks

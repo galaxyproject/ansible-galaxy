@@ -4,7 +4,7 @@
 - name: Include layout vars
   include_vars: "layout-{{ galaxy_layout | default('legacy') }}.yml"
 
-- name: Set any unset variables from layout defaults
+- name: Set any unset variables from layout defaults  # noqa var-naming
   set_fact:
     "{{ item }}": "{{ lookup('vars', '__' ~ item) }}"
   when: item not in vars
@@ -17,6 +17,7 @@
     - galaxy_shed_tools_dir
     - galaxy_cache_dir
     - galaxy_local_tools_dir
+    - galaxy_tool_data_path
 
 - name: Check that any explicitly set Galaxy config options match the values of explicitly set variables
   assert:
@@ -32,7 +33,7 @@
     - job_working_directory
     - shed_tool_config_file
 
-- name: Set any unset variables corresponding to Galaxy config options from galaxy_config or layout defaults
+- name: Set any unset variables corresponding to Galaxy config options from galaxy_config or layout defaults  # noqa var-naming
   set_fact:
     "{{ 'galaxy_' ~ item }}": "{{ ((galaxy_config | default({}))[galaxy_app_config_section] | default({}))[item] | default(lookup('vars', '__galaxy_' ~ item)) }}"
   when: "'galaxy_' ~ item not in vars"

@@ -1,0 +1,39 @@
+[Unit]
+Description=Galaxy
+After=network.target
+After=time-sync.target
+After=multi-user.target
+
+[Service]
+UMask=022
+Type=simple
+{% if galaxy_systemd_root %}
+User={{ __galaxy_user_name }}
+Group={{ __galaxy_user_group }}
+{% endif %}
+WorkingDirectory={{ galaxy_server_dir }}
+TimeoutStartSec={{ galaxy_systemd_timeout_start_sec }}
+ExecStart={{ galaxy_systemd_command }}
+{% if galaxy_systemd_mode == 'gravity' %}
+ExecReload={{ galaxy_venv_dir }}/bin/galaxyctl graceful
+ExecStop={{ galaxy_venv_dir }}/bin/galaxyctl shutdown
+{% endif %}
+
+Environment=HOME={{ galaxy_root }}
+Environment=VIRTUAL_ENV={{ galaxy_venv_dir }}
+Environment=PATH={{ galaxy_venv_dir }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin
+Environment=DOCUTILSCONFIG=
+Environment=PYTHONPATH={{ galaxy_dynamic_job_rules_dir }}
+Environment=GRAVITY_STATE_DIR={{ galaxy_gravity_state_dir }}
+{% for env in galaxy_systemd_env %}
+Environment={{ env }}
+{% endfor %}
+MemoryLimit={{ __galaxy_systemd_memory_limit_merged.mule }}G
+Restart=always
+
+MemoryAccounting=yes
+CPUAccounting=yes
+BlockIOAccounting=yes
+
+[Install]
+WantedBy=multi-user.target

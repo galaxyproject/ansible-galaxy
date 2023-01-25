@@ -10,7 +10,10 @@
         chdir: "{{ galaxy_server_dir }}"
       register: current_db_version
       changed_when: no
-      failed_when: current_db_version.rc != 0 and 'migrate.exceptions.DatabaseNotControlledError' not in current_db_version.stderr
+      failed_when:
+        - current_db_version.rc != 0
+        - "'migrate.exceptions.DatabaseNotControlledError' not in current_db_version.stderr"
+        - "'galaxy.model.migrations.NoVersionTableError' not in current_db_version.stderr"
       when: not ansible_check_mode
 
     - name: Get maximum Galaxy DB version
@@ -25,13 +28,21 @@
       debug:
         msg: "Current database version is {{ current_db_version.stdout }} and the maximum version is {{ max_db_version.stdout }}."
       changed_when: True
-      when: "(not ansible_check_mode) and (current_db_version.stdout != max_db_version.stdout and 'migrate.exceptions.DatabaseNotControlledError' not in current_db_version.stderr)"
+      when:
+        - not ansible_check_mode
+        - current_db_version.stdout != max_db_version.stdout
+        - "'migrate.exceptions.DatabaseNotControlledError' not in current_db_version.stderr"
+        - "'galaxy.model.migrations.NoVersionTableError' not in current_db_version.stderr"
 
     - name: Upgrade Galaxy DB
       command: "{{ galaxy_venv_dir }}/bin/python {{ galaxy_server_dir }}/scripts/manage_db.py -c {{ galaxy_config_file }} upgrade"
       args:
         chdir: "{{ galaxy_server_dir }}"
-      when: "(not ansible_check_mode) and current_db_version.stdout != max_db_version.stdout and 'migrate.exceptions.DatabaseNotControlledError' not in current_db_version.stderr"
+      when:
+        - not ansible_check_mode
+        - current_db_version.stdout != max_db_version.stdout
+        - "'migrate.exceptions.DatabaseNotControlledError' not in current_db_version.stderr"
+        - "'galaxy.model.migrations.NoVersionTableError' not in current_db_version.stderr"
 
   remote_user: "{{ galaxy_remote_users.galaxy | default(__galaxy_remote_user) }}"
   become: "{{ true if galaxy_become_users.galaxy is defined else __galaxy_become }}"

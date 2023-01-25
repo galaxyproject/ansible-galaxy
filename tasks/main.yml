@@ -35,6 +35,10 @@
   tags:
     - galaxy_create_user
 
+- name: Collect Galaxy user facts
+  import_tasks: user-facts.yml
+  tags: always
+
 - name: Include path management tasks
   include_tasks:
     file: paths.yml
@@ -120,3 +124,39 @@
   when: galaxy_manage_errordocs
   tags:
     - galaxy_manage_errordocs
+
+- name: Include Gravity setup tasks
+  include_tasks:
+    file: gravity.yml
+    apply:
+      tags: galaxy_manage_gravity
+  when: galaxy_manage_gravity
+  tags:
+    - galaxy_manage_gravity
+
+- name: Include systemd unit setup tasks (Galaxy)
+  include_tasks:
+    file: systemd-galaxy.yml
+    apply:
+      tags: galaxy_manage_systemd
+  when: galaxy_manage_systemd and galaxy_systemd_mode in ["mule", "gravity"]
+  tags:
+    - galaxy_manage_systemd
+
+- name: Include systemd unit setup tasks (Reports)
+  include_tasks:
+    file: systemd-reports.yml
+    apply:
+      tags: galaxy_manage_systemd_reports
+  when: galaxy_manage_systemd_reports
+  tags:
+    - galaxy_manage_systemd_reports
+
+- name: Include cleanup scheduling tasks
+  include_tasks:
+    file: cleanup.yml
+    apply:
+      tags: galaxy_manage_cleanup
+  when: galaxy_manage_cleanup
+  tags:
+    - galaxy_manage_cleanup
