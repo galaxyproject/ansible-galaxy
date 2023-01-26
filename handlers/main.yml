@@ -28,6 +28,7 @@
     GRAVITY_STATE_DIR: "{{ galaxy_gravity_state_dir }}"
   when: "galaxy_systemd_mode == 'gravity' and galaxy_manage_systemd"
   listen: "restart galaxy"
+  ignore_errors: yes
 
 - name: galaxyctl update
   command: "{{ galaxy_venv_dir }}/bin/galaxyctl update"
