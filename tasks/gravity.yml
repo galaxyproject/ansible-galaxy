@@ -8,11 +8,19 @@
       command: "{{ galaxy_venv_dir }}/bin/galaxyctl register {{ galaxy_config_file }}"
       args:
         creates: "{{ galaxy_gravity_state_dir }}/configstate.yaml"
+      when: __galaxy_major_version is version('23.0', '<')
 
     - name: Update Gravity process management files
       command: "{{ galaxy_venv_dir }}/bin/galaxyctl update"
       args:
         creates: "{{ galaxy_gravity_state_dir }}/supervisor/supervisord.conf.d"
+      when: __galaxy_major_version is version('23.0', '<')
+
+    - name: Update Gravity process management files
+      command: "{{ galaxy_venv_dir }}/bin/galaxyctl -c {{ galaxy_config_file }} update"
+      args:
+        creates: "{{ galaxy_gravity_state_dir }}/supervisor/supervisord.conf.d"
+      when: __galaxy_major_version is version('23.0', '>=')
 
   environment:
     GRAVITY_STATE_DIR: "{{ galaxy_gravity_state_dir }}"

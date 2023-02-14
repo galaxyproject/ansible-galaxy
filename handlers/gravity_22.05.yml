@@ -1,0 +1,14 @@
+---
+# handlers for gravity as used in galaxy version 22.05
+
+- name: galaxy gravity restart
+  command: "{{ galaxy_venv_dir }}/bin/galaxyctl graceful"
+  environment:
+    GRAVITY_STATE_DIR: "{{ galaxy_gravity_state_dir }}"
+  listen: "restart galaxy"
+
+- name: galaxyctl update
+  command: "{{ galaxy_venv_dir }}/bin/galaxyctl update"
+  environment:
+    GRAVITY_STATE_DIR: "{{ galaxy_gravity_state_dir }}"
+  listen: "galaxyctl update"
