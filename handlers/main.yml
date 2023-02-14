@@ -22,15 +22,12 @@
   when: "galaxy_systemd_mode == 'mule' and galaxy_manage_systemd"
   listen: "restart galaxy"
 
-- name: galaxy gravity restart
-  command: "{{ galaxy_venv_dir }}/bin/galaxyctl graceful"
-  environment:
-    GRAVITY_STATE_DIR: "{{ galaxy_gravity_state_dir }}"
-  when: "galaxy_systemd_mode == 'gravity' and galaxy_manage_systemd"
-  listen: "restart galaxy"
+- name: Include Gravity handlers (for 22.05)
+  import_tasks:
+    file: gravity_22.05.yml
+  when: "galaxy_systemd_mode == 'gravity' and galaxy_manage_systemd and __galaxy_major_version is version('23.0', '<')"
 
-- name: galaxyctl update
-  command: "{{ galaxy_venv_dir }}/bin/galaxyctl update"
-  environment:
-    GRAVITY_STATE_DIR: "{{ galaxy_gravity_state_dir }}"
-  when: "galaxy_systemd_mode == 'gravity'"
+- name: Include Gravity handlers (for 23.0)
+  import_tasks:
+    file: gravity_23.0.yml
+  when: "galaxy_systemd_mode == 'gravity' and galaxy_manage_systemd and __galaxy_major_version is version('23.0', '>=')"
