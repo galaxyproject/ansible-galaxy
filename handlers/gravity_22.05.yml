@@ -6,6 +6,7 @@
   environment:
     GRAVITY_STATE_DIR: "{{ galaxy_gravity_state_dir }}"
   listen: "restart galaxy"
+  ignore_errors: true
 
 - name: galaxyctl update
   command: "{{ galaxy_venv_dir }}/bin/galaxyctl update"
