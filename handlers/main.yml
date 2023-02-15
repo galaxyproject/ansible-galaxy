@@ -11,6 +11,11 @@
     name: galaxy.service
     state: started
     scope: "{{ galaxy_systemd_root | ternary(omit, 'user') }}"
+  register: serviceDetails
+  until: serviceDetails.status.ActiveState == "active"
+  retries: 3
+  delay: 20
+
   when: "galaxy_systemd_mode == 'gravity' and galaxy_manage_systemd"
   listen: "start galaxy"
 
