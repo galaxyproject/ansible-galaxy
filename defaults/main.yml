@@ -369,6 +369,13 @@ galaxy_client_build_steps:
     - stageLibs
     - plugins
 
+__galaxy_node_version_max:
+  "redhat7": "16.19.1"
+galaxy_node_version_max: >-
+  {{
+    (__galaxy_node_version_max[(ansible_os_family | lower) ~ ansible_distribution_major_version]) | default(galaxy_node_version)
+  }}
+
 #
 # systemd options
 #
