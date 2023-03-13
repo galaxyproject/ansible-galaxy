@@ -22,9 +22,9 @@ jobs:
           - ubuntu:20.04
           - ubuntu:22.04
         galaxy-version:
-          - '21.01'
           - '22.01'
           - '22.05'
+          - '23.0'
           - 'dev'
         exclude:
           # wheels often don't exist in the combination of old package versions in older galaxy releases for newer

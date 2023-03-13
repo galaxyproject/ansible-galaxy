@@ -4,6 +4,7 @@
 # Galaxy 18.09 and older prefer 9.11.1
 # Galaxy 19.01 prefers 10.13.0
 # Galaxy 19.05 and newer provide client/.node_version
+# Galaxy 23.0 and newer on EL7 or older requires a downgrade to 16
 
 - name: Determine preferred Node.js version
   block:
@@ -16,6 +17,19 @@
     - name: Set Galaxy Node.js version fact
       set_fact:
         galaxy_node_version: "{{ __galaxy_node_version_file['content'] | b64decode | trim }}"
+
+    - name: Report Node.js version file version
+      debug:
+        var: galaxy_node_version
+
+    - name: Override Galaxy Node.js version
+      set_fact:
+        galaxy_node_version: >-
+          {{
+            (
+             galaxy_node_version_max is version(galaxy_node_version, "<")
+            ) | ternary(galaxy_node_version_max, galaxy_node_version)
+          }}
 
     # if the client build is being executed independently, nodeenv may not be already installed.
     # If so, setup a virtualenv with nodeenv installed.
