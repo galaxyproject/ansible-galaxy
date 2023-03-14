@@ -30,4 +30,4 @@
 - name: Include Gravity handlers (for 23.0)
   import_tasks:
     file: gravity_23.0.yml
-  when: "galaxy_systemd_mode == 'gravity' and galaxy_manage_systemd and __galaxy_major_version is version('23.0', '>=')"
+  when: "galaxy_systemd_mode == 'gravity' and __galaxy_major_version is version('23.0', '>=')"
