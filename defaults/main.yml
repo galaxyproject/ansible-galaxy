@@ -107,12 +107,18 @@ galaxy_dirs:
   - "{{ galaxy_tool_data_path }}"
   - "{{ galaxy_log_dir }}"
 
+# Additional directories to create as the Galaxy user, so you don't have to copy the default galaxy_dirs
+galaxy_extra_dirs: []
+
 # Directories to create as the privilege separated user if galaxy_manage_paths is enabled
 galaxy_privsep_dirs:
   - "{{ galaxy_venv_dir }}"
   - "{{ galaxy_server_dir }}"
   - "{{ galaxy_config_dir }}"
   - "{{ galaxy_local_tools_dir }}"
+
+# Additional directories to create as the privilege separated user, so you don't have to copy the default galaxy_dirs
+galaxy_extra_privsep_dirs: []
 
 # Local (relative to playbook) path to local tools
 galaxy_local_tools_src_dir: files/galaxy/tools
