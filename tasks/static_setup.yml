@@ -8,14 +8,6 @@
       include_tasks: _inc_galaxy_version.yml
       when: __galaxy_major_version is undefined
 
-    - name: Create directories for config files
-      ansible.builtin.file:
-        state: directory
-        path: "{{ item }}"
-        mode: "{{ __galaxy_dir_perms }}"
-        group: "{{ __galaxy_user_group }}"
-      loop: "{{ (galaxy_config_files + galaxy_config_templates) | map(attribute='dest') | map('dirname') | unique }}"
-
     - name: Install additional Galaxy config files (static)
       copy:
         src: "{{ item.src }}"
