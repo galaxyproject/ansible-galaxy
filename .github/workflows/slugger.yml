@@ -16,7 +16,7 @@ name: "Automatic Regular Releases"
 on:
   workflow_dispatch:
   schedule:
-    - cron:  '0 0 * * 1'
+    - cron: '0 0 * * 1'
 
 jobs:
   release:
@@ -24,12 +24,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the codebase.
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
       - name: Set up Python 3.
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
           python-version: '3.x'
 
@@ -38,28 +38,35 @@ jobs:
 
       - name: Check for changes
         run: |
-          MOST_RECENT_TAG=$(git describe --tags --abbrev=0)
-          CHANGES=$(git diff ${MOST_RECENT_TAG} --name-only | wc -l)
-          echo "Found ${CHANGES} files"
-          git diff ${MOST_RECENT_TAG} --name-only
+          LATEST_TAG=$(git describe --tags --abbrev=0)
+          echo "The last released tag was ${LATEST_TAG}"
+          CHANGES=$(git diff ${LATEST_TAG} --name-only | wc -l)
+          echo "Found ${CHANGES} changed files"
+          git diff ${LATEST_TAG} --name-only
           echo "changed_files=${CHANGES}" >> $GITHUB_ENV
 
       - name: Create a new git tag
         run: |
-          MOST_RECENT_TAG=$(git describe --tags --abbrev=0)
-          major_minor=$(echo "$MOST_RECENT_TAG" | sed 's/\(.*\..*\.\)\(.*\)/\1/')
-          patch=$(echo "$MOST_RECENT_TAG" | sed 's/\(.*\..*\.\)\(.*\)/\2/')
+          LATEST_TAG=$(git describe --tags --abbrev=0)
+          major_minor=$(echo "$LATEST_TAG" | sed 's/\(.*\..*\.\)\(.*\)/\1/')
+          patch=$(echo "$LATEST_TAG" | sed 's/\(.*\..*\.\)\(.*\)/\2/')
           newpatch=$(echo "$patch + 1" | bc)
           NEW_TAG="${major_minor}${newpatch}"
-          echo "$MOST_RECENT_TAG -> $NEW_TAG"
+          echo "$LATEST_TAG -> $NEW_TAG"
 
           git config user.name github-actions
           git config user.email github-actions@github.com
           git tag "$NEW_TAG"
           git push --tags
+          echo "Creating new tag $NEW_TAG" >> $GITHUB_STEP_SUMMARY
         if: env.changed_files > 0
 
-      # We have to do this step as GHA prevents triggering it's own actions, to prevent runaway loops.
+      # We have to do this step as GHA prevents triggering it's own actions, to
+      # prevent runaway loops.
       - name: Trigger a new import on Galaxy.
-        run: ansible-galaxy role import --api-key ${{ secrets.GALAXY_API_KEY }} $(echo ${{ github.repository }} | cut -d/ -f1) $(echo ${{ github.repository }} | cut -d/ -f2) --branch main
+        run: |
+          org=$(echo ${{ github.repository }} | cut -d/ -f1)
+          repo=$(echo ${{ github.repository }} | cut -d/ -f2)
+          key=${{ secrets.GALAXY_API_KEY }}
+          ansible-galaxy role import --api-key $key $org $repo --branch main
         if: env.changed_files > 0
