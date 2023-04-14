@@ -246,6 +246,7 @@ galaxy_app_config_section: "{{ 'galaxy' if galaxy_config_style in ('yaml', 'yml'
 
 # Galaxy configuration files will be written with these permissions (mode argument to Ansible copy/template module)
 galaxy_config_perms: 0640
+galaxy_config_perms_public: 0644
 
 # The default Galaxy configuration, ensures that Galaxy can find all of the configs if galaxy_config_dir !=
 # galaxy_server_dir
@@ -313,6 +314,8 @@ galaxy_errordocs_prefix: /error
 # templates to be installed on the managed host.
 galaxy_config_files: []
 galaxy_config_templates: []
+# Like above, except with world readable permissions
+galaxy_config_files_public: []
 
 # Default Gravity configuration
 galaxy_gravity_state_dir: "{{ (galaxy_mutable_data_dir, 'gravity') | path_join }}"
