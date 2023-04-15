@@ -19,6 +19,17 @@
       notify:
         - restart galaxy
 
+    - name: Install additional Galaxy config files (static, public)
+      copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        backup: "{{ galaxy_backup_configfiles }}"
+        mode: "{{ galaxy_config_perms_public }}"
+        group: "{{ __galaxy_user_group }}"
+      with_items: "{{ galaxy_config_files_public }}"
+      notify:
+        - restart galaxy
+
     - name: Install additional Galaxy config files (template)
       template:
         src: "{{ item.src }}"
