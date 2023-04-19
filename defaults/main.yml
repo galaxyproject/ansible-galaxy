@@ -188,7 +188,7 @@ _galaxy_tmpclean_command:
 
 galaxy_tmpclean_verbose_statement: "{{ galaxy_tmpclean_verbose | ternary(' -v', '') }}"
 galaxy_tmpclean_log_statement: >-
-  {{ (galaxy_tmpclean_log is not true) | ternary(
+  {{ (galaxy_tmpclean_log != true) | ternary(
       ((galaxy_tmpclean_log is none) | ternary(
           '>/dev/null',
           '>>' ~ galaxy_tmpclean_log
