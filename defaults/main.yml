@@ -23,6 +23,7 @@ galaxy_manage_gravity: "{{ false if __galaxy_major_version is version('22.05', '
 galaxy_manage_systemd: no # For Galaxy
 galaxy_manage_systemd_reports: no # For Reports
 galaxy_manage_cleanup: no
+galaxy_manage_themes: no
 
 
 # Control whether to output verbose task diffs (e.g. when performing a git update) when running Ansible with --diff.
@@ -295,6 +296,50 @@ galaxy_app_config_default:
   # Everything else
   visualization_plugins_directory: "config/plugins/visualizations"
 
+  # Static and themes cofiguration, will only be added if galaxy_manage_themes
+  enable_static: "{{ galaxy_manage_themes }}"
+  static_dir_by_host: >
+    { {% if galaxy_manage_static %}
+    {% for subdomain in galaxy_names_subdomains %}
+    '{{ subdomain.names }}.{{ galaxy_themes_instance_domain}}': '{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/'
+    {% end for %}
+    {% end if %} }
+  static_images_dir_by_host: >
+    { {% if galaxy_manage_static %}
+    {% for subdomain in galaxy_names_subdomains %}
+    '{{ subdomain.names }}.{{ galaxy_themes_instance_domain}}': '{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/images'
+    {% end for %}
+    {% end if %} }
+  static_welcome_html_by_host: >
+    { {% if galaxy_manage_static %}
+    {% for subdomain in galaxy_names_subdomains %}
+    '{{ subdomain.names }}.{{ galaxy_themes_instance_domain}}': '{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/welcome.html'
+    {% end for %}
+    {% end if %} }
+  static_scripts_dir_by_host: >
+    { {% if galaxy_manage_static %}
+    {% for subdomain in galaxy_names_subdomains %}
+    '{{ subdomain.names }}.{{ galaxy_themes_instance_domain}}': '{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/scripts'
+    {% end for %}
+    {% end if %} }
+  static_favicon_dir_by_host: >
+    { {% if galaxy_manage_static %}
+    {% for subdomain in galaxy_names_subdomains %}
+    '{{ subdomain.names }}.{{ galaxy_themes_instance_domain}}': '{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/favicon.ico'
+    {% end for %}
+    {% end if %} }
+  static_robots_txt_by_host: >
+    { {% if galaxy_manage_static %}
+    {% for subdomain in galaxy_names_subdomains %}
+    '{{ subdomain.names }}.{{ galaxy_themes_instance_domain}}': '{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/robots.txt'
+    {% end for %}
+    {% end if %} }
+  themes_dir_by_host: >
+    { {% if galaxy_manage_themes %}
+    {% for subdomain in galaxy_names_subdomains %}
+    '{{ subdomain.names  }}.{{ galaxy_themes_instance_domain}}': {{ subdomain.name }}.yml
+    {% end for %}
+    {% end if %} }
 # Need to set galaxy_config_default[galaxy_app_config_section] dynamically but Ansible/Jinja2 does not make this easy
 galaxy_config_default: "{{ {} | combine({galaxy_app_config_section: galaxy_app_config_default}) }}"
 galaxy_config_merged: "{{ galaxy_config_default | combine(galaxy_config | default({}), recursive=True) }}"
@@ -425,3 +470,30 @@ galaxy_systemd_env: []
 
 # A list of additional python packages to install into galaxy's virtual environment
 galaxy_additional_venv_packages: []
+
+# galaxy themes variables
+galaxy_themes_subdomains: {}
+# - name: assembly
+#   tool_sections:
+#     - "hicexplorer"
+#     - "graph_display_data"
+#     - "peak_calling"
+#     - "assembly"
+#     - "annotation"
+#     - "genome_diversity"
+#     - "multiple_alignments"
+#   extra_tool_labels:
+#     - "proteomics"
+galaxy_themes_static_keys:
+  static_dir: ""
+  static_images_dir: "images/"
+  static_scripts_dir: "scripts/"
+  static_welcome_html: "welcome.html/"
+  static_favicon_dir: "favicon.ico"
+  static_robots_txt: "robots.txt"
+galaxy_themes_conf_path: files/galaxy/config/themes_conf.yml
+galaxy_themes_static_path: "{{ galaxy_root }}/server"
+galaxy_themes_static_dir: "{{ galaxy_root }}/server/static"
+galaxy_themes_welcome_url_prefix: https://usegalaxy-eu.github.io/index-
+galaxy_themes_ansible_file_path: files/galaxy/static
+galaxy_themes_instance_domain: usegalaxy.eu

@@ -1,0 +1,49 @@
+---
+- name: Create static dirs
+  ansible.builtin.file:
+    state: directory
+    mode: '0755'
+    owner: "{{ __galaxy_privsep_user_name }}"
+    group: "{{ __galaxy_privsep_user_group }}"
+    path: "{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}"
+
+- name: Move all contents from static to parent directory
+  ansible.builtin.command: cp -r {{ galaxy_themes_static_dir }}/. {{ galaxy_themes_static_path }}/static-{{ \
+   subdomain.name }}
+  changed_when: false
+
+- name: Remove static dirs
+  ansible.builtin.file:
+    state: absent
+    mode: '0755'
+    owner: "{{ __galaxy_privsep_user_name }}"
+    group: "{{ __galaxy_privsep_user_group }}"
+    path: "{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/static"
+
+- name: Create welcome.html directory
+  ansible.builtin.file:
+    state: directory
+    mode: '0755'
+    owner: "{{ __galaxy_privsep_user_name }}"
+    group: "{{ __galaxy_privsep_user_group }}"
+    path: "{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/welcome.html"
+
+- name: Check if iframe for subdomain exists
+  ansible.builtin.uri:
+    url: "{{ galaxy_themes_welcome_url_prefix }}{{ subdomain.name }}.html"
+    return_content: true
+  register: iframe
+
+- name: Template welcome.html for subdomains
+  ansible.builtin.template:
+    src: welcome.html.j2
+    dest: "{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/welcome.html/index.html"
+    owner: "{{ __galaxy_privsep_user_name }}"
+    group: "{{ __galaxy_privsep_user_group }}"
+    mode: '0644'
+
+- name: Copy static files
+  ansible.builtin.include_tasks: copy_static_files.yml
+  loop: "{{ galaxy_themes_static_keys | dict2items }}"
+  loop_control:
+    loop_var: object

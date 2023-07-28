@@ -1,0 +1,18 @@
+---
+- name: Copy static files
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "{{ galaxy_themes_static_path }}/static-{{ subdomain }}/{{ object.value }}"
+    mode: '0644'
+    owner: "{{ __galaxy_privsep_user_name }}"
+    group: "{{ __galaxy_privsep_user_group }}"
+  with_fileglob: "{{ galaxy_themes_ansible_file_path }}/{{ subdomain }}/static/{{ object.value }}*"
+
+- name: Copy files from dist
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "{{ galaxy_themes_static_path }}/static-{{ subdomain }}/dist/"
+    mode: '0644'
+    owner: "{{ __galaxy_privsep_user_name }}"
+    group: "{{ __galaxy_privsep_user_group }}"
+  with_fileglob: "{{ galaxy_themes_ansible_file_path }}/{{ subdomain }}/static/dist/*"
