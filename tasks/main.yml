@@ -162,7 +162,7 @@
     - galaxy_manage_cleanup
 
 - name: Include Copy static files
-  ansible.builtin.include_tasks: setup_static.yml
+  ansible.builtin.include_tasks: setup_static_dirs.yml
   loop: "{{ galaxy_themes_subdomains }}"
   loop_control:
     loop_var: subdomain
