@@ -33,6 +33,7 @@
     url: "{{ galaxy_themes_welcome_url_prefix }}{{ subdomain.name }}.html"
     return_content: true
   register: iframe
+  failed_when: false
 
 - name: Template welcome.html for subdomains
   ansible.builtin.template:

@@ -497,6 +497,7 @@ galaxy_themes_conf_path: files/galaxy/config/themes_conf.yml
 galaxy_themes_static_path: "{{ galaxy_root }}/server"
 galaxy_themes_static_dir: "{{ galaxy_root }}/server/static"
 galaxy_themes_welcome_url_prefix: https://usegalaxy-eu.github.io/index-
+galaxy_themes_default_welcome: https://galaxyproject.org
 galaxy_themes_ansible_file_path: files/galaxy/static
 galaxy_themes_instance_domain: usegalaxy.eu
 galaxy_themes_global_host_filters_path: "{{ galaxy_root }}/server/lib/galaxy/tool_util/toolbox/filters/global_host_filters.py"
