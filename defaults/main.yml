@@ -24,6 +24,7 @@ galaxy_manage_systemd: no # For Galaxy
 galaxy_manage_systemd_reports: no # For Reports
 galaxy_manage_cleanup: no
 galaxy_manage_themes: no
+galaxy_manage_static: no
 galaxy_manage_host_filters: no
 
 
