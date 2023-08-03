@@ -302,43 +302,43 @@ galaxy_app_config_default:
   static_dir_by_host: >
     { {% if galaxy_manage_static %}
     {% for subdomain in galaxy_themes_subdomains %}
-    '{{ subdomain.names }}.{{ galaxy_themes_instance_domain}}': '{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/'
+    '{{ subdomain.name }}.{{ galaxy_themes_instance_domain}}': '{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/'
     {% end for %}
     {% end if %} }
   static_images_dir_by_host: >
     { {% if galaxy_manage_static %}
     {% for subdomain in galaxy_themes_subdomains %}
-    '{{ subdomain.names }}.{{ galaxy_themes_instance_domain}}': '{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/images'
+    '{{ subdomain.name }}.{{ galaxy_themes_instance_domain}}': '{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/images'
     {% end for %}
     {% end if %} }
   static_welcome_html_by_host: >
     { {% if galaxy_manage_static %}
     {% for subdomain in galaxy_themes_subdomains %}
-    '{{ subdomain.names }}.{{ galaxy_themes_instance_domain}}': '{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/welcome.html'
+    '{{ subdomain.name }}.{{ galaxy_themes_instance_domain}}': '{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/welcome.html'
     {% end for %}
     {% end if %} }
   static_scripts_dir_by_host: >
     { {% if galaxy_manage_static %}
     {% for subdomain in galaxy_themes_subdomains %}
-    '{{ subdomain.names }}.{{ galaxy_themes_instance_domain}}': '{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/scripts'
+    '{{ subdomain.name }}.{{ galaxy_themes_instance_domain}}': '{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/scripts'
     {% end for %}
     {% end if %} }
   static_favicon_dir_by_host: >
     { {% if galaxy_manage_static %}
     {% for subdomain in galaxy_themes_subdomains %}
-    '{{ subdomain.names }}.{{ galaxy_themes_instance_domain}}': '{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/favicon.ico'
+    '{{ subdomain.name }}.{{ galaxy_themes_instance_domain}}': '{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/favicon.ico'
     {% end for %}
     {% end if %} }
   static_robots_txt_by_host: >
     { {% if galaxy_manage_static %}
     {% for subdomain in galaxy_themes_subdomains %}
-    '{{ subdomain.names }}.{{ galaxy_themes_instance_domain}}': '{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/robots.txt'
+    '{{ subdomain.name }}.{{ galaxy_themes_instance_domain}}': '{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/robots.txt'
     {% end for %}
     {% end if %} }
   themes_dir_by_host: >
     { {% if galaxy_manage_themes %}
     {% for subdomain in galaxy_themes_subdomains %}
-    '{{ subdomain.names  }}.{{ galaxy_themes_instance_domain}}': {{ subdomain.name }}.yml
+    '{{ subdomain.name  }}.{{ galaxy_themes_instance_domain}}': {{ subdomain.name }}.yml
     {% end for %}
     {% end if %} }
 # Need to set galaxy_config_default[galaxy_app_config_section] dynamically but Ansible/Jinja2 does not make this easy
