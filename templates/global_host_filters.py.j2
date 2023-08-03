@@ -58,7 +58,7 @@ def per_host_tool_sections( context, section ):
 
     # Core tools used by all virtual hosts.
     # HiCtools mode: published in NAR 2018
-    if host == "{{ galaxy_themesinstance_domain }}":
+    if host == "{{ galaxy_themes_instance_domain }}":
         return True
 
     if subdomain in DOMAIN_SECTIONS:
