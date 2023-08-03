@@ -105,6 +105,40 @@ The handler should "listen" to the topic `"restart galaxy"`.
 
 [gravity]: https://github.com/galaxyproject/gravity
 
+From release 22.01 Galaxy can serve different static content per host (e.g. subdomain) and you can set [themes][themes] per host.
+By setting `galaxy_manage_static: yes` you enable the creation of static directories and configuration per host and by setting `galaxy_manage_themes: yes` the role will append your themes_config.yml file specified under `galaxy_themes_conf_path` to your themes files after coping them over to your galaxy server and create the respective configuration.
+In order to use this features, you need to create the following directory structure under files/ (cusomizable with the `galaxy_themes_ansible_ansible_file_path` variable):
+~~~bash
+files/galaxy/static
+├──<subdomain-name-1>
+│   ├── static
+│   │   ├── dist (optional)
+│   │   │   └── some-image.png 
+│   │   ├── images (optional)
+│   │   │   └── more-content.jpg
+│   │   └── welcome.html
+│   └── themes 
+│       └── <subdomain-name-1>.yml           
+├── <subdomain-name-2>                            
+│   ├── static
+│   │   ├── dist (optional)
+│   │   │   ├── another-static-image.svg
+│   │   │   └── more-static-content-2.svg
+│   │   └── welcome.html
+│   └── themes
+│       └── <subdomain-name-1>.yml
+... (and many more subdomains)
+~~~
+Were the <subdomain-name-1> should exactly match your subdomain's name. The subdirectories `static` and `themes` are mandatory, as well as the correctly named theme file (if you enabled `galaxy_manage_themes`), while all subdirectories in `static` are optional.  
+Which subdirectories and files are copied is managed by the `static_galaxy_themes_keys` variable.
+
+Also make sure that you set `galaxy_themes_welcome_url_prefix`, so your welcome pages are templated correctly.
+
+It is mandatory to set the variables under `galaxy_themes_subdomains` as shown in the example in [defaults/main.yml](defaults/main.yml). If you enabled the `galaxy_manage_host_filters` variable, you can also specify the tool sections that should be shown for each individual subdomain.
+
+
+
+[themes]: https://training.galaxyproject.org/training-material/topics/admin/tutorials/customization/tutorial.html
 **New options for Galaxy 18.01 and later**
 
 - `galaxy_config_style` (default: `yaml`): The type of Galaxy configuration file to write, `yaml` for the YAML format supported by uWSGI or `ini-paste` for the traditional PasteDeploy-style INI file
@@ -503,3 +537,4 @@ This role was written and contributed to by the following people:
 - [John Chilton](https://github.com/jmchilton)
 - [Nate Coraor](https://github.com/natefoo)
 - [Helena Rasche](https://github.com/hexylena)
+- [Mira Kuntz](https://github.com/mira-miracoli)
