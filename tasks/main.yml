@@ -163,7 +163,7 @@
 
 - name: Include Copy static files
   ansible.builtin.include_tasks: setup_static_dirs.yml
-  loop: "{{ galaxy_themes_subdomains }}"
+  loop: "{{ galaxy_themes_subdomains if galaxy_themes_subdomains|length else [] }}"
   loop_control:
     loop_var: subdomain
   when: galaxy_manage_static
