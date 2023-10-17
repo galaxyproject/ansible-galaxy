@@ -161,18 +161,18 @@
   tags:
     - galaxy_manage_cleanup
 
-- name: Include Copy static files
+- name: Include create subdomain static dirs and copy static files
   ansible.builtin.include_tasks: setup_static_dirs.yml
   # fail only if enabled but dictionary is empty
   loop: "{{ galaxy_themes_subdomains if galaxy_themes_subdomains|length or \
     galaxy_manage_static else [] }}"
   loop_control:
     loop_var: subdomain
-  when: galaxy_manage_static
+  when: galaxy_manage_subdomain_static
   tags:
-    - galaxy_manage_static
+    - galaxy_manage_subdomain_static
 
-- name: Include Copy themes files
+- name: Include copy themes files
   ansible.builtin.include_tasks: themes.yml
   # fail only if enabled but dictionary is empty
   loop: "{{ galaxy_themes_subdomains if galaxy_themes_subdomains|length or \
