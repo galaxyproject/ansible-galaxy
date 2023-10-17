@@ -8,8 +8,13 @@
     path: "{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}"
 
 - name: Move all contents from static to parent directory
-  ansible.builtin.command: cp -r {{ galaxy_themes_static_dir }}/. {{ galaxy_themes_static_path }}/static-{{ \
-   subdomain.name }}
+  ansible.builtin.copy: 
+    src: "{{ galaxy_themes_static_dir }}"
+    dest: "{{ galaxy_themes_static_path }}/static-{{ \
+      subdomain.name }}"
+    owner: "{{ __galaxy_privsep_user_name }}"
+    group: "{{ __galaxy_privsep_user_group }}"
+    directory_mode: true
   changed_when: false
 
 - name: Remove static dirs
