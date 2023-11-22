@@ -161,11 +161,11 @@
   tags:
     - galaxy_manage_cleanup
 
-- name: Zip static directory
-  community.general.archive:
-    path: "{{ galaxy_themes_static_path }}/static/"
-    dest: "{{ galaxy_themes_static_path }}/static.gz"
-  when: galaxy_manage_subdomain_static
+#- name: Zip static directory
+#  community.general.archive:
+#    path: "{{ galaxy_themes_static_path }}/static/"
+#    dest: "{{ galaxy_themes_static_path }}/static.gz"
+#  when: galaxy_manage_subdomain_static
 
 - name: Include create subdomain static dirs and copy static files
   ansible.builtin.include_tasks: setup_static_dirs.yml
@@ -178,11 +178,11 @@
   tags:
     - galaxy_manage_subdomain_static
 
-- name: Remove static archive
-  ansible.builtin.file:
-    path: "{{ galaxy_themes_static_path }}/static.gz"
-    state: absent
-  when: galaxy_manage_subdomain_static
+#- name: Remove static archive
+#  ansible.builtin.file:
+#    path: "{{ galaxy_themes_static_path }}/static.gz"
+#    state: absent
+#  when: galaxy_manage_subdomain_static
 
 - name: Include copy themes files
   ansible.builtin.include_tasks: themes.yml

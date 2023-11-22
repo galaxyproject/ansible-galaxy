@@ -7,11 +7,12 @@
     group: "{{ __galaxy_privsep_user_group }}"
     path: "{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}"
 
-- name: Add generic static files to subdomain static dir
-  ansible.builtin.unarchive:
-    src: "{{ galaxy_themes_static_path }}/static.gz"
+- name: Synchronize contents from static to static-"{{ subdomain.name }}"
+  ansible.posix.synchronize:
+    src: "{{ galaxy_themes_static_path }}/static/"
     dest: "{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}"
-    remote_src: yes
+    rsync_opts: ["--ignore-existing"]
+  delegate_to: "{{ inventory_hostname }}"
 
 - name: Check if welcome.html is present in files
   ansible.builtin.stat:
@@ -43,7 +44,7 @@
     mode: '0644'
   when: not custom_welcome.stat.exists
 
-- name: Copy static files
+- name: Include copy_static_files.yml
   ansible.builtin.include_tasks: copy_static_files.yml
   loop: "{{ galaxy_themes_static_keys | dict2items }}"
   loop_control:
