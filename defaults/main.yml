@@ -26,6 +26,7 @@ galaxy_manage_cleanup: no
 galaxy_manage_themes: no
 galaxy_manage_subdomain_static: no
 galaxy_manage_host_filters: no
+galaxy_auto_brand: no # automatically sets the subdomain name as brand
 
 
 # Control whether to output verbose task diffs (e.g. when performing a git update) when running Ansible with --diff.
@@ -302,36 +303,42 @@ galaxy_app_config_default:
   static_enabled: "{{ galaxy_manage_subdomain_static }}"
   static_dir_by_host: >
     { {% if galaxy_manage_subdomain_static %}
+    '{{ galaxy_themes_instance_domain }}': '{{ galaxy_themes_static_path }}/static/',
     {% for subdomain in galaxy_themes_subdomains %}
     '{{ subdomain.name }}.{{ galaxy_themes_instance_domain}}': '{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/',
     {% endfor %}
     {% endif %} }
   static_images_dir_by_host: >
     { {% if galaxy_manage_subdomain_static %}
+    '{{ galaxy_themes_instance_domain }}': '{{ galaxy_themes_static_path }}/static/images',
     {% for subdomain in galaxy_themes_subdomains %}
     '{{ subdomain.name }}.{{ galaxy_themes_instance_domain}}': '{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/images',
     {% endfor %}
     {% endif %} }
   static_welcome_html_by_host: >
     { {% if galaxy_manage_subdomain_static %}
+    '{{ galaxy_themes_instance_domain }}': '{{ galaxy_themes_static_path }}/static/welcome.html',
     {% for subdomain in galaxy_themes_subdomains %}
     '{{ subdomain.name }}.{{ galaxy_themes_instance_domain}}': '{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/welcome.html',
     {% endfor %}
     {% endif %} }
   static_scripts_dir_by_host: >
     { {% if galaxy_manage_subdomain_static %}
+    '{{ galaxy_themes_instance_domain }}': '{{ galaxy_themes_static_path }}/static/scripts',
     {% for subdomain in galaxy_themes_subdomains %}
     '{{ subdomain.name }}.{{ galaxy_themes_instance_domain}}': '{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/scripts',
     {% endfor %}
     {% endif %} }
   static_favicon_dir_by_host: >
     { {% if galaxy_manage_subdomain_static %}
+    '{{ galaxy_themes_instance_domain }}': '{{ galaxy_themes_static_path }}/static',
     {% for subdomain in galaxy_themes_subdomains %}
     '{{ subdomain.name }}.{{ galaxy_themes_instance_domain}}': '{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}',
     {% endfor %}
     {% endif %} }
   static_robots_txt_by_host: >
     { {% if galaxy_manage_subdomain_static %}
+    '{{ galaxy_themes_instance_domain }}': '{{ galaxy_themes_static_path }}/static',
     {% for subdomain in galaxy_themes_subdomains %}
     '{{ subdomain.name }}.{{ galaxy_themes_instance_domain}}': '{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}',
     {% endfor %}
@@ -340,6 +347,13 @@ galaxy_app_config_default:
     { {% if galaxy_manage_themes %}
     {% for subdomain in galaxy_themes_subdomains %}
     '{{ subdomain.name  }}.{{ galaxy_themes_instance_domain}}': '{{ subdomain.name }}.yml',
+    {% endfor %}
+    {% endif %} }
+  brand_by_host: >
+    { {% if galaxy_auto_brand %}
+    '{{ galaxy_themes_instance_domain }}': '{{ galaxy_themes_instance_domain }}',
+    {% for subdomain in galaxy_themes_subdomains %}
+    '{{ subdomain.name  }}.{{ galaxy_themes_instance_domain}}': '{{ subdomain.name[0]|upper }}{{ subdomain.name[1:] }}',
     {% endfor %}
     {% endif %} }
 # Need to set galaxy_config_default[galaxy_app_config_section] dynamically but Ansible/Jinja2 does not make this easy
