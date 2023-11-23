@@ -34,7 +34,7 @@ jobs:
           python-version: '3.x'
 
       - name: Install Ansible.
-        run: pip3 install ansible-base
+        run: pip3 install six ansible-base
 
       - name: Check for changes
         run: |
