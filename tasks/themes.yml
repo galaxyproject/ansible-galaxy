@@ -1,0 +1,14 @@
+---
+- name: Append themes_conf.yml to all files in galaxy/config/themes
+  ansible.builtin.blockinfile:
+    block: "{{ lookup('ansible.builtin.file', galaxy_themes_conf_path) }}"
+    path: "{{ galaxy_themes_ansible_file_path }}/{{ subdomain.name }}/themes/{{ subdomain.name }}.yml"
+
+- name: Copy themes files
+  ansible.builtin.copy:
+    src: "{{ galaxy_themes_ansible_file_path }}/{{ subdomain.name }}/themes/{{ subdomain.name }}.yml"
+    dest: "{{ galaxy_config_dir }}"
+    mode: '0644'
+    owner: "{{ __galaxy_privsep_user_name }}"
+    group: "{{ __galaxy_privsep_user_group }}"
+

@@ -1,0 +1,51 @@
+---
+- name: Create subdomain static dirs
+  ansible.builtin.file:
+    state: directory
+    mode: '0755'
+    owner: "{{ __galaxy_privsep_user_name }}"
+    group: "{{ __galaxy_privsep_user_group }}"
+    path: "{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}"
+
+- name: Synchronize contents from static to static-"{{ subdomain.name }}"
+  ansible.posix.synchronize:
+    src: "{{ galaxy_themes_static_path }}/static/"
+    dest: "{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}"
+    rsync_opts: ["--ignore-existing"]
+  delegate_to: "{{ inventory_hostname }}"
+
+- name: Check if welcome.html is present in files
+  ansible.builtin.stat:
+    path: "{{ galaxy_themes_ansible_file_path }}/{{ subdomain.name }}/static/welcome.html"
+  register: custom_welcome
+
+- name: Create welcome.html directory
+  ansible.builtin.file:
+    state: directory
+    mode: '0755'
+    owner: "{{ __galaxy_privsep_user_name }}"
+    group: "{{ __galaxy_privsep_user_group }}"
+    path: "{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/welcome.html"
+
+- name: Check if iframe for subdomain exists
+  ansible.builtin.uri:
+    url: "{{ galaxy_themes_welcome_url_prefix }}{{ subdomain.name }}.html"
+    return_content: true
+  register: galaxy_themes_use_iframe
+  failed_when: false
+  when: not custom_welcome.stat.exists
+
+- name: Template welcome.html for subdomains
+  ansible.builtin.template:
+    src: welcome.html.j2
+    dest: "{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/welcome.html/index.html"
+    owner: "{{ __galaxy_privsep_user_name }}"
+    group: "{{ __galaxy_privsep_user_group }}"
+    mode: '0644'
+  when: not custom_welcome.stat.exists
+
+- name: Include copy_static_files.yml
+  ansible.builtin.include_tasks: copy_static_files.yml
+  loop: "{{ galaxy_themes_static_keys | dict2items }}"
+  loop_control:
+    loop_var: object

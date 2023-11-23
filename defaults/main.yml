@@ -23,6 +23,10 @@ galaxy_manage_gravity: "{{ false if __galaxy_major_version is version('22.05', '
 galaxy_manage_systemd: no # For Galaxy
 galaxy_manage_systemd_reports: no # For Reports
 galaxy_manage_cleanup: no
+galaxy_manage_themes: no
+galaxy_manage_subdomain_static: no
+galaxy_manage_host_filters: no
+galaxy_auto_brand: no # automatically sets the subdomain name as brand
 
 
 # Control whether to output verbose task diffs (e.g. when performing a git update) when running Ansible with --diff.
@@ -295,6 +299,63 @@ galaxy_app_config_default:
   # Everything else
   visualization_plugins_directory: "config/plugins/visualizations"
 
+  # Static and themes configuration, will only be added if galaxy_manage_themes
+  static_enabled: "{{ galaxy_manage_subdomain_static }}"
+  static_dir_by_host: >
+    { {% if galaxy_manage_subdomain_static %}
+    '{{ galaxy_themes_instance_domain }}': '{{ galaxy_themes_static_path }}/static/',
+    {% for subdomain in galaxy_themes_subdomains %}
+    '{{ subdomain.name }}.{{ galaxy_themes_instance_domain}}': '{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/',
+    {% endfor %}
+    {% endif %} }
+  static_images_dir_by_host: >
+    { {% if galaxy_manage_subdomain_static %}
+    '{{ galaxy_themes_instance_domain }}': '{{ galaxy_themes_static_path }}/static/images',
+    {% for subdomain in galaxy_themes_subdomains %}
+    '{{ subdomain.name }}.{{ galaxy_themes_instance_domain}}': '{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/images',
+    {% endfor %}
+    {% endif %} }
+  static_welcome_html_by_host: >
+    { {% if galaxy_manage_subdomain_static %}
+    '{{ galaxy_themes_instance_domain }}': '{{ galaxy_themes_static_path }}/static/welcome.html',
+    {% for subdomain in galaxy_themes_subdomains %}
+    '{{ subdomain.name }}.{{ galaxy_themes_instance_domain}}': '{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/welcome.html',
+    {% endfor %}
+    {% endif %} }
+  static_scripts_dir_by_host: >
+    { {% if galaxy_manage_subdomain_static %}
+    '{{ galaxy_themes_instance_domain }}': '{{ galaxy_themes_static_path }}/static/scripts',
+    {% for subdomain in galaxy_themes_subdomains %}
+    '{{ subdomain.name }}.{{ galaxy_themes_instance_domain}}': '{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/scripts',
+    {% endfor %}
+    {% endif %} }
+  static_favicon_dir_by_host: >
+    { {% if galaxy_manage_subdomain_static %}
+    '{{ galaxy_themes_instance_domain }}': '{{ galaxy_themes_static_path }}/static',
+    {% for subdomain in galaxy_themes_subdomains %}
+    '{{ subdomain.name }}.{{ galaxy_themes_instance_domain}}': '{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}',
+    {% endfor %}
+    {% endif %} }
+  static_robots_txt_by_host: >
+    { {% if galaxy_manage_subdomain_static %}
+    '{{ galaxy_themes_instance_domain }}': '{{ galaxy_themes_static_path }}/static',
+    {% for subdomain in galaxy_themes_subdomains %}
+    '{{ subdomain.name }}.{{ galaxy_themes_instance_domain}}': '{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}',
+    {% endfor %}
+    {% endif %} }
+  themes_config_file_by_host: >
+    { {% if galaxy_manage_themes %}
+    {% for subdomain in galaxy_themes_subdomains %}
+    '{{ subdomain.name  }}.{{ galaxy_themes_instance_domain}}': '{{ subdomain.name }}.yml',
+    {% endfor %}
+    {% endif %} }
+  brand_by_host: >
+    { {% if galaxy_auto_brand %}
+    '{{ galaxy_themes_instance_domain }}': '{{ galaxy_themes_instance_domain }}',
+    {% for subdomain in galaxy_themes_subdomains %}
+    '{{ subdomain.name  }}.{{ galaxy_themes_instance_domain}}': '{{ subdomain.name[0]|upper }}{{ subdomain.name[1:] }}',
+    {% endfor %}
+    {% endif %} }
 # Need to set galaxy_config_default[galaxy_app_config_section] dynamically but Ansible/Jinja2 does not make this easy
 galaxy_config_default: "{{ {} | combine({galaxy_app_config_section: galaxy_app_config_default}) }}"
 galaxy_config_merged: "{{ galaxy_config_default | combine(galaxy_config | default({}), recursive=True) }}"
@@ -425,3 +486,64 @@ galaxy_systemd_env: []
 
 # A list of additional python packages to install into galaxy's virtual environment
 galaxy_additional_venv_packages: []
+
+# galaxy themes variables
+galaxy_themes_subdomains: {}
+# - name: assembly
+#   tool_sections:
+#     - "hicexplorer"
+#     - "graph_display_data"
+#     - "peak_calling"
+#     - "assembly"
+#     - "annotation"
+#     - "genome_diversity"
+#     - "multiple_alignments"
+#   extra_tool_labels:
+#     - "proteomics"
+galaxy_themes_static_keys:
+  static_dir: ""
+  static_images_dir: "images/"
+  static_scripts_dir: "scripts/"
+  static_welcome_html: "welcome.html/"
+  static_favicon_dir: "favicon.ico"
+  static_robots_txt: "robots.txt"
+galaxy_themes_conf_path: files/galaxy/config/themes_conf.yml
+galaxy_themes_static_path: "{{ galaxy_root }}/server"
+galaxy_themes_static_dir: "{{ galaxy_root }}/server/static"
+galaxy_themes_welcome_url_prefix: https://usegalaxy-eu.github.io/index-
+galaxy_themes_default_welcome: https://galaxyproject.org
+galaxy_themes_ansible_file_path: files/galaxy/static
+galaxy_themes_instance_domain: usegalaxy.eu
+galaxy_themes_global_host_filters_path: "{{ galaxy_root }}/server/lib/galaxy/tool_util/toolbox/filters/global_host_filters.py"
+galaxy_themes_tool_base_labels:
+  - "file_and_meta_tools"
+  - "general_text_tools"
+  - "genomic_file_manipulation"
+  - "gff"
+  - "common_genomics"
+galaxy_themes_tool_ngs_labels:
+  - "specific_genomics"
+  - "genomics_toolkits"
+
+# These sections will be displayed in the tool panel for every subdomain
+galaxy_themes_tool_base_sections:
+  - "getext"
+  - "send"
+  - "collection_operations"
+  - "textutil"
+  - "convert"
+  - "filter"
+  - "group"
+  - "expression_tools"
+
+# There sections are a collection of general NGS tools and will be used in most but not all subdomains
+galaxy_themes_tool_ngs_sections:
+  - "deeptools"
+  - "bed"
+  - "sambam"
+  - "bxops"
+  - "fastafastq"
+  - "fastq_quality_control"
+  - "picard"
+  - "mapping"
+  - "sambam"

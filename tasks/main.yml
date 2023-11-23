@@ -160,3 +160,27 @@
   when: galaxy_manage_cleanup
   tags:
     - galaxy_manage_cleanup
+
+- name: Inlcude static directory setup
+  ansible.builtin.include_tasks: static_dirs.yml
+  when: galaxy_manage_subdomain_static
+  tags:
+    - galaxy_manage_subdomain_static
+
+- name: Include copy themes files
+  ansible.builtin.include_tasks: themes.yml
+  # fail only if enabled but dictionary is empty
+  loop: "{{ galaxy_themes_subdomains if galaxy_themes_subdomains|length or \
+    galaxy_manage_themes else [] }}"
+  loop_control:
+    loop_var: subdomain
+  when: galaxy_manage_themes
+  tags:
+    - galaxy_manage_themes
+
+- name: Set global host filters
+  ansible.builtin.template:
+    src: "global_host_filters.py.j2"
+    dest: "{{ galaxy_themes_global_host_filters_path }}"
+    mode: 0644
+  when: galaxy_manage_host_filters

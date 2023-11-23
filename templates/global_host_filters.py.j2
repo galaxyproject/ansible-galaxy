@@ -1,0 +1,67 @@
+import logging
+log = logging.getLogger( __name__ )
+
+def per_host_tool_labels( context, label ):
+    """
+    This tool section filter results in different labels being displayed based on
+    the fqdn the user is making the request to. This could allow a single Galaxy instance
+    to seem like several different instances hosting different tools based on the fqdn used
+    to access the Galxy. This can be enabled by renaming this file to examples.py and adding
+    the following to the ``app:main`` section of ``galaxy.yml``:
+
+        tool_label_filters = examples:per_host_tool_labels
+    """
+    host = context.trans.request.host
+    subdomain = host.replace('.{{ galaxy_themes_instance_domain }}', '')
+    # Core tools used by all virtual hosts.
+    valid_labels = {{ galaxy_themes_tool_base_labels }}
+    general_ngs_labels = {{ galaxy_themes_tool_ngs_labels }}
+{% if galaxy_themes_subdomains is defined %}
+{% for subsite in galaxy_themes_subdomains %}
+    if "{{ subsite.name }}.{{ galaxy_themes_instance_domain }}" in host:
+        valid_labels += general_ngs_labels
+{% if subsite.extra_tool_labels is defined %}
+        valid_labels += {{ subsite.extra_tool_labels }}
+{% endif %}
+        return label.id in valid_labels
+{% endfor %}
+{% endif %}        
+    return True
+
+BASE_SECTIONS = {{ galaxy_themes_tool_base_sections }}
+
+GENERAL_NGS_SECTIONS = {{ galaxy_themes_tool_ngs_sections }}
+
+DOMAIN_SECTIONS = {
+{% if galaxy_themes_subdomains is defined %}
+{% for subdomain in galaxy_themes_subdomains %}
+{% if subdomain.tool_sections is defined %}
+    '{{ subdomain.name }}': GENERAL_NGS_SECTIONS + {{ subdomain.tool_sections }},
+{% endif %}    
+{% endfor %}
+{% endif %}    
+}
+
+
+def per_host_tool_sections( context, section ):
+    """
+    This tool section filter results in different sections being displayed based on
+    the fqdn the user is making the request to. This could allow a single Galaxy instance
+    to seem like several different instances hosting different tools based on the fqdn used
+    to access the Galxy. This can be enabled by renaming this file to examples.py and adding
+    the following to the ``app:main`` section of ``galaxy.yml``:
+
+        tool_section_filters = examples:per_host_tool_sections
+    """
+    host = context.trans.request.host
+    subdomain = host.replace('.{{ galaxy_themes_instance_domain }}', '')
+
+    # Core tools used by all virtual hosts.
+    # HiCtools mode: published in NAR 2018
+    if host == "{{ galaxy_themes_instance_domain }}":
+        return True
+
+    if subdomain in DOMAIN_SECTIONS:
+        return section.id in DOMAIN_SECTIONS[subdomain] or section.id in BASE_SECTIONS
+    else:
+        return True
