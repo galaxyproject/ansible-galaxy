@@ -119,7 +119,7 @@ files/galaxy/static
 │   │   │   └── some-image.png 
 │   │   ├── images (optional)
 │   │   │   └── more-content.jpg
-│   │   └── welcome.html
+│   │   └── welcome.html (optional, galaxyproject.org will be displayed otherwise.)
 │   └── themes 
 │       └── <subdomain-name-1>.yml           
 ├── <subdomain-name-2>                            
