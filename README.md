@@ -127,7 +127,7 @@ files/galaxy/static
 │   │   ├── dist (optional)
 │   │   │   ├── another-static-image.svg
 │   │   │   └── more-static-content-2.svg
-│   │   └── welcome.html
+│   │   └── welcome.html (optional)
 │   └── themes
 │       └── <subdomain-name-2>.yml
 ... (and many more subdomains)
