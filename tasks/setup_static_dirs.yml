@@ -31,7 +31,7 @@
   ansible.builtin.uri:
     url: "{{ galaxy_themes_welcome_url_prefix }}{{ subdomain.name }}.html"
     return_content: true
-  register: iframe
+  register: galaxy_themes_use_iframe
   failed_when: false
   when: not custom_welcome.stat.exists
 
