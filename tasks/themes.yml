@@ -3,6 +3,7 @@
   ansible.builtin.blockinfile:
     block: "{{ lookup('ansible.builtin.file', galaxy_themes_conf_path) }}"
     path: "{{ galaxy_themes_ansible_file_path }}/{{ subdomain.name }}/themes/{{ subdomain.name }}.yml"
+  delegate_to: 127.0.0.1
 
 - name: Copy themes files
   ansible.builtin.copy:
