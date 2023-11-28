@@ -345,6 +345,7 @@ galaxy_app_config_default:
     {% endif %} }
   themes_config_file_by_host: >
     { {% if galaxy_manage_themes %}
+    '{{ galaxy_themes_instance_domain }}': '{{ galaxy_themes_conf_file_name }}',
     {% for subdomain in galaxy_themes_subdomains %}
     '{{ subdomain.name  }}.{{ galaxy_themes_instance_domain}}': '{{ subdomain.name }}.yml',
     {% endfor %}
@@ -500,6 +501,7 @@ galaxy_themes_subdomains: {}
 #     - "multiple_alignments"
 #   extra_tool_labels:
 #     - "proteomics"
+galaxy_themes_conf_file_name: "{{ galaxy_themes_conf_path | basename }}"
 galaxy_themes_static_keys:
   static_dir: ""
   static_images_dir: "images/"
