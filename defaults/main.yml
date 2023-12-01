@@ -512,6 +512,8 @@ galaxy_themes_static_keys:
 galaxy_themes_conf_path: files/galaxy/config/themes_conf.yml
 galaxy_themes_static_path: "{{ galaxy_root }}/server"
 galaxy_themes_static_dir: "{{ galaxy_root }}/server/static"
+galaxy_themes_symlinks: true
+galaxy_themes_no_symlinks_log: false # Hides extended logs for the symlink task in static/dist
 galaxy_themes_welcome_url_prefix: https://usegalaxy-eu.github.io/index-
 galaxy_themes_default_welcome: https://galaxyproject.org
 galaxy_themes_ansible_file_path: files/galaxy/static

@@ -5,7 +5,40 @@
     mode: '0755'
     owner: "{{ __galaxy_privsep_user_name }}"
     group: "{{ __galaxy_privsep_user_group }}"
-    path: "{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}"
+    path: "{{ galaxy_themes_static_path }}/{{ item }}"
+  with_items:
+    - "static-{{ subdomain.name }}"
+    - "static-{{ subdomain.name }}/dist"
+
+- name: Register files in static/dist
+  ansible.builtin.find:
+    paths: "{{ galaxy_themes_static_path }}/static/dist"
+    file_type: file
+  when: galaxy_themes_symlinks
+  register: dist_files
+
+- name: "Symlink files static-{{ subdomain.name }}/dist to static/dist"
+  ansible.builtin.file:
+    src: "{{ item.path }}"
+    dest: "{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/dist/{{ item.path | basename }}"
+    state: link
+  when: galaxy_themes_symlinks
+  no_log: "{{ galaxy_themes_no_symlinks_log }}"
+  with_items: "{{ dist_files.files }}"
+
+- name: "Symlink directory {{ item }} from static-{{ subdomain.name }}/{{ item }} to static/{{ item }}"
+  ansible.builtin.file:
+    src: "{{ galaxy_themes_static_path }}/static/{{ item }}"
+    dest: "{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/{{ item }}"
+    state: link
+  when: galaxy_themes_symlinks
+  ignore_errors: true
+  with_items:
+    - "plugins"
+    - "patmat"
+    - "toolshed"
+    - "wymeditor"
+    - "style"
 
 - name: Synchronize contents from static to static-"{{ subdomain.name }}"
   ansible.posix.synchronize:
