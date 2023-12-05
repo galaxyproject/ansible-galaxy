@@ -30,9 +30,9 @@
 
     - name: Set client build version fact
       set_fact:
-        __galaxy_client_build_version: "{{ __galaxy_client_build_version_result.content | b64decode | trim }}"
+        __galaxy_client_build_version: "{{ galaxy_client_force_build | ternary('FORCE-BUILD', __galaxy_client_build_version_result.content | b64decode | trim) }}"
 
-    - name: Set client build version fact
+    - name: Set galaxy commit ID fact
       set_fact:
         __galaxy_current_commit_id: "{{ __galaxy_git_stat_result.after if __galaxy_from_git.stat.exists else 'none' }}"
       when: __galaxy_from_git.stat.exists
