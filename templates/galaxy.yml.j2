@@ -25,4 +25,7 @@
 {% for section, val in galaxy_config | dictsort if section not in ('uwsgi', 'gravity', galaxy_app_config_section) %}
 {{ {section: val} | to_nice_yaml(indent=4) }}
 {% endfor %}
+{% for key, value in galaxy_config_merged[galaxy_app_config_section] | dictsort %}
+{% set _dummy=galaxy_config_merged[galaxy_app_config_section].pop(key) if value is mapping and value|length == 0  %}
+{% endfor %}
 {{ {galaxy_app_config_section: galaxy_config_merged[galaxy_app_config_section]} | to_nice_yaml(indent=4) }}
