@@ -6,7 +6,7 @@
   block:
 
     - name: Register Galaxy config with Gravity (Gravity < 1)
-      command: "{{ galaxy_venv_dir }}/bin/galaxyctl register {{ galaxy_config_file }}"
+      command: "{{ galaxy_gravity_command }} register {{ galaxy_config_file }}"
       args:
         creates: "{{ galaxy_gravity_state_dir }}/configstate.yaml"
 
@@ -21,7 +21,7 @@
     content: |
       #!/usr/bin/env sh
       export GRAVITY_CONFIG_FILE={{ galaxy_config_file | quote }}
-      exec {{ (galaxy_venv_dir ~ '/bin/galaxyctl') | quote }} "$@"
+      exec {{ galaxy_gravity_command | quote }} "$@"
     dest: "{{ galaxy_gravity_wrapper_path }}"
     mode: "0755"
   when: galaxy_gravity_wrapper_path is not none
