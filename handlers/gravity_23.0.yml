@@ -2,13 +2,13 @@
 # handlers for gravity as used in galaxy version 23.0
 
 - name: galaxyctl update
-  command: "{{ galaxy_venv_dir }}/bin/galaxyctl -c {{ galaxy_config_file }} update"
+  command: "{{ galaxy_gravity_command }} -c {{ galaxy_config_file }} update"
   listen: "galaxyctl update"
   become: yes
   become_user: "{{ (__galaxy_gravity_pm == 'systemd' and galaxy_systemd_root) | ternary('root', __galaxy_user_name) }}"
 
 - name: galaxy gravity restart
-  command: "{{ galaxy_venv_dir }}/bin/galaxyctl -c {{ galaxy_config_file }} graceful"
+  command: "{{ galaxy_gravity_command }} -c {{ galaxy_config_file }} graceful"
   listen: "restart galaxy"
   become: yes
   become_user: "{{ (__galaxy_gravity_pm == 'systemd' and galaxy_systemd_root) | ternary('root', __galaxy_user_name) }}"
