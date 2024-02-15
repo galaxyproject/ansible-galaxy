@@ -18,6 +18,6 @@
 - name: Include create subdomain static dirs and copy static files
   ansible.builtin.include_tasks: static_subdomain_dirs.yml
   loop: "{{ galaxy_themes_subdomains if galaxy_themes_subdomains | length or \
-    galaxy_manage_static else [] }}"
+    galaxy_manage_subdomain_static else [] }}"
   loop_control:
     loop_var: subdomain
