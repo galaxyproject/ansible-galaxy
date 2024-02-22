@@ -43,10 +43,10 @@
 
     - name: Install local tools
       copy:
-        src: "{{ galaxy_local_tools_src_dir }}/{{ item }}"
-        dest: "{{ galaxy_local_tools_dir }}/{{ item }}"
+        src: "{{ galaxy_local_tools_src_dir }}/{{ item.file | default(item) }}"
+        dest: "{{ galaxy_local_tools_dir }}/{{ item.file | default(item) }}"
         mode: preserve
-      with_items: "{{ galaxy_local_tools | default([]) }}"
+      loop: "{{ galaxy_local_tools | default([]) }}"
       when: galaxy_local_tools is defined
 
     - name: Install local_tool_conf.xml
