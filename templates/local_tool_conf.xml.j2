@@ -1,8 +1,13 @@
 <?xml version='1.0' encoding='utf-8'?>
 <toolbox monitor="true" tool_path="{{ galaxy_local_tools_dir }}">
 {% for tool in galaxy_local_tools %}
-{% if tool.endswith('.xml') %}
-    <tool file="{{ tool }}" />
+{% if tool is not mapping %}
+{% set tool = {'section_name': 'Local Tools', 'file': tool} %}
+{% endif %}
+{% if tool.file.endswith('.xml') %}
+    <section id="{{ tool.section_id | default(tool.section_name | regex_replace('[^A-Za-z0-9]', '_') | lower) }}" name="{{ tool.section_name }}">
+        <tool file="{{ tool.file }}" />
+    </section>
 {% endif %}
 {% endfor %}
 </toolbox>
