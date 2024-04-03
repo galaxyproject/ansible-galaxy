@@ -46,42 +46,8 @@
           changed_when: true
           when: __galaxy_from_git.stat.exists
 
-        - name: Ensure galaxy_node_version is set
-          include_tasks: _inc_node_version.yml
-          when: galaxy_node_version is undefined
-
-        - name: Check if node is installed
-          stat:
-            path: "{{ galaxy_venv_dir }}/bin/node"
-          register: __galaxy_node_is_installed
-
-        - name: Collect installed node version
-          command: "{{ galaxy_venv_dir }}/bin/node --version"
-          when: __galaxy_node_is_installed.stat.exists
-          changed_when: false
-          register: __galaxy_installed_node_version
-
-        - name: Remove node_modules directory when upgrading node
-          file:
-            path: "{{ galaxy_venv_dir }}/lib/node_modules"
-            state: absent
-          when: (not __galaxy_node_is_installed.stat.exists) or (('v' ~ galaxy_node_version) != __galaxy_installed_node_version.stdout)
-
-        - name: Install or upgrade node
-          command: "nodeenv -n {{ galaxy_node_version }} -p"
-          environment:
-            PATH: "{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
-            VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
-          when: (not __galaxy_node_is_installed.stat.exists) or (('v' ~ galaxy_node_version) != __galaxy_installed_node_version.stdout)
-
-        - name: Install yarn
-          npm:
-            executable: "{{ galaxy_venv_dir }}/bin/npm"
-            name: yarn
-            global: yes
-          environment:
-            PATH: "{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
-            VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+        - name: Include client build tools process
+          include_tasks: "_inc_client_install_tools.yml"
 
         - name: Include client build process
           include_tasks: "_inc_client_build_{{ 'make' if galaxy_client_make_target is not none else 'steps' }}.yml"
@@ -91,3 +57,40 @@
   remote_user: "{{ galaxy_remote_users.privsep | default(__galaxy_remote_user) }}"
   become: "{{ true if galaxy_become_users.privsep is defined else __galaxy_become }}"
   become_user: "{{ galaxy_become_users.privsep | default(__galaxy_become_user) }}"
+  when: not galaxy_client_use_prebuilt
+
+- name: Install prebuilt client
+  block:
+    - name: Ensure prebuilt client is supported
+      assert:
+        that:
+          - __galaxy_major_version is version('23.0', '>=')
+        success_msg: "Prebuilt client is supported"
+        fail_msg: "Prebuilt client is not supported for Galaxy version {{ __galaxy_major_version }}, '>= 23.0' required."
+
+    - name: Include client install tools process
+      include_tasks: "_inc_client_install_tools.yml"
+
+    - name: Install prebuilt client with yarn
+      yarn:
+        executable: "yarn --check-files"
+        path: "{{ galaxy_server_dir }}"
+      environment:
+        PATH: "{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
+        VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+      register: __yarn_install
+      changed_when: "'already up-to-date' not in __yarn_install.out | lower"
+
+    - name: Stage prebuilt client # noqa no-changed-when
+      command: "yarn run stage"
+      args:
+        chdir: "{{ galaxy_server_dir }}"
+      environment:
+        PATH: "{{ galaxy_server_dir }}/client/node_modules/.bin:{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
+        VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+      when: __yarn_install.changed
+
+  remote_user: "{{ galaxy_remote_users.privsep | default(__galaxy_remote_user) }}"
+  become: "{{ true if galaxy_become_users.privsep is defined else __galaxy_become }}"
+  become_user: "{{ galaxy_become_users.privsep | default(__galaxy_become_user) }}"
+  when: galaxy_client_use_prebuilt
