@@ -1,0 +1,40 @@
+---
+
+- name: Install client build tools
+  block:
+    - name: Ensure galaxy_node_version is set
+      include_tasks: _inc_node_version.yml
+      when: galaxy_node_version is undefined
+
+    - name: Check if node is installed
+      stat:
+        path: "{{ galaxy_venv_dir }}/bin/node"
+      register: __galaxy_node_is_installed
+
+    - name: Collect installed node version
+      command: "{{ galaxy_venv_dir }}/bin/node --version"
+      when: __galaxy_node_is_installed.stat.exists
+      changed_when: false
+      register: __galaxy_installed_node_version
+
+    - name: Remove node_modules directory when upgrading node
+      file:
+        path: "{{ galaxy_venv_dir }}/lib/node_modules"
+        state: absent
+      when: (not __galaxy_node_is_installed.stat.exists) or (('v' ~ galaxy_node_version) != __galaxy_installed_node_version.stdout)
+
+    - name: Install or upgrade node
+      command: "nodeenv -n {{ galaxy_node_version }} -p"
+      environment:
+        PATH: "{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
+        VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+      when: (not __galaxy_node_is_installed.stat.exists) or (('v' ~ galaxy_node_version) != __galaxy_installed_node_version.stdout)
+
+    - name: Install yarn
+      npm:
+        executable: "{{ galaxy_venv_dir }}/bin/npm"
+        name: yarn
+        global: yes
+      environment:
+        PATH: "{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
+        VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
