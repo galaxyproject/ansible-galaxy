@@ -1,0 +1,46 @@
+---
+- name: Install dependencies (yum)
+  yum:
+    # For completeness this should include git, but on EL7 we install a newer git from SCL in the Dockerfile to deal
+    # with automatic line ending conversion in the default git 1.8 breaking idempotence
+    #name: [sudo, git, make, bzip2]
+    name: [sudo, make, bzip2]
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version is version("8", "<")
+- name: Install dependencies (dnf)
+  dnf:
+    name: [sudo, git, make, bzip2]
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version is version("8", ">=")
+- name: Install dependencies (apt)
+  apt:
+    name:
+      - sudo
+      - git
+      - make
+      - python3-venv
+      - python3-setuptools
+      - python3-dev
+      - python3-psycopg2
+      - gcc
+      - acl
+      - gnutls-bin
+      - libmagic-dev
+  when: ansible_os_family == "Debian"
+
+# This is to cheat at idempotence, which will fail if a commit is merged between converge and idempotence.
+- name: Check whether server dir exists
+  stat:
+    path: "{{ galaxy_root }}/server"
+  register: __molecule_dir_check
+- name: Collect current commit id
+  git:
+    clone: false
+    depth: "{{ galaxy_clone_depth }}"
+    dest: "{{ galaxy_root }}/server"
+    repo: https://github.com/galaxyproject/galaxy.git
+  changed_when: false
+  become: "{{ __molecule_dir_check.stat.exists }}"
+  become_user: "{{ galaxy_privsep_user }}"
+  register: __molecule_git_check
+- name: Set galaxy_commit_id
+  set_fact:
+    galaxy_commit_id: "{{ __molecule_git_check.before or ((__galaxy_version == 'dev') | ternary('dev', 'release_' ~ __galaxy_version)) }}"
