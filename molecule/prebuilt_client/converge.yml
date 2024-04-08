@@ -2,6 +2,7 @@
 - name: Converge
   hosts: all
   vars:
+    galaxy_client_use_prebuilt: true # This scenario tests with the prebuilt client
     __galaxy_version: "{{ lookup('env', 'GALAXY_VERSION') }}"
     galaxy_create_user: yes
     galaxy_manage_paths: yes
@@ -19,7 +20,6 @@
     galaxy_user: galaxy
     galaxy_group: galaxy
     galaxy_privsep_user: gxpriv
-    galaxy_clone_depth: 1
     galaxy_config:
       galaxy:
         database_connection: sqlite:///{{ galaxy_mutable_data_dir }}/universe.sqlite
