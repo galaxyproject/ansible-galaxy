@@ -425,16 +425,25 @@ Install Galaxy as per the current production server best practices:
       become: yes
     # Install with:
     #   % ansible-galaxy install natefoo.postgresql_objects
-    - role: natefoo.postgresql_objects
+    - role: galaxyproject.postgresql_objects
       become: yes
       become_user: postgres
     - role: galaxyproject.galaxy
   handlers:
-    - name: Restart Galaxy
-      supervisorctl:
-        name: galaxy
-        state: restarted
-      listen: restart galaxy
+    - name: Galaxy gravity restart
+      command: "/usr/local/bin/galaxyctl graceful"
+      listen: "restart galaxy"
+  post_tasks:
+
+    - name: Get Galaxy service Status
+      ansible.builtin.systemd:
+        name: "galaxy.target"
+      check_mode: true
+      register: galaxy_status
+
+    - name: Galaxy gravity start
+      command: "/usr/local/bin/galaxyctl start"
+      when: "galaxy_status.status.ActiveState == 'inactive'"
 ```
 
 License
