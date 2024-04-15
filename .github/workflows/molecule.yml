@@ -16,6 +16,7 @@ jobs:
       matrix:
         scenario:
           - default
+          - prebuilt_client
         from-image:
           - centos:7
           - rockylinux:8
