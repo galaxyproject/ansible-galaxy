@@ -19,6 +19,7 @@
     galaxy_user: galaxy
     galaxy_group: galaxy
     galaxy_privsep_user: gxpriv
+    galaxy_clone_depth: 1
     galaxy_config:
       galaxy:
         database_connection: sqlite:///{{ galaxy_mutable_data_dir }}/universe.sqlite
@@ -61,6 +62,7 @@
     - name: Collect current commit id
       git:
         clone: false
+        depth: "{{ galaxy_clone_depth }}"
         dest: "{{ galaxy_root }}/server"
         repo: https://github.com/galaxyproject/galaxy.git
       changed_when: false
