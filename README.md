@@ -370,6 +370,7 @@ Install Galaxy as per the current production server best practices:
     galaxy_force_checkout: true
     galaxy_create_user: yes
     galaxy_manage_paths: yes
+    galaxy_manage_systemd: yes
     galaxy_user: galaxy
     galaxy_privsep_user: gxpriv
     galaxy_group: galaxy
@@ -416,7 +417,18 @@ Install Galaxy as per the current production server best practices:
   pre_tasks:
     - name: Install Dependencies
       apt:
-        name: ['git', 'python-psycopg2', 'python-virtualenv']
+        name:
+          - sudo
+          - git
+          - make
+          - python3-venv
+          - python3-setuptools
+          - python3-dev
+          - python3-psycopg2
+          - gcc
+          - acl
+          - gnutls-bin
+          - libmagic-dev
       become: yes
   roles:
     # Install with:
@@ -425,16 +437,10 @@ Install Galaxy as per the current production server best practices:
       become: yes
     # Install with:
     #   % ansible-galaxy install natefoo.postgresql_objects
-    - role: natefoo.postgresql_objects
+    - role: galaxyproject.postgresql_objects
       become: yes
       become_user: postgres
     - role: galaxyproject.galaxy
-  handlers:
-    - name: Restart Galaxy
-      supervisorctl:
-        name: galaxy
-        state: restarted
-      listen: restart galaxy
 ```
 
 License
