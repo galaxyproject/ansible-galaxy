@@ -417,7 +417,18 @@ Install Galaxy as per the current production server best practices:
   pre_tasks:
     - name: Install Dependencies
       apt:
-        name: ['git', 'python-psycopg2', 'python-virtualenv']
+        name:
+          - sudo
+          - git
+          - make
+          - python3-venv
+          - python3-setuptools
+          - python3-dev
+          - python3-psycopg2
+          - gcc
+          - acl
+          - gnutls-bin
+          - libmagic-dev
       become: yes
   roles:
     # Install with:
