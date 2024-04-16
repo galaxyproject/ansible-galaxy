@@ -25,6 +25,7 @@ Environment=PATH={{ galaxy_venv_dir }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/loc
 Environment=DOCUTILSCONFIG=
 Environment=PYTHONPATH={{ galaxy_dynamic_job_rules_dir }}
 Environment=GRAVITY_STATE_DIR={{ galaxy_gravity_state_dir }}
+Environment=GRAVITY_CONFIG_FILE={{ galaxy_config_file }}
 {% for env in galaxy_systemd_env %}
 Environment={{ env }}
 {% endfor %}
