@@ -39,7 +39,18 @@
       when: ansible_os_family == "RedHat" and ansible_distribution_major_version is version("8", ">=")
     - name: Install dependencies (apt)
       apt:
-        name: [sudo, git, make, python3-venv, python3-setuptools]
+        name:
+          - sudo
+          - git
+          - make
+          - python3-venv
+          - python3-setuptools
+          - python3-dev
+          - python3-psycopg2
+          - gcc
+          - acl
+          - gnutls-bin
+          - libmagic-dev
       when: ansible_os_family == "Debian"
 
     # This is to cheat at idempotence, which will fail if a commit is merged between converge and idempotence.
