@@ -16,6 +16,7 @@ jobs:
       matrix:
         scenario:
           - default
+          - prebuilt_client
         from-image:
           - centos:7
           - rockylinux:8
@@ -34,6 +35,10 @@ jobs:
             galaxy-version: '21.01'
           - from-image: ubuntu:22.04
             galaxy-version: '22.01'
+          - scenario: prebuilt_client
+            galaxy-version: '22.01'
+          - scenario: prebuilt_client
+            galaxy-version: '22.05'       
     steps:
       - uses: actions/checkout@v3
         with:
