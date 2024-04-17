@@ -20,6 +20,7 @@
     galaxy_user: galaxy
     galaxy_group: galaxy
     galaxy_privsep_user: gxpriv
+    galaxy_clone_depth: 1
     galaxy_config:
       galaxy:
         database_connection: sqlite:///{{ galaxy_mutable_data_dir }}/universe.sqlite
