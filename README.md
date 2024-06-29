@@ -140,7 +140,7 @@ Also make sure that you set `galaxy_themes_welcome_url_prefix`, so your welcome 
 
 It is mandatory to set the variables under `galaxy_themes_subdomains` as shown in the example in [defaults/main.yml](defaults/main.yml). If you enabled the `galaxy_manage_host_filters` variable, you can also specify the tool sections that should be shown for each individual subdomain.
 
-
+`galaxy_themes_manage_base_welcome_html: true` makes the role create a `welcome.html` directory and templates from a file called `welcome.html.j2` to `{{ galaxy_themes_static_path }}/welcome.html/index.html`. This will be the page Galaxy loads when accessing `/root`.
 
 [themes]: https://training.galaxyproject.org/training-material/topics/admin/tutorials/customization/tutorial.html
 **New options for Galaxy 18.01 and later**
