@@ -5,7 +5,7 @@
     mode: '0755'
     owner: "{{ __galaxy_privsep_user_name }}"
     group: "{{ __galaxy_privsep_user_group }}"
-    path: "{{ galaxy_themes_static_path }}/{{ item }}"
+    path: "{{ galaxy_themes_static_subdomain_path }}/{{ item }}"
   with_items:
     - "static-{{ subdomain.name }}"
     - "static-{{ subdomain.name }}/dist"
@@ -20,7 +20,7 @@
 - name: "Symlink files static-{{ subdomain.name }}/dist to static/dist"
   ansible.builtin.file:
     src: "{{ item.path }}"
-    dest: "{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/dist/{{ item.path | basename }}"
+    dest: "{{ galaxy_themes_static_subdomain_path }}/static-{{ subdomain.name }}/dist/{{ item.path | basename }}"
     state: link
   when: galaxy_themes_symlinks
   no_log: "{{ galaxy_themes_symlinks_no_log }}"
@@ -29,7 +29,7 @@
 - name: "Symlink directory {{ item }} from static-{{ subdomain.name }}/{{ item }} to static/{{ item }}"
   ansible.builtin.file:
     src: "{{ galaxy_themes_static_path }}/static/{{ item }}"
-    dest: "{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/{{ item }}"
+    dest: "{{ galaxy_themes_static_subdomain_path }}/static-{{ subdomain.name }}/{{ item }}"
     state: link
   when: galaxy_themes_symlinks
   ignore_errors: true
@@ -43,7 +43,7 @@
 - name: Synchronize contents from static to static-"{{ subdomain.name }}"
   ansible.posix.synchronize:
     src: "{{ galaxy_themes_static_path }}/static/"
-    dest: "{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}"
+    dest: "{{ galaxy_themes_static_subdomain_path }}/static-{{ subdomain.name }}"
     rsync_opts: ["--ignore-existing"]
   delegate_to: "{{ inventory_hostname }}"
 
@@ -58,7 +58,7 @@
     mode: '0755'
     owner: "{{ __galaxy_privsep_user_name }}"
     group: "{{ __galaxy_privsep_user_group }}"
-    path: "{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/welcome.html"
+    path: "{{ galaxy_themes_static_subdomain_path }}/static-{{ subdomain.name }}/welcome.html"
 
 - name: Check if iframe for subdomain exists
   ansible.builtin.uri:
@@ -71,7 +71,7 @@
 - name: Template welcome.html for subdomains
   ansible.builtin.template:
     src: welcome.html.j2
-    dest: "{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/welcome.html/index.html"
+    dest: "{{ galaxy_themes_static_subdomain_path }}/static-{{ subdomain.name }}/welcome.html/index.html"
     owner: "{{ __galaxy_privsep_user_name }}"
     group: "{{ __galaxy_privsep_user_group }}"
     mode: '0644'

@@ -2,7 +2,7 @@
 - name: Copy subdomain static files
   ansible.builtin.copy:
     src: "{{ item }}"
-    dest: "{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/{{ object.value }}"
+    dest: "{{ galaxy_themes_static_subdomain_path }}/static-{{ subdomain.name }}/{{ object.value }}"
     mode: '0644'
     owner: "{{ __galaxy_privsep_user_name }}"
     group: "{{ __galaxy_privsep_user_group }}"
@@ -11,7 +11,7 @@
 - name: Copy files from dist
   ansible.builtin.copy:
     src: "{{ item }}"
-    dest: "{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/dist/"
+    dest: "{{ galaxy_themes_static_subdomain_path }}/static-{{ subdomain.name }}/dist/"
     mode: '0644'
     owner: "{{ __galaxy_privsep_user_name }}"
     group: "{{ __galaxy_privsep_user_group }}"
@@ -20,7 +20,7 @@
 - name: Copy files from dist
   ansible.builtin.copy:
     src: "{{ item }}"
-    dest: "{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/dist/"
+    dest: "{{ galaxy_themes_static_subdomain_path }}/static-{{ subdomain.name }}/dist/"
     mode: '0644'
     owner: "{{ __galaxy_privsep_user_name }}"
     group: "{{ __galaxy_privsep_user_group }}"
@@ -29,7 +29,7 @@
 - name: Copy custom welcome.html
   ansible.builtin.copy:
     src: "{{ item }}"
-    dest: "{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/welcome.html/index.html"
+    dest: "{{ galaxy_themes_static_subdomain_path }}/static-{{ subdomain.name }}/welcome.html/index.html"
     mode: '0644'
     owner: "{{ __galaxy_privsep_user_name }}"
     group: "{{ __galaxy_privsep_user_group }}"
