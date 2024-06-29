@@ -44,7 +44,8 @@
   ansible.posix.synchronize:
     src: "{{ galaxy_themes_static_path }}/static/"
     dest: "{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}"
-    rsync_opts: ["--ignore-existing"]
+    rsync_opts: "{{ ['--ignore-existing'] if __galaxy_client_build_version ==
+      __galaxy_current_commit_id else omit }}"
   delegate_to: "{{ inventory_hostname }}"
 
 - name: Check if welcome.html is present in files
