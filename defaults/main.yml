@@ -303,42 +303,42 @@ galaxy_app_config_default:
   static_enabled: "{{ galaxy_manage_subdomain_static }}"
   static_dir_by_host: >
     { {% if galaxy_manage_subdomain_static %}
-    '{{ galaxy_themes_instance_domain }}': '{{ galaxy_themes_static_path }}/static/',
+    '{{ galaxy_themes_instance_domain }}': '{{ galaxy_static_dir }}/',
     {% for subdomain in galaxy_themes_subdomains %}
     '{{ subdomain.name }}.{{ galaxy_themes_instance_domain}}': '{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/',
     {% endfor %}
     {% endif %} }
   static_images_dir_by_host: >
     { {% if galaxy_manage_subdomain_static %}
-    '{{ galaxy_themes_instance_domain }}': '{{ galaxy_themes_static_path }}/static/images',
+    '{{ galaxy_themes_instance_domain }}': '{{ galaxy_static_dir }}/images',
     {% for subdomain in galaxy_themes_subdomains %}
     '{{ subdomain.name }}.{{ galaxy_themes_instance_domain}}': '{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/images',
     {% endfor %}
     {% endif %} }
   static_welcome_html_by_host: >
     { {% if galaxy_manage_subdomain_static %}
-    '{{ galaxy_themes_instance_domain }}': '{{ galaxy_themes_static_path }}/static/welcome.html',
+    '{{ galaxy_themes_instance_domain }}': '{{ galaxy_static_dir }}/welcome.html',
     {% for subdomain in galaxy_themes_subdomains %}
     '{{ subdomain.name }}.{{ galaxy_themes_instance_domain}}': '{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/welcome.html',
     {% endfor %}
     {% endif %} }
   static_scripts_dir_by_host: >
     { {% if galaxy_manage_subdomain_static %}
-    '{{ galaxy_themes_instance_domain }}': '{{ galaxy_themes_static_path }}/static/scripts',
+    '{{ galaxy_themes_instance_domain }}': '{{ galaxy_static_dir }}/scripts',
     {% for subdomain in galaxy_themes_subdomains %}
     '{{ subdomain.name }}.{{ galaxy_themes_instance_domain}}': '{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/scripts',
     {% endfor %}
     {% endif %} }
   static_favicon_dir_by_host: >
     { {% if galaxy_manage_subdomain_static %}
-    '{{ galaxy_themes_instance_domain }}': '{{ galaxy_themes_static_path }}/static',
+    '{{ galaxy_themes_instance_domain }}': '{{ galaxy_static_dir }}',
     {% for subdomain in galaxy_themes_subdomains %}
     '{{ subdomain.name }}.{{ galaxy_themes_instance_domain}}': '{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}',
     {% endfor %}
     {% endif %} }
   static_robots_txt_by_host: >
     { {% if galaxy_manage_subdomain_static %}
-    '{{ galaxy_themes_instance_domain }}': '{{ galaxy_themes_static_path }}/static',
+    '{{ galaxy_themes_instance_domain }}': '{{ galaxy_static_dir }}',
     {% for subdomain in galaxy_themes_subdomains %}
     '{{ subdomain.name }}.{{ galaxy_themes_instance_domain}}': '{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}',
     {% endfor %}
