@@ -136,6 +136,9 @@ files/galaxy/static
 Where the <subdomain-name-1> should exactly match your subdomain's name. The subdirectories `static` and `themes` are mandatory, as well as the correctly named theme file (if you enabled `galaxy_manage_themes`), while all subdirectories in `static` are optional.  
 Which subdirectories and files are copied is managed by the `static_galaxy_themes_keys` variable.
 
+`galaxy_themes_static_path` should point to the parent directory of your Galaxy's original static directory. (default is `galaxy_root`)
+`galaxy_themes_static_subdomain_path` by default points to `galaxy_themes_static_path` but can be configured, in case you want to separate your subdomain static dirs from the `galaxy_root`.
+
 Also make sure that you set `galaxy_themes_welcome_url_prefix`, so your welcome pages are templated correctly.
 
 It is mandatory to set the variables under `galaxy_themes_subdomains` as shown in the example in [defaults/main.yml](defaults/main.yml). If you enabled the `galaxy_manage_host_filters` variable, you can also specify the tool sections that should be shown for each individual subdomain.
