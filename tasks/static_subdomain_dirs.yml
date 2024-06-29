@@ -12,7 +12,7 @@
 
 - name: Register files in static/dist
   ansible.builtin.find:
-    paths: "{{ galaxy_themes_static_path }}/static/dist"
+    paths: "{{ galaxy_static_dir }}/dist"
     file_type: file
   when: galaxy_themes_symlinks
   register: dist_files
@@ -28,7 +28,7 @@
 
 - name: "Symlink directory {{ item }} from static-{{ subdomain.name }}/{{ item }} to static/{{ item }}"
   ansible.builtin.file:
-    src: "{{ galaxy_themes_static_path }}/static/{{ item }}"
+    src: "{{ galaxy_static_dir }}/{{ item }}"
     dest: "{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/{{ item }}"
     state: link
   when: galaxy_themes_symlinks
@@ -42,7 +42,7 @@
 
 - name: Synchronize contents from static to static-"{{ subdomain.name }}"
   ansible.posix.synchronize:
-    src: "{{ galaxy_themes_static_path }}/static/"
+    src: "{{ galaxy_static_dir }}/"
     dest: "{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}"
     rsync_opts: "{{ ['--ignore-existing'] if __galaxy_client_build_version ==
       __galaxy_current_commit_id else omit }}"
