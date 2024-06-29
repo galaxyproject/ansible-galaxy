@@ -25,6 +25,7 @@ galaxy_manage_systemd_reports: no # For Reports
 galaxy_manage_cleanup: no
 galaxy_manage_themes: no
 galaxy_manage_subdomain_static: no
+galaxy_themes_manage_base_welcome_html: no
 galaxy_manage_host_filters: no
 galaxy_auto_brand: no # automatically sets the subdomain name as brand
 
