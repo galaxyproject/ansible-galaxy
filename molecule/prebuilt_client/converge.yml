@@ -2,6 +2,7 @@
 - name: Converge
   hosts: all
   vars:
+    galaxy_client_use_prebuilt: true # This scenario tests with the prebuilt client
     __galaxy_version: "{{ lookup('env', 'GALAXY_VERSION') }}"
     galaxy_create_user: yes
     galaxy_manage_paths: yes

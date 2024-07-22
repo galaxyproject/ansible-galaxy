@@ -425,6 +425,12 @@ galaxy_uwsgi_config_default:
 # Client build settings
 #
 
+
+# If this is set to true, instead of building the client from source, a prebuilt version of the client will be installed from NPM.
+# This mimics the behavior of the GALAXY_INSTALL_PREBUILT_CLIENT=1 setting when running Galaxy with run.sh.
+# When setting this to true, none of the other client settings below will be used.
+galaxy_client_use_prebuilt: false
+
 # Options include: client / client-production / client-production-maps (default). Set to null to invoke each step of the
 # build separately, but this is not guaranteed to work for all version of Galaxy - using `make` is the safer choice.
 galaxy_client_make_target: client-production-maps
