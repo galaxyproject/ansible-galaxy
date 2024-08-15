@@ -493,7 +493,7 @@ galaxy_systemd_env: []
 galaxy_additional_venv_packages: []
 
 # galaxy themes variables
-galaxy_themes_subdomains: {}
+galaxy_themes_subdomains: []
 # - name: assembly
 #   tool_sections:
 #     - "hicexplorer"
