@@ -347,7 +347,7 @@ galaxy_app_config_default:
     { {% if galaxy_manage_themes %}
     '{{ galaxy_themes_instance_domain }}': '{{ galaxy_themes_conf_file_name }}',
     {% for subdomain in galaxy_themes_subdomains %}
-    '{{ subdomain.name  }}.{{ galaxy_themes_instance_domain}}': '{{ subdomain.name }}.yml',
+    '{{ subdomain.name  }}.{{ galaxy_themes_instance_domain}}': 'themes_conf-{{ subdomain.name }}.yml',
     {% endfor %}
     {% endif %} }
   brand_by_host: >
