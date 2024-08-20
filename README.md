@@ -95,60 +95,63 @@ Options below that control individual file or subdirectory placement can still o
 [custom]: vars/layout-custom.yml
 [fhs]: http://www.pathname.com/fhs/
 
-**New options for Galaxy 22.01 and later**
+**Process control with Gravity**
 
-The role can now manage the Galaxy service using [gravity][gravity]. This is the default for Galaxy 22.05 and later.
+The role can manage the Galaxy service using [gravity][gravity]. This is the default for Galaxy 22.05 and later.
 Additionally, support for the `galaxy_restart_handler_name` variable has been removed. If you need to enable your own
-custom restart handler, you can use the "`listen`" option to the handler as explained in the
-[handler documentation](https://docs.ansible.com/ansible/latest/user_guide/playbooks_handlers.html#using-variables-with-handlers).
+custom restart handler, you can use the "`listen`" option to the handler as explained in the [handler
+documentation](https://docs.ansible.com/ansible/latest/user_guide/playbooks_handlers.html#using-variables-with-handlers).
 The handler should "listen" to the topic `"restart galaxy"`.
 
 [gravity]: https://github.com/galaxyproject/gravity
 
-From release 22.01 Galaxy can serve different static content per host (e.g. subdomain) and you can set [themes][themes] per host.
+**Galaxy Themes**
 
-By setting `galaxy_manage_subdomain_static: yes` you enable the creation of static directories and configuration per host and by setting `galaxy_manage_themes: yes` the role will append your themes_config.yml file specified under `galaxy_themes_conf_path` to your themes files after coping them over to your galaxy server and create the respective configuration.
+From release 22.01, Galaxy users can select between different UI [themes][themes]. You can define themes using the
+`galaxy_themes` variable, the syntax of which is the same as the `themes_conf.yml` file described [in the themes
+training][themes].
+
+The `galaxy_manage_themes` variable controls whether the role manages theme configs and is automatically enabled if
+`galaxy_themes` is defined. If you just want to load the the sample themes from Galaxy's
+[themes_conf.yml.sample][themes_conf_sample] without defining your own, you can manually set `galaxy_manage_themes` to
+`true`.
+
+[themes]: https://training.galaxyproject.org/training-material/topics/admin/tutorials/customization/tutorial.html
+[themes_conf_sample]: https://github.com/galaxyproject/galaxy/blob/dev/lib/galaxy/config/sample/themes_conf.yml.sample
+
+**Galaxy Subdomains**
+
+From release 22.01 Galaxy can serve different static content and themes per host (e.g. subdomain).
+
+By setting `galaxy_manage_subdomain_static: yes` you enable the creation of static directories and configuration per host.
 
 In order to use this feature, you need to create the following directory structure under files/ (customizable with the `galaxy_themes_ansible_file_path` variable):
 
 ~~~bash
 files/galaxy/static
 ├──<subdomain-name-1>
-│   ├── static
-│   │   ├── dist (optional)
-│   │   │   └── some-image.png 
-│   │   ├── images (optional)
-│   │   │   └── more-content.jpg
-│   │   └── welcome.html (optional, galaxyproject.org will be displayed otherwise.)
-│   └── themes 
-│       └── <subdomain-name-1>.yml           
+│   └── static
+│       ├── dist (optional)
+│       │   └── some-image.png
+│       ├── images (optional)
+│       │   └── more-content.jpg
+│       └── welcome.html (optional, galaxyproject.org will be displayed otherwise.)
 ├── <subdomain-name-2>                            
-│   ├── static
-│   │   ├── dist (optional)
-│   │   │   ├── another-static-image.svg
-│   │   │   └── more-static-content-2.svg
-│   │   └── welcome.html (optional)
-│   └── themes
-│       └── <subdomain-name-2>.yml
+│   └── static
+│       ├── dist (optional)
+│       │   ├── another-static-image.svg
+│       │   └── more-static-content-2.svg
+│       └── welcome.html (optional)
 ... (and many more subdomains)
 ~~~
 
-Where the <subdomain-name-1> should exactly match your subdomain's name. The subdirectories `static` and `themes` are mandatory, as well as the correctly named theme file (if you enabled `galaxy_manage_themes`), while all subdirectories in `static` are optional.  
-Which subdirectories and files are copied is managed by the `static_galaxy_themes_keys` variable.
+Where the <subdomain-name-1> should exactly match your subdomain's name. The subdirectory `static` is mandatory, while all subdirectories in `static` are optional. Which subdirectories and files are copied is managed by the `static_galaxy_themes_keys` variable.
 
 Also make sure that you set `galaxy_themes_welcome_url_prefix`, so your welcome pages are templated correctly.
 
 It is mandatory to set the variables under `galaxy_themes_subdomains` as shown in the example in [defaults/main.yml](defaults/main.yml). If you enabled the `galaxy_manage_host_filters` variable, you can also specify the tool sections that should be shown for each individual subdomain.
 
-
-
-[themes]: https://training.galaxyproject.org/training-material/topics/admin/tutorials/customization/tutorial.html
-**New options for Galaxy 18.01 and later**
-
-- `galaxy_config_style` (default: `yaml`): The type of Galaxy configuration file to write, `yaml` for the YAML format supported by Gunicorn or `ini-paste` for the traditional PasteDeploy-style INI file
-- `galaxy_app_config_section` (default: depends on `galaxy_config_style`): The config file section under which the
-  Galaxy config should be placed (and the key in `galaxy_config` in which the Galaxy config can be found. If
-  `galaxy_config_style` is `yaml` the default is `galaxy`. If `galaxy_config_style` is `ini-paste`, the default is `app:main`.
+Each subdomain can be given its own theme, which is defined under the `theme` key of the subdomain's entry in `galaxy_themes_subdomains`. This theme will be the default for the subdomain, and any other themes defined globally for the server will also be available for the user to select. If a subdomain's `theme` is not defined, the global default is used. An example is provided in [defaults/main.yml](defaults/main.yml).
 
 **Feature control**
 

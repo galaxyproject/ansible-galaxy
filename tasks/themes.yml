@@ -16,7 +16,7 @@
           ansible.builtin.set_fact:
             galaxy_themes: "{{ __galaxy_themes_config_slurp.content | b64decode | from_yaml }}"
 
-    - name: Write default themes config
+    - name: Write base themes config
       ansible.builtin.copy:
         content: "{{ galaxy_themes | to_yaml }}"
         dest: "{{ galaxy_config_merged.themes_config_file | default((galaxy_config_dir, 'themes_conf.yml') | path_join) }}"
@@ -25,12 +25,11 @@
     - name: Write subdomain themes configs
       ansible.builtin.copy:
         content: |
-          {% if item.theme is defined %}
           {{ item.theme | to_yaml }}
-          {% endif %}
           {{ galaxy_themes | to_yaml }}
         dest: "{{ galaxy_config_dir }}/themes_conf-{{ item.name }}.yml"
         mode: "0644"
+      when: item.theme is defined
       loop: "{{ galaxy_themes_subdomains }}"
 
   remote_user: "{{ galaxy_remote_users.privsep | default(__galaxy_remote_user) }}"

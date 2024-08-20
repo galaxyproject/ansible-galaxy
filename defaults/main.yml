@@ -23,7 +23,7 @@ galaxy_manage_gravity: "{{ false if __galaxy_major_version is version('22.05', '
 galaxy_manage_systemd: no # For Galaxy
 galaxy_manage_systemd_reports: no # For Reports
 galaxy_manage_cleanup: no
-galaxy_manage_themes: no
+galaxy_manage_themes: "{{ galaxy_manage_static_setup and (galaxy_themes is defined or galaxy_themes_subdomains) }}"
 galaxy_manage_subdomain_static: no
 galaxy_manage_host_filters: no
 galaxy_auto_brand: no # automatically sets the subdomain name as brand
@@ -271,6 +271,7 @@ galaxy_app_config_default:
   ucsc_build_sites: "{{ galaxy_server_dir }}/tool-data/shared/ucsc/ucsc_build_sites.txt.sample"
   tool_data_table_config_path: "{{ galaxy_server_dir }}/config/tool_data_table_conf.xml.sample"
   tool_sheds_config_file: "{{ galaxy_server_dir }}/config/tool_sheds_conf.xml.sample"
+  themes_config_file: "{{ galaxy_config_dir }}/themes_conf.yml"
 
   # Various cache and temporary directories
   data_dir: "{{ galaxy_mutable_data_dir }}"
@@ -344,10 +345,11 @@ galaxy_app_config_default:
     {% endfor %}
     {% endif %} }
   themes_config_file_by_host: >
-    { {% if galaxy_manage_themes %}
-    '{{ galaxy_themes_instance_domain }}': '{{ galaxy_themes_conf_file_name }}',
+    { {% if galaxy_manage_themes and galaxy_themes_subdomains %}
     {% for subdomain in galaxy_themes_subdomains %}
+    {% if subdomain.theme is defined %}
     '{{ subdomain.name  }}.{{ galaxy_themes_instance_domain}}': 'themes_conf-{{ subdomain.name }}.yml',
+    {% endif %}
     {% endfor %}
     {% endif %} }
   brand_by_host: >
@@ -511,7 +513,19 @@ galaxy_themes_subdomains: []
 #     - "multiple_alignments"
 #   extra_tool_labels:
 #     - "proteomics"
-galaxy_themes_conf_file_name: "{{ galaxy_themes_conf_path | basename }}"
+#   # default theme (optional)
+#   theme:
+#     assembly:
+#       masthead:
+#         color: >
+#           bottom -90px left / 1000px no-repeat url("/static/dist/flying-bird-1.svg"),
+#           bottom -90px left / 1000px no-repeat url("/static/dist/flying-bird-2.svg"),
+#           linear-gradient( 20deg,
+#             rgb(7, 40, 98) 0%,
+#             rgb(69, 122, 184) 48%,
+#             rgba(165, 204, 210, 0.9676562309265136) 74%,
+#             rgb(228, 195, 131) 92%,
+#             rgb(203, 119, 79) 100%)
 galaxy_themes_static_keys:
   static_dir: ""
   static_images_dir: "images/"
@@ -519,7 +533,6 @@ galaxy_themes_static_keys:
   static_welcome_html: "welcome.html/"
   static_favicon_dir: "favicon.ico"
   static_robots_txt: "robots.txt"
-galaxy_themes_conf_path: files/galaxy/config/themes_conf.yml
 galaxy_themes_static_path: "{{ galaxy_root }}/server"
 galaxy_themes_static_dir: "{{ galaxy_root }}/server/static"
 galaxy_themes_symlinks: true
