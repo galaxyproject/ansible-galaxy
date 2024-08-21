@@ -1,15 +1,37 @@
 ---
-- name: Append themes_conf.yml to all files in galaxy/config/themes
-  ansible.builtin.blockinfile:
-    block: "{{ lookup('ansible.builtin.file', galaxy_themes_conf_path) }}"
-    path: "{{ galaxy_themes_ansible_file_path }}/{{ subdomain.name }}/themes/{{ subdomain.name }}.yml"
-  delegate_to: 127.0.0.1
 
-- name: Copy themes files
-  ansible.builtin.copy:
-    src: "{{ galaxy_themes_ansible_file_path }}/{{ subdomain.name }}/themes/{{ subdomain.name }}.yml"
-    dest: "{{ galaxy_config_dir }}"
-    mode: '0644'
-    owner: "{{ __galaxy_privsep_user_name }}"
-    group: "{{ __galaxy_privsep_user_group }}"
+- name: Themes setup
+  block:
 
+    - name: Default themes block
+      when: galaxy_themes is not defined
+      block:
+
+        - name: Load default themes if unset
+          ansible.builtin.slurp:
+            src: "{{ (galaxy_server_dir, 'lib/galaxy/config/sample/themes_conf.yml.sample') | path_join }}"
+          register: __galaxy_themes_config_slurp
+
+        - name: Set galaxy_themes
+          ansible.builtin.set_fact:
+            galaxy_themes: "{{ __galaxy_themes_config_slurp.content | b64decode | from_yaml }}"
+
+    - name: Write base themes config
+      ansible.builtin.copy:
+        content: "{{ galaxy_themes | to_yaml }}"
+        dest: "{{ galaxy_config_merged.galaxy.themes_config_file | default((galaxy_config_dir, 'themes_conf.yml') | path_join) }}"
+        mode: "0644"
+
+    - name: Write subdomain themes configs
+      ansible.builtin.copy:
+        content: |
+          {{ item.theme | to_yaml }}
+          {{ galaxy_themes | to_yaml }}
+        dest: "{{ galaxy_config_dir }}/themes_conf-{{ item.name }}.yml"
+        mode: "0644"
+      when: item.theme is defined
+      loop: "{{ galaxy_themes_subdomains }}"
+
+  remote_user: "{{ galaxy_remote_users.privsep | default(__galaxy_remote_user) }}"
+  become: "{{ true if galaxy_become_users.privsep is defined else __galaxy_become }}"
+  become_user: "{{ galaxy_become_users.privsep | default(__galaxy_become_user) }}"
