@@ -346,6 +346,7 @@ galaxy_app_config_default:
     {% endif %} }
   themes_config_file_by_host: >
     { {% if galaxy_manage_themes and galaxy_themes_subdomains %}
+    '{{ galaxy_themes_instance_domain }}': '{{ galaxy_config.galaxy.themes_config_file | default((galaxy_config_dir, "themes_conf.yml") | path_join) }}',
     {% for subdomain in galaxy_themes_subdomains %}
     {% if subdomain.theme is defined %}
     '{{ subdomain.name  }}.{{ galaxy_themes_instance_domain}}': 'themes_conf-{{ subdomain.name }}.yml',

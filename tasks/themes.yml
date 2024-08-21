@@ -19,7 +19,7 @@
     - name: Write base themes config
       ansible.builtin.copy:
         content: "{{ galaxy_themes | to_yaml }}"
-        dest: "{{ galaxy_config_merged.themes_config_file | default((galaxy_config_dir, 'themes_conf.yml') | path_join) }}"
+        dest: "{{ galaxy_config_merged.galaxy.themes_config_file | default((galaxy_config_dir, 'themes_conf.yml') | path_join) }}"
         mode: "0644"
 
     - name: Write subdomain themes configs
