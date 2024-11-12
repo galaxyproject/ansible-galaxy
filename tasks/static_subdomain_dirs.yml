@@ -52,6 +52,7 @@
   ansible.builtin.stat:
     path: "{{ galaxy_themes_ansible_file_path }}/{{ subdomain.name }}/static/welcome.html"
   register: custom_welcome
+  delegate_to: 127.0.0.1
 
 - name: Create welcome.html directory
   ansible.builtin.file:
