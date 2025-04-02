@@ -37,6 +37,7 @@
     PATH: "{{ galaxy_server_dir }}/client/node_modules/.bin:{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
     VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
     GXY_BUILD_SOURCEMAPS: 1
+    NODE_OPTIONS: --max_old_space_size=4096
 
 - name: Stage built client
   command: "yarn run stage-build"
