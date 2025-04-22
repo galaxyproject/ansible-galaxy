@@ -100,7 +100,7 @@ galaxy_create_privsep_user: "{{ galaxy_create_user if __galaxy_privsep_user_name
 galaxy_log_dir: "{{ galaxy_mutable_data_dir }}/log"
 
 # Directories to create as the Galaxy user if galaxy_manage_paths is enabled
-galaxy_dirs:
+__galaxy_dirs:
   - "{{ galaxy_mutable_data_dir }}"
   - "{{ galaxy_mutable_config_dir }}"
   - "{{ galaxy_cache_dir }}"
@@ -111,15 +111,19 @@ galaxy_dirs:
   - "{{ galaxy_tool_data_path }}"
   - "{{ galaxy_log_dir }}"
 
+galaxy_dirs: "{{ __galaxy_dirs }}"
+
 # Additional directories to create as the Galaxy user, so you don't have to copy the default galaxy_dirs
 galaxy_extra_dirs: []
 
 # Directories to create as the privilege separated user if galaxy_manage_paths is enabled
-galaxy_privsep_dirs:
+__galaxy_privsep_dirs:
   - "{{ galaxy_venv_dir }}"
   - "{{ galaxy_server_dir }}"
   - "{{ galaxy_config_dir }}"
   - "{{ galaxy_local_tools_dir }}"
+
+galaxy_privsep_dirs: "{{ __galaxy_privsep_dirs }}"
 
 # Additional directories to create as the privilege separated user, so you don't have to copy the default galaxy_dirs
 galaxy_extra_privsep_dirs: []
