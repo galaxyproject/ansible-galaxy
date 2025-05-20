@@ -18,15 +18,15 @@
 
     - name: Write base themes config
       ansible.builtin.copy:
-        content: "{{ galaxy_themes | to_yaml }}"
+        content: "{{ galaxy_themes | to_yaml(sort_keys=False) }}"
         dest: "{{ galaxy_config_merged.galaxy.themes_config_file | default((galaxy_config_dir, 'themes_conf.yml') | path_join) }}"
         mode: "0644"
 
     - name: Write subdomain themes configs
       ansible.builtin.copy:
         content: |
-          {{ item.theme | to_yaml }}
-          {{ galaxy_themes | to_yaml }}
+          {{ item.theme | to_yaml(sort_keys=False) }}
+          {{ galaxy_themes | to_yaml(sort_keys=False) }}
         dest: "{{ galaxy_config_dir }}/themes_conf-{{ item.name }}.yml"
         mode: "0644"
       when: item.theme is defined
