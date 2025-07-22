@@ -28,7 +28,7 @@
 		onload="this.style.position='static'; this.style.visibility='visible';"></iframe>
 	<script type="text/javascript">
 		var pseudo_rand = parseInt(Date.now() / 1000 / 60 / 10);
-		{% if galaxy_themes_use_iframe is defined %}
+		{% if galaxy_themes_use_iframe is defined and subdomain is defined and galaxy_themes_use_iframe.status == 200 %}
 		document.getElementById('center-iframe').src = '{{ galaxy_themes_welcome_url_prefix }}{{ subdomain.name }}?nonce=' + pseudo_rand + '#';
 		{% else %}
 		document.getElementById('center-iframe').src = '{{ galaxy_themes_default_welcome }}?nonce=' + pseudo_rand + '#';
