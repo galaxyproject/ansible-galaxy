@@ -527,17 +527,7 @@ galaxy_themes_subdomains: []
 #             rgba(165, 204, 210, 0.9676562309265136) 74%,
 #             rgb(228, 195, 131) 92%,
 #             rgb(203, 119, 79) 100%)
-galaxy_themes_static_keys:
-  static_dir: ""
-  static_images_dir: "images/"
-  static_scripts_dir: "scripts/"
-  static_welcome_html: "welcome.html/"
-  static_favicon_dir: "favicon.ico"
-  static_robots_txt: "robots.txt"
 galaxy_themes_static_path: "{{ galaxy_root }}/server"
-galaxy_themes_static_dir: "{{ galaxy_root }}/server/static"
-galaxy_themes_symlinks: true
-galaxy_themes_symlinks_no_log: false # Hides extended logs for the symlink task in static/dist
 galaxy_themes_welcome_url_prefix: https://usegalaxy-eu.github.io/index-
 galaxy_themes_default_welcome: https://galaxyproject.org
 galaxy_themes_ansible_file_path: files/galaxy/static

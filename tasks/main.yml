@@ -161,7 +161,7 @@
   tags:
     - galaxy_manage_cleanup
 
-- name: Inlcude static directory setup
+- name: Include static directory setup
   ansible.builtin.include_tasks: static_dirs.yml
   when: galaxy_manage_subdomain_static
   tags:

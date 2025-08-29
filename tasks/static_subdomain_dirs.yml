@@ -1,60 +1,20 @@
 ---
-- name: Create subdomain static dirs
-  ansible.builtin.file:
-    state: directory
+- name: Create {{ subdomain.name }}'s static dirs and symlink Galaxy static files  # noqa name[template]
+  symlink_clone:
+    src: "{{ galaxy_static_dir }}"
+    path: "{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/"
     mode: '0755'
     owner: "{{ __galaxy_privsep_user_name }}"
     group: "{{ __galaxy_privsep_user_group }}"
-    path: "{{ galaxy_themes_static_path }}/{{ item }}"
-  with_items:
-    - "static-{{ subdomain.name }}"
-    - "static-{{ subdomain.name }}/dist"
 
-- name: Register files in static/dist
-  ansible.builtin.find:
-    paths: "{{ galaxy_static_dir }}/dist"
-    file_type: file
-  when: galaxy_themes_symlinks
-  register: dist_files
-
-- name: "Symlink files static-{{ subdomain.name }}/dist to static/dist"
-  ansible.builtin.file:
-    src: "{{ item.path }}"
-    dest: "{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/dist/{{ item.path | basename }}"
-    state: link
-  when: galaxy_themes_symlinks
-  no_log: "{{ galaxy_themes_symlinks_no_log }}"
-  with_items: "{{ dist_files.files }}"
-
-- name: "Symlink directory {{ item }} from static-{{ subdomain.name }}/{{ item }} to static/{{ item }}"
-  ansible.builtin.file:
-    src: "{{ galaxy_static_dir }}/{{ item }}"
-    dest: "{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/{{ item }}"
-    state: link
-  when: galaxy_themes_symlinks
-  ignore_errors: true
-  with_items:
-    - "plugins"
-    - "patmat"
-    - "toolshed"
-    - "wymeditor"
-    - "style"
-
-- name: Synchronize contents from static to static-"{{ subdomain.name }}"
-  ansible.posix.synchronize:
-    src: "{{ galaxy_static_dir }}/"
-    dest: "{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}"
-    rsync_opts: "{{ ['--ignore-existing'] if __galaxy_client_build_version ==
-      __galaxy_current_commit_id else omit }}"
-  delegate_to: "{{ inventory_hostname }}"
-
-- name: Check if welcome.html is present in files
+- name: Check if welcome.html is present in {{ subdomain.name }}'s static files  # noqa name[template]
   ansible.builtin.stat:
     path: "{{ galaxy_themes_ansible_file_path }}/{{ subdomain.name }}/static/welcome.html"
   register: custom_welcome
   delegate_to: 127.0.0.1
+  become: false
 
-- name: Create welcome.html directory
+- name: Create welcome.html directory within {{ subdomain.name }}'s static dir  # noqa name[template]
   ansible.builtin.file:
     state: directory
     mode: '0755'
@@ -62,7 +22,7 @@
     group: "{{ __galaxy_privsep_user_group }}"
     path: "{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/welcome.html"
 
-- name: Check if iframe for subdomain exists
+- name: Check if iframe for {{ subdomain.name }} exists  # noqa name[template]
   ansible.builtin.uri:
     url: "{{ galaxy_themes_welcome_url_prefix }}{{ subdomain.name }}.html"
     return_content: true
@@ -70,7 +30,7 @@
   failed_when: false
   when: not custom_welcome.stat.exists
 
-- name: Template welcome.html for subdomains
+- name: Template welcome.html for {{ subdomain.name }}
   ansible.builtin.template:
     src: welcome.html.j2
     dest: "{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/welcome.html/index.html"
@@ -79,8 +39,25 @@
     mode: '0644'
   when: not custom_welcome.stat.exists
 
-- name: Include copy_static_files.yml
-  ansible.builtin.include_tasks: copy_static_files.yml
-  loop: "{{ galaxy_themes_static_keys | dict2items }}"
-  loop_control:
-    loop_var: object
+- name: Check if {{ subdomain.name }}'s static files directory exists  # noqa name[template]
+  ansible.builtin.stat:
+    path: "{{ galaxy_themes_ansible_file_path }}/{{ subdomain.name }}/static/"
+  register: subdomain_static_dir
+
+- name: Copy {{ subdomain.name }}'s static files  # noqa name[template]
+  ansible.builtin.copy:
+    src: "{{ galaxy_themes_ansible_file_path }}/{{ subdomain.name }}/static/"
+    dest: "{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/"
+    mode: '0644'
+    owner: "{{ __galaxy_privsep_user_name }}"
+    group: "{{ __galaxy_privsep_user_group }}"
+  when: subdomain_static_dir.stat.exists
+
+- name: Copy custom welcome.html
+  ansible.builtin.copy:
+    src: "{{ galaxy_themes_ansible_file_path }}/{{ subdomain.name }}/static/welcome.html"
+    dest: "{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}/welcome.html/index.html"
+    mode: '0644'
+    owner: "{{ __galaxy_privsep_user_name }}"
+    group: "{{ __galaxy_privsep_user_group }}"
+  when: custom_welcome.stat.exists
