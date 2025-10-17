@@ -344,15 +344,7 @@ galaxy_app_config_default:
     '{{ subdomain.name }}.{{ galaxy_themes_instance_domain}}': '{{ galaxy_themes_static_path }}/static-{{ subdomain.name }}',
     {% endfor %}
     {% endif %} }
-  themes_config_file_by_host: >
-    { {% if galaxy_manage_themes and galaxy_themes_subdomains %}
-    '{{ galaxy_themes_instance_domain }}': '{{ galaxy_config.galaxy.themes_config_file | default((galaxy_config_dir, "themes_conf.yml") | path_join) }}',
-    {% for subdomain in galaxy_themes_subdomains %}
-    {% if subdomain.theme is defined %}
-    '{{ subdomain.name  }}.{{ galaxy_themes_instance_domain}}': 'themes_conf-{{ subdomain.name }}.yml',
-    {% endif %}
-    {% endfor %}
-    {% endif %} }
+  themes_config_file_by_host: "{{ {} if not (galaxy_manage_themes and galaxy_themes_subdomains) else _themes_config_file_by_host }}"
   brand_by_host: >
     { {% if galaxy_auto_brand %}
     '{{ galaxy_themes_instance_domain }}': '{{ galaxy_themes_instance_domain }}',
@@ -360,6 +352,13 @@ galaxy_app_config_default:
     '{{ subdomain.name  }}.{{ galaxy_themes_instance_domain}}': '{{ subdomain.name[0]|upper }}{{ subdomain.name[1:] }}',
     {% endfor %}
     {% endif %} }
+# Helper variable for themes_config_file_by_host - builds actual dict instead of string
+_themes_config_file_by_host:
+  "{{ galaxy_themes_instance_domain }}": "{{ galaxy_config.galaxy.themes_config_file | default((galaxy_config_dir, 'themes_conf.yml') | path_join) }}"
+{% for subdomain in galaxy_themes_subdomains if subdomain.theme is defined %}
+  "{{ subdomain.name }}.{{ galaxy_themes_instance_domain }}": "themes_conf-{{ subdomain.name }}.yml"
+{% endfor %}
+
 # Need to set galaxy_config_default[galaxy_app_config_section] dynamically but Ansible/Jinja2 does not make this easy
 galaxy_config_default: "{{ {} | combine({galaxy_app_config_section: galaxy_app_config_default}) }}"
 galaxy_config_merged: "{{ galaxy_config_default | combine(galaxy_config | default({}), recursive=True) }}"
