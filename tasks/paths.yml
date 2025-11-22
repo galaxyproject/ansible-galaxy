@@ -20,8 +20,8 @@
         owner: "{{ __galaxy_privsep_user_name }}"
         group: "{{ __galaxy_user_group }}" #This is set so that the galaxy_user can read the files in the priv_sep dirs. (As priv_sep dirs have defauly perms of 0640.)
         mode: "{{ __galaxy_dir_perms }}"
-      loop: "{{ galaxy_privsep_dirs + galaxy_extra_privsep_dirs }}"
-      when: item | default(False)
+      # Skip null, xref https://github.com/galaxyproject/ansible-galaxy/pull/126
+      loop: "{{ (galaxy_privsep_dirs + galaxy_extra_privsep_dirs) | select | list }}"
 
     - name: Create additional directories
       file:
