@@ -26,6 +26,10 @@
   import_tasks: layout.yml
   tags: always
 
+- name: Build config facts for *_by_host variables
+  import_tasks: config-facts.yml
+  tags: always
+
 - name: Include user creation tasks
   include_tasks:
     file: user.yml
