@@ -67,6 +67,18 @@
         galaxy_tool_config_files: "{{ galaxy_tool_config_files + [galaxy_shed_tool_config_file] }}"
       when: __galaxy_major_version is version('19.09', '<') and galaxy_shed_tool_config_file not in galaxy_tool_config_files
 
+    - name: Rebuild galaxy_app_config_default with updated tool_config_files
+      set_fact:
+        galaxy_app_config_default: "{{ galaxy_app_config_default | combine({'tool_config_file': galaxy_tool_config_files | join(',')}) }}"
+
+    - name: Rebuild galaxy_config_default with updated galaxy_app_config_default
+      set_fact:
+        galaxy_config_default: "{{ {} | combine({galaxy_app_config_section: galaxy_app_config_default}) }}"
+
+    - name: Rebuild galaxy_config_merged with updated galaxy_config_default
+      set_fact:
+        galaxy_config_merged: "{{ galaxy_config_default | combine(galaxy_config | default({}), recursive=True) }}"
+
     - name: Ensure dynamic job rules paths exists
       file:
         path: "{{ galaxy_dynamic_job_rules_dir }}/{{ item | dirname }}"
