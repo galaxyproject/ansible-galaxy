@@ -22,12 +22,36 @@
   when: "galaxy_systemd_mode == 'mule' and galaxy_manage_systemd"
   listen: "restart galaxy"
 
-- name: Include Gravity handlers (for 22.05)
-  import_tasks:
-    file: gravity_22.05.yml
+# Gravity handlers for 22.05
+- name: galaxy gravity restart (22.05)
+  command: "{{ galaxy_gravity_command }} graceful"
+  environment:
+    GRAVITY_STATE_DIR: "{{ galaxy_gravity_state_dir }}"
+  listen: "restart galaxy"
   when: "galaxy_systemd_mode == 'gravity' and galaxy_manage_systemd and __galaxy_major_version is version('23.0', '<')"
+  become: yes
+  become_user: "{{ __galaxy_user_name }}"
 
-- name: Include Gravity handlers (for 23.0)
-  import_tasks:
-    file: gravity_23.0.yml
+- name: galaxyctl update (22.05)
+  command: "{{ galaxy_gravity_command }} update"
+  environment:
+    GRAVITY_STATE_DIR: "{{ galaxy_gravity_state_dir }}"
+  listen: "galaxyctl update"
+  when: "galaxy_systemd_mode == 'gravity' and galaxy_manage_systemd and __galaxy_major_version is version('23.0', '<')"
+  become: yes
+  become_user: "{{ __galaxy_user_name }}"
+
+# Gravity handlers for 23.0+
+- name: galaxyctl update (23.0+)
+  command: "{{ galaxy_gravity_command }} -c {{ galaxy_config_file }} update"
+  listen: "galaxyctl update"
   when: "galaxy_systemd_mode == 'gravity' and __galaxy_major_version is version('23.0', '>=')"
+  become: yes
+  become_user: "{{ (__galaxy_gravity_pm == 'systemd' and galaxy_systemd_root) | ternary('root', __galaxy_user_name) }}"
+
+- name: galaxy gravity restart (23.0+)
+  command: "{{ galaxy_gravity_command }} -c {{ galaxy_config_file }} graceful"
+  listen: "restart galaxy"
+  when: "galaxy_systemd_mode == 'gravity' and __galaxy_major_version is version('23.0', '>=')"
+  become: yes
+  become_user: "{{ (__galaxy_gravity_pm == 'systemd' and galaxy_systemd_root) | ternary('root', __galaxy_user_name) }}"
