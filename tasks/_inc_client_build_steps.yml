@@ -19,30 +19,47 @@
     success_msg: "Deconstructed client build is supported"
     fail_msg: "Deconstructed client build is not supported for Galaxy version {{ __galaxy_major_version }}, please set 'galaxy_client_make_target'"
 
-- name: Run gulp  # noqa no-changed-when
-  command: corepack yarn run gulp {{ item }}
-  args:
-    chdir: "{{ galaxy_server_dir }}/client"
-  with_items: "{{ galaxy_client_build_steps[__galaxy_major_version] | default(galaxy_client_build_steps.default) }}"
-  environment:
-    PATH: "{{ galaxy_server_dir }}/client/node_modules/.bin:{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
-    VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
-    NODE_ENV: "{{ galaxy_client_node_env }}"
+- name: Pre-25.2 block
+  when: "__galaxy_major_version is version('25.2', '<')"
+  block:
 
-- name: Run webpack  # noqa no-changed-when
-  command: "corepack yarn run webpack{{ (galaxy_client_node_env == 'production') | ternary('-production', '') }}"
-  args:
-    chdir: "{{ galaxy_server_dir }}/client"
-  environment:
-    PATH: "{{ galaxy_server_dir }}/client/node_modules/.bin:{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
-    VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
-    NODE_OPTIONS: --max_old_space_size=8192
+    - name: Run gulp  # noqa no-changed-when
+      command: corepack yarn run gulp {{ item }}
+      args:
+        chdir: "{{ galaxy_server_dir }}/client"
+      with_items: "{{ galaxy_client_build_steps[__galaxy_major_version] | default(galaxy_client_build_steps.default) }}"
+      environment:
+        PATH: "{{ galaxy_server_dir }}/client/node_modules/.bin:{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
+        VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+        NODE_ENV: "{{ galaxy_client_node_env }}"
 
-- name: Stage built client
-  command: "corepack yarn run stage-build"
-  args:
-    chdir: "{{ galaxy_server_dir }}/client"
-  environment:
-    PATH: "{{ galaxy_server_dir }}/client/node_modules/.bin:{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
-    VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
-  when: "__galaxy_major_version is version('23.0', '>=')"
+    - name: Run webpack  # noqa no-changed-when
+      command: "corepack yarn run webpack{{ (galaxy_client_node_env == 'production') | ternary('-production', '') }}"
+      args:
+        chdir: "{{ galaxy_server_dir }}/client"
+      environment:
+        PATH: "{{ galaxy_server_dir }}/client/node_modules/.bin:{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
+        VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+        NODE_OPTIONS: --max_old_space_size=8192
+
+    - name: Stage built client
+      command: "corepack yarn run stage-build"
+      args:
+        chdir: "{{ galaxy_server_dir }}/client"
+      environment:
+        PATH: "{{ galaxy_server_dir }}/client/node_modules/.bin:{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
+        VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+      when: "__galaxy_major_version is version('23.0', '>=')"
+
+- name: Post-25.2 block
+  when: "__galaxy_major_version is version('25.2', '>=')"
+  block:
+
+    - name: Run build  # noqa no-changed-when
+      command: "corepack yarn run build{{ (galaxy_client_node_env == 'production') | ternary('-production', '') }}"
+      args:
+        chdir: "{{ galaxy_server_dir }}/client"
+      environment:
+        PATH: "{{ galaxy_server_dir }}/client/node_modules/.bin:{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
+        VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+        NODE_OPTIONS: --max-old-space-size=8192
