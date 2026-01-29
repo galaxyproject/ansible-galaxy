@@ -25,16 +25,20 @@
       register: conditional_dependencies
       changed_when: no
 
+    - name: Clean Galaxy conditional dependencies (remove inline comments)
+      set_fact:
+        conditional_dependencies_cleaned: "{{ conditional_dependencies.stdout_lines | map('regex_replace', '#.*$', '') | list }}"
+
     - name: Install Galaxy conditional dependencies
       pip:
-        name: "{{ conditional_dependencies.stdout_lines }}"
+        name: "{{ conditional_dependencies_cleaned }}"
         extra_args: "--index-url https://wheels.galaxyproject.org/simple/ --extra-index-url https://pypi.python.org/simple {{ pip_extra_args | default('') }}"
         virtualenv: "{{ galaxy_venv_dir }}"
         virtualenv_command: "{{ galaxy_virtualenv_command | default(pip_virtualenv_command | default(omit)) }}"
       environment:
         PYTHONPATH: null
         VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
-      when: (not ansible_check_mode) and conditional_dependencies.stdout_lines | length > 0
+      when: (not ansible_check_mode) and conditional_dependencies_cleaned | length > 0
 
     - name: Install additional packages into galaxy's virtual environment
       pip:
