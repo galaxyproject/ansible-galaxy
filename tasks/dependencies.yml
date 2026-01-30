@@ -7,8 +7,21 @@
     - name: Include virtualenv setup tasks
       import_tasks: virtualenv.yml
 
+    # Install Galaxy base dependencies using uv
+    - name: Install Galaxy base dependencies (uv)
+      command: >-
+        {{ galaxy_venv_dir }}/bin/uv pip install
+        --python {{ galaxy_venv_dir }}/bin/python
+        --index-strategy unsafe-best-match
+        --extra-index-url https://wheels.galaxyproject.org/simple/
+        -r {{ galaxy_requirements_file }}
+      environment:
+        PYTHONPATH: null
+        VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+      when: galaxy_fetch_dependencies_with_uv
+
     # virtualenv_command is still required if `virtualenv` isn't on $PATH, even if the venv already exists.
-    - name: Install Galaxy base dependencies
+    - name: Install Galaxy base dependencies (pip)
       pip:
         requirements: "{{ galaxy_requirements_file }}"
         extra_args: "--index-url https://wheels.galaxyproject.org/simple/ --extra-index-url https://pypi.python.org/simple {{ pip_extra_args | default('') }}"
@@ -17,6 +30,7 @@
       environment:
         PYTHONPATH: null
         VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+      when: not galaxy_fetch_dependencies_with_uv
 
     - name: Collect Galaxy conditional dependency requirement strings
       command: "{{ galaxy_venv_dir }}/bin/python -c \"import galaxy.dependencies; print('\\n'.join(galaxy.dependencies.optional('{{ galaxy_config_file }}')))\""
@@ -25,7 +39,19 @@
       register: conditional_dependencies
       changed_when: no
 
-    - name: Install Galaxy conditional dependencies
+    - name: Install Galaxy conditional dependencies (uv)
+      command: >-
+        {{ galaxy_venv_dir }}/bin/uv pip install
+        --python {{ galaxy_venv_dir }}/bin/python
+        --index-strategy unsafe-best-match
+        --extra-index-url https://wheels.galaxyproject.org/simple/
+        {{ conditional_dependencies.stdout_lines | join(' ') }}
+      environment:
+        PYTHONPATH: null
+        VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+      when: galaxy_fetch_dependencies_with_uv and (not ansible_check_mode) and conditional_dependencies.stdout_lines | length > 0
+
+    - name: Install Galaxy conditional dependencies (pip)
       pip:
         name: "{{ conditional_dependencies.stdout_lines }}"
         extra_args: "--index-url https://wheels.galaxyproject.org/simple/ --extra-index-url https://pypi.python.org/simple {{ pip_extra_args | default('') }}"
@@ -34,9 +60,19 @@
       environment:
         PYTHONPATH: null
         VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
-      when: (not ansible_check_mode) and conditional_dependencies.stdout_lines | length > 0
+      when: (not galaxy_fetch_dependencies_with_uv) and (not ansible_check_mode) and conditional_dependencies.stdout_lines | length > 0
 
-    - name: Install additional packages into galaxy's virtual environment
+    - name: Install additional packages into galaxy's virtual environment (uv)
+      command: >-
+        {{ galaxy_venv_dir }}/bin/uv pip install
+        --python {{ galaxy_venv_dir }}/bin/python
+        {{ galaxy_additional_venv_packages | join(' ') }}
+      environment:
+        PYTHONPATH: null
+        VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+      when: galaxy_fetch_dependencies_with_uv and galaxy_additional_venv_packages | length > 0
+
+    - name: Install additional packages into galaxy's virtual environment (pip)
       pip:
         name: "{{ galaxy_additional_venv_packages }}"
         virtualenv: "{{ galaxy_venv_dir }}"
@@ -44,7 +80,7 @@
       environment:
         PYTHONPATH: null
         VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
-      when: galaxy_additional_venv_packages | length > 0
+      when: (not galaxy_fetch_dependencies_with_uv) and galaxy_additional_venv_packages | length > 0
 
   remote_user: "{{ galaxy_remote_users.privsep | default(__galaxy_remote_user) }}"
   become: "{{ true if galaxy_become_users.privsep is defined else __galaxy_become }}"
