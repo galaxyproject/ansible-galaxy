@@ -93,13 +93,17 @@ def compare_permissions(src: Path, dest: Path) -> bool:
             src_path = root / name if name != root else root
             dst_path = dest / src_path.relative_to(src)
 
+            if not dst_path.exists():  # `src_path` guaranteed to exist
+                return True
+
             if src_path.is_symlink() or dst_path.is_symlink():
                 continue
 
-            src_stat = src_path.lstat()
-            dst_stat = dst_path.lstat()
             if src_path.is_dir() != dst_path.is_dir():
                 return True
+
+            src_stat = src_path.lstat()
+            dst_stat = dst_path.lstat()
             if src_stat.st_mode != dst_stat.st_mode:
                 return True
             if src_stat.st_uid != dst_stat.st_uid:
