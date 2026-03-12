@@ -148,6 +148,26 @@ def set_permissions(
                 )
 
 
+def compare_dirs(src: Path, dst: Path) -> bool:
+    """Compare two directories recursively."""
+    comparison = filecmp.dircmp(src, dst)
+
+    changed = bool(
+        comparison.left_only
+        # or comparison.right_only  # target may contain extra files
+        or comparison.diff_files
+        or comparison.funny_files
+    )
+    if changed:
+        return True
+
+    for subdir in comparison.common_dirs:
+        if compare_dirs(src / subdir, dst / subdir):
+            return True
+
+    return False
+
+
 def run_module():
     """Run the Ansible module."""
     module = AnsibleModule(
@@ -232,15 +252,9 @@ def run_module():
 
         # determine if anything was changed
         if target.exists():
-            comparison = filecmp.dircmp(temp_path, target)
+            comparison = compare_dirs(temp_path, target)
             permissions = compare_permissions(temp_path, target)
-            changed = bool(
-                comparison.left_only
-                # or comparison.right_only  # target contain have extra files
-                or comparison.diff_files
-                or comparison.funny_files
-                or permissions
-            )
+            changed = comparison or permissions
         else:
             changed = True
     # merge source with target if anything changed
