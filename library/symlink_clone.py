@@ -93,13 +93,17 @@ def compare_permissions(src: Path, dest: Path) -> bool:
             src_path = root / name if name != root else root
             dst_path = dest / src_path.relative_to(src)
 
+            if not dst_path.exists():  # `src_path` guaranteed to exist
+                continue
+
             if src_path.is_symlink() or dst_path.is_symlink():
                 continue
 
-            src_stat = src_path.lstat()
-            dst_stat = dst_path.lstat()
             if src_path.is_dir() != dst_path.is_dir():
                 return True
+
+            src_stat = src_path.lstat()
+            dst_stat = dst_path.lstat()
             if src_stat.st_mode != dst_stat.st_mode:
                 return True
             if src_stat.st_uid != dst_stat.st_uid:
@@ -142,6 +146,31 @@ def set_permissions(
                     owner if owner is not None else -1,
                     group if group is not None else -1,
                 )
+
+
+def compare_dirs(src: Path, dst: Path) -> bool:
+    """Compare two directories recursively.
+    
+    Returns:
+        True if the directories are different, False if they are considered
+        identical.
+    """
+    comparison = filecmp.dircmp(src, dst)
+
+    changed = bool(
+        comparison.left_only
+        # or comparison.right_only  # target may contain extra files
+        or comparison.diff_files
+        or comparison.funny_files
+    )
+    if changed:
+        return True
+
+    for subdir in comparison.common_dirs:
+        if compare_dirs(src / subdir, dst / subdir):
+            return True
+
+    return False
 
 
 def run_module():
@@ -228,15 +257,9 @@ def run_module():
 
         # determine if anything was changed
         if target.exists():
-            comparison = filecmp.dircmp(temp_path, target)
+            comparison = compare_dirs(temp_path, target)
             permissions = compare_permissions(temp_path, target)
-            changed = bool(
-                comparison.left_only
-                # or comparison.right_only  # target contain have extra files
-                or comparison.diff_files
-                or comparison.funny_files
-                or permissions
-            )
+            changed = comparison or permissions
         else:
             changed = True
     # merge source with target if anything changed
