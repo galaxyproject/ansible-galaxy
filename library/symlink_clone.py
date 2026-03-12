@@ -94,7 +94,7 @@ def compare_permissions(src: Path, dest: Path) -> bool:
             dst_path = dest / src_path.relative_to(src)
 
             if not dst_path.exists():  # `src_path` guaranteed to exist
-                return True
+                continue
 
             if src_path.is_symlink() or dst_path.is_symlink():
                 continue
