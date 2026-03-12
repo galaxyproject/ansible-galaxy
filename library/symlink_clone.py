@@ -149,7 +149,12 @@ def set_permissions(
 
 
 def compare_dirs(src: Path, dst: Path) -> bool:
-    """Compare two directories recursively."""
+    """Compare two directories recursively.
+    
+    Returns:
+        True if the directories are different, False if they are considered
+        identical.
+    """
     comparison = filecmp.dircmp(src, dst)
 
     changed = bool(
