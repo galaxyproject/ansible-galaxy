@@ -302,13 +302,14 @@ galaxy_app_config_default:
 
   # Static and themes configuration, will only be added if galaxy_manage_themes
   static_enabled: "{{ galaxy_manage_subdomain_static }}"
-  # The following *_by_host dicts are built at runtime in tasks/config-facts.yml
+  # The following static_*_by_host dicts are built at runtime in tasks/static-facts.yml
   static_dir_by_host: {}
   static_images_dir_by_host: {}
   static_welcome_html_by_host: {}
   static_scripts_dir_by_host: {}
   static_favicon_dir_by_host: {}
   static_robots_txt_by_host: {}
+  # The remaining themes_*_by_host and brand_by_host dicts are built at runtime in tasks/themes-facts.yml
   themes_config_file_by_host: {}
   brand_by_host: {}
 # Need to set galaxy_config_default[galaxy_app_config_section] dynamically but Ansible/Jinja2 does not make this easy
