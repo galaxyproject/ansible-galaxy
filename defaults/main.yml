@@ -418,6 +418,7 @@ __galaxy_gravity_pm: "{{ (galaxy_config_merged.gravity | default({})).process_ma
 __galaxy_gravity_instance_name: "{{ (galaxy_config_merged.gravity | default({})).instance_name | default(none) }}"
 galaxy_gravity_wrapper_path: "/usr/local/bin/galaxyctl{{ __galaxy_gravity_instance_name | ternary('-' ~ __galaxy_gravity_instance_name, '') }}"
 galaxy_gravity_command: "{{ galaxy_venv_dir }}/bin/galaxyctl"
+galaxy_gravity_restart_action: graceful
 
 # Currently `mule` (aka uWSGI) and `gravity` (runs Galaxy 22.01+ under gunicorn) are supported
 galaxy_systemd_mode: "{{ 'mule' if __galaxy_major_version is version('22.05', '<') else 'gravity' }}"

@@ -24,7 +24,7 @@
 
 # Gravity handlers for 22.05
 - name: galaxy gravity restart (22.05)
-  command: "{{ galaxy_gravity_command }} graceful"
+  command: "{{ galaxy_gravity_command }} {{ galaxy_gravity_restart_action }}"
   environment:
     GRAVITY_STATE_DIR: "{{ galaxy_gravity_state_dir }}"
   listen: "restart galaxy"
@@ -50,7 +50,7 @@
   become_user: "{{ (__galaxy_gravity_pm == 'systemd' and galaxy_systemd_root) | ternary('root', __galaxy_user_name) }}"
 
 - name: galaxy gravity restart (23.0+)
-  command: "{{ galaxy_gravity_command }} -c {{ galaxy_config_file }} graceful"
+  command: "{{ galaxy_gravity_command }} -c {{ galaxy_config_file }} {{ galaxy_gravity_restart_action }}"
   listen: "restart galaxy"
   when: "galaxy_systemd_mode == 'gravity' and __galaxy_major_version is version('23.0', '>=')"
   become: yes
