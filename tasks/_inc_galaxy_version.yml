@@ -14,7 +14,7 @@
   register: __galaxy_version_legacy_stat
   when: not __galaxy_version_init_stat.stat.exists
 
-- name: Collect Galaxy version file (new location)
+- name: Collect Galaxy version file for Galaxy 26.1+
   slurp:
     src: "{{ galaxy_server_dir }}/lib/galaxy/version/__init__.py"
   register: __galaxy_version_file
