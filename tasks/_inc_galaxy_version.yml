@@ -3,22 +3,10 @@
 
 # Currently only used by mutable config setup but placed in an include because it'll probably be used by more
 
-- name: Collect Galaxy version file (Galaxy 26.1+)
-  slurp:
-    src: "{{ galaxy_server_dir }}/lib/galaxy/version/__init__.py"
-  register: __galaxy_version_file
-  failed_when: false
-
-- name: Collect Galaxy version file (legacy location)
+- name: Collect Galaxy version file
   slurp:
     src: "{{ galaxy_server_dir }}/lib/galaxy/version.py"
   register: __galaxy_version_file
-  when: __galaxy_version_file is not defined or __galaxy_version_file.failed
-
-- name: Fail if Galaxy version file not found
-  fail:
-    msg: "Galaxy version file not found in expected locations"
-  when: __galaxy_version_file.failed is defined and __galaxy_version_file.failed
 
 - name: Determine Galaxy version
   set_fact:
