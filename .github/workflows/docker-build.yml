@@ -30,10 +30,9 @@ jobs:
           ref: ${{ matrix.galaxy-branch }}
           path: galaxy
 
-      - name: Use simplified Dockerfile (single build stage)
+      - name: Fetch Dockerfile
         run: |
-          # Download the new simplified Dockerfile that drops separate server/client build stages
-          curl -sL https://raw.githubusercontent.com/galaxyproject/galaxy/bf302e24fefac14782110f10e6d29369be785b70/.k8s_ci.Dockerfile -o galaxy/.k8s_ci.Dockerfile
+          curl -sL https://raw.githubusercontent.com/galaxyproject/galaxy/${{ matrix.galaxy-branch }}/.k8s_ci.Dockerfile -o galaxy/.k8s_ci.Dockerfile
 
       - name: Patch Dockerfile to use local ansible-galaxy role
         run: |
