@@ -6,6 +6,9 @@ on:
   push:
     # branches:
     #   - main
+  schedule:
+    # Run weekly on Friday at 02:00 UTC to catch Galaxy breaking changes early
+    - cron: '0 2 * * 5'
 
 jobs:
   docker-build:
