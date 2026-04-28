@@ -12,8 +12,13 @@
 - name: Collect Galaxy version file (legacy location)
   slurp:
     src: "{{ galaxy_server_dir }}/lib/galaxy/version.py"
-  register: __galaxy_version_file
+  register: __galaxy_version_file_legacy
   when: __galaxy_version_file.failed
+  ignore_errors: true
+
+- name: Set final version file variable
+  set_fact:
+    __galaxy_version_file: "{{ __galaxy_version_file if not __galaxy_version_file.failed else __galaxy_version_file_legacy }}"
 
 - name: Determine Galaxy version
   set_fact:
