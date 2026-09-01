@@ -425,7 +425,13 @@ galaxy_gravity_wrapper_path: "/usr/local/bin/galaxyctl{{ __galaxy_gravity_instan
 galaxy_gravity_command: "{{ galaxy_venv_dir }}/bin/galaxyctl"
 # Gravity restart behaviour, one of: restart, graceful
 # Documentation: https://gravity.readthedocs.io/en/stable/basic_usage.html#managing-a-production-galaxy
-galaxy_gravity_restart_action: graceful 
+galaxy_gravity_restart_action: graceful
+
+# When galaxy_gravity_restart_action is graceful, pass --start-if-stopped so a
+# stopped instance is started instead of the restart being refused. Requires
+# gravity>=1.2.4 (bundled with Galaxy release_26.1+) -- leave disabled if
+# targeting an older Galaxy release.
+galaxy_gravity_graceful_start_if_stopped: false
 
 # Currently `mule` (aka uWSGI) and `gravity` (runs Galaxy 22.01+ under gunicorn) are supported
 galaxy_systemd_mode: "{{ 'mule' if __galaxy_major_version is version('22.05', '<') else 'gravity' }}"
