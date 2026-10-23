@@ -18,6 +18,10 @@ galaxy_manage_database: yes
 galaxy_fetch_dependencies: yes
 galaxy_install_uv: yes
 galaxy_fetch_dependencies_with_uv: yes
+# uv doesn't compile bytecode unless asked. Without it, the first Python to import a package writes its
+# __pycache__, and galaxyctl runs as root (galaxy_systemd_root), so the venv fills with root-owned files
+# that the next uv run as the privilege separation user can't replace. Compile at install time instead.
+galaxy_uv_compile_bytecode: yes
 galaxy_build_client: yes
 galaxy_manage_errordocs: no
 galaxy_backup_configfiles: yes
