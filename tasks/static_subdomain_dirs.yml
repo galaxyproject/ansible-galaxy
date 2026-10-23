@@ -24,7 +24,7 @@
 
 - name: Check if iframe for {{ subdomain.name }} exists  # noqa name[template]
   ansible.builtin.uri:
-    url: "{{ galaxy_themes_welcome_url_prefix }}{{ subdomain.name }}.html"
+    url: "{{ galaxy_themes_welcome_url_prefix }}{{ subdomain.name }}"
     return_content: true
   register: galaxy_themes_use_iframe
   failed_when: false
