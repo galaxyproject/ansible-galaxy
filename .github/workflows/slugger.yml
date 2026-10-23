@@ -18,15 +18,22 @@ on:
   schedule:
     - cron: '0 0 * * 1'
 
+permissions: {}
+
 jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
+    permissions:
+      # Needed to push the new tag
+      contents: write
     steps:
       - name: Check out the codebase.
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+          # Credentials are needed by `git push --tags` below
+          persist-credentials: true
 
       - name: Set up Python 3.
         uses: actions/setup-python@v3
