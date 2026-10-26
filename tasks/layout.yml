@@ -7,7 +7,7 @@
 - name: Set any unset variables from layout defaults  # noqa var-naming
   set_fact:
     "{{ item }}": "{{ lookup('vars', '__' ~ item) }}"
-  when: lookup('ansible.builtin.varnames', '^' ~ item ~ '$', wantlist=True) | length == 0
+  when: not query('ansible.builtin.varnames', '^' ~ item ~ '$')
   with_items:
     - galaxy_venv_dir
     - galaxy_server_dir
