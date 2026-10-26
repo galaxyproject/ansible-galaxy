@@ -36,7 +36,7 @@
 - name: Set any unset variables corresponding to Galaxy config options from galaxy_config or layout defaults  # noqa var-naming
   set_fact:
     "{{ 'galaxy_' ~ item }}": "{{ ((galaxy_config | default({}))[galaxy_app_config_section] | default({}))[item] | default(lookup('vars', '__galaxy_' ~ item)) }}"
-  when: "lookup('ansible.builtin.varnames', '^galaxy_' ~ item ~ '$', wantlist=True) | length == 0"
+  when: not query('ansible.builtin.varnames', '^galaxy_' ~ item ~ '$')
   with_items:
     - tool_dependency_dir
     - file_path
