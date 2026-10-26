@@ -26,7 +26,7 @@
     msg: "Value of '{{ 'galaxy_' ~ item }}' does not match value of '{{ item }}' in galaxy_config: {{ lookup('vars', 'galaxy_' ~ item) }} != {{ galaxy_config[galaxy_app_config_section][item] }}"
     # TODO: requires Ansible 2.7
     #success_msg: "Value of '{{ 'galaxy_' ~ item }}' matches galaxy_config value of '{{ item }}' in galaxy_config"
-  when: "lookup('ansible.builtin.varnames', '^galaxy_' ~ item ~ '$', wantlist=True) | length > 0 and item in ((galaxy_config | default({}))[galaxy_app_config_section] | default({}))"
+  when: query('ansible.builtin.varnames', '^galaxy_' ~ item ~ '$') | length > 0 and item in ((galaxy_config | default({}))[galaxy_app_config_section] | default({}))
   with_items:
     - tool_dependency_dir
     - file_path
