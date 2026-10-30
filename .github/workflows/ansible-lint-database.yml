@@ -1,0 +1,30 @@
+name: Ansible lint (database tasks)
+on:
+  push:
+    branches:
+      - main
+      - dev
+      - 'release_*'
+    paths:
+      - tasks/database.yml
+      - .github/workflows/ansible-lint-database.yml
+  pull_request:
+    paths:
+      - tasks/database.yml
+      - .github/workflows/ansible-lint-database.yml
+permissions: {}
+jobs:
+  lint:
+    name: Lint database tasks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7.0.0
+        with:
+          python-version: '3.14'
+      - name: Install ansible-lint
+        run: python -m pip install ansible-lint==26.10.1
+      - name: Lint database tasks
+        run: ansible-lint tasks/database.yml
