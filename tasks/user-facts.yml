@@ -13,7 +13,7 @@
 - name: Get group names for Galaxy users
   getent:
     database: group
-    key: "{{ item.ansible_facts.getent_passwd[item.invocation.module_args.key][2] }}"
+    key: "{{ item.ansible_facts.getent_passwd[item.item][2] }}"
   with_items: "{{ __galaxy_passwd_result.results }}"
   loop_control:
     label: "{{ item.item }}"
