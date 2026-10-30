@@ -1,0 +1,20 @@
+---
+# tasks/user-facts.yml looks up the primary group of the Galaxy and privsep users when galaxy_group isn't set.
+# Regression test for #254: ansible-core 2.21 dropped `invocation` from loop results.
+- name: Test user-facts.yml
+  hosts: localhost
+  gather_facts: false
+  vars:
+    galaxy_user: "{{ lookup('ansible.builtin.env', 'USER') }}"
+    galaxy_privsep_user: root
+  tasks:
+    - name: Look up Galaxy user facts
+      ansible.builtin.include_role:
+        name: galaxyproject.galaxy
+        tasks_from: user-facts
+
+    - name: Check the groups are the users' primary groups
+      ansible.builtin.assert:
+        that:
+          - __galaxy_user_group == lookup('ansible.builtin.pipe', 'id -gn')
+          - __galaxy_privsep_user_group == lookup('ansible.builtin.pipe', 'id -gn root')
