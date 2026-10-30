@@ -8,7 +8,7 @@
     galaxy_user: "{{ lookup('ansible.builtin.env', 'USER') }}"
     galaxy_privsep_user: root
   tasks:
-    - name: Look up Galaxy user facts
+    - name: Set Galaxy user facts
       ansible.builtin.include_role:
         name: galaxyproject.galaxy
         tasks_from: user-facts
@@ -18,3 +18,23 @@
         that:
           - __galaxy_user_group == lookup('ansible.builtin.pipe', 'id -gn')
           - __galaxy_privsep_user_group == lookup('ansible.builtin.pipe', 'id -gn root')
+
+- name: Test user-facts.yml with galaxy_group set
+  hosts: localhost
+  gather_facts: false
+  vars:
+    galaxy_user: "{{ lookup('ansible.builtin.env', 'USER') }}"
+    galaxy_privsep_user: root
+    galaxy_group:
+      name: galaxy
+  tasks:
+    - name: Set Galaxy user facts
+      ansible.builtin.include_role:
+        name: galaxyproject.galaxy
+        tasks_from: user-facts
+
+    - name: Check both users get galaxy_group
+      ansible.builtin.assert:
+        that:
+          - __galaxy_user_group == 'galaxy'
+          - __galaxy_privsep_user_group == 'galaxy'
