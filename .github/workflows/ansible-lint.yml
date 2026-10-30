@@ -1,0 +1,23 @@
+name: Ansible lint
+on:
+  push:
+  pull_request:
+permissions: {}
+jobs:
+  lint:
+    name: Lint files that pass ansible-lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7.0.0
+        with:
+          python-version: '3.14'
+      - name: Install ansible-lint
+        run: python -m pip install ansible-lint==26.10.1
+      # Add a file here once it passes ansible-lint, so it stays clean. Keep the list sorted.
+      - name: Lint
+        run: >-
+          ansible-lint
+          tasks/database.yml
