@@ -12,6 +12,8 @@ name: Release (by Tag Push)
     tags:
       - '*'
 
+permissions: {}
+
 jobs:
   release:
     name: Release
@@ -19,6 +21,8 @@ jobs:
     steps:
       - name: Check out the codebase.
         uses: actions/checkout@v3
+        with:
+          persist-credentials: false
 
       - name: Set up Python 3.
         uses: actions/setup-python@v3
