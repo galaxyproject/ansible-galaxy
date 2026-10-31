@@ -29,14 +29,14 @@ jobs:
       contents: write
     steps:
       - name: Check out the codebase.
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           # Credentials are needed by `git push --tags` below
           persist-credentials: true
 
       - name: Set up Python 3.
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v7
         with:
           python-version: '3.x'
 
