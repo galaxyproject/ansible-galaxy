@@ -2,14 +2,16 @@
 # Manage static Galaxy configuration files
 
 - name: Static config setup
+  remote_user: "{{ galaxy_remote_users.privsep | default(__galaxy_remote_user) }}"
+  become: "{{ true if galaxy_become_users.privsep is defined else __galaxy_become }}"
+  become_user: "{{ galaxy_become_users.privsep | default(__galaxy_become_user) }}"
   block:
-
     - name: Ensure Galaxy version is set
-      include_tasks: _inc_galaxy_version.yml
+      ansible.builtin.include_tasks: _inc_galaxy_version.yml
       when: __galaxy_major_version is undefined
 
     - name: Install additional Galaxy config files (static)
-      copy:
+      ansible.builtin.copy:
         src: "{{ item.src }}"
         dest: "{{ item.dest }}"
         backup: "{{ galaxy_backup_configfiles }}"
@@ -20,7 +22,7 @@
         - restart galaxy
 
     - name: Install additional Galaxy config files (static, public)
-      copy:
+      ansible.builtin.copy:
         src: "{{ item.src }}"
         dest: "{{ item.dest }}"
         backup: "{{ galaxy_backup_configfiles }}"
@@ -31,7 +33,7 @@
         - restart galaxy
 
     - name: Install additional Galaxy config files (template)
-      template:
+      ansible.builtin.template:
         src: "{{ item.src }}"
         dest: "{{ item.dest }}"
         backup: "{{ galaxy_backup_configfiles }}"
@@ -42,82 +44,65 @@
         - restart galaxy
 
     - name: Install local tools
-      copy:
-        src: "{{ galaxy_local_tools_src_dir }}/{{ item.file | default(item) }}"
-        dest: "{{ galaxy_local_tools_dir }}/{{ item.file | default(item) }}"
-        mode: preserve
-      loop: "{{ galaxy_local_tools | default([]) }}"
-      when: galaxy_local_tools is defined
-
-    - name: Install local_tool_conf.xml
-      template:
-        src: local_tool_conf.xml.j2
-        dest: "{{ galaxy_config_dir }}/local_tool_conf.xml"
-        mode: "{{ galaxy_config_perms }}"
-        group: "{{ __galaxy_user_group }}"
-      when: galaxy_local_tools is defined
-
-    - name: Append local_tool_conf.xml to tool_config_file Galaxy config option
-      set_fact:
-        galaxy_tool_config_files: "{{ galaxy_tool_config_files + [galaxy_config_dir ~ '/local_tool_conf.xml'] }}"
+      ansible.builtin.include_tasks: local_tools.yml
       when: galaxy_local_tools is defined
 
     - name: Append shed_tool_conf.xml to tool_config_file Galaxy config option
-      set_fact:
+      ansible.builtin.set_fact:
         galaxy_tool_config_files: "{{ galaxy_tool_config_files + [galaxy_shed_tool_config_file] }}"
       when: __galaxy_major_version is version('19.09', '<') and galaxy_shed_tool_config_file not in galaxy_tool_config_files
 
     - name: Rebuild galaxy_app_config_default with updated tool_config_files
-      set_fact:
+      ansible.builtin.set_fact:
         galaxy_app_config_default: "{{ galaxy_app_config_default | combine({'tool_config_file': galaxy_tool_config_files | join(',')}) }}"
 
     - name: Rebuild galaxy_config_default with updated galaxy_app_config_default
-      set_fact:
+      ansible.builtin.set_fact:
         galaxy_config_default: "{{ {} | combine({galaxy_app_config_section: galaxy_app_config_default}) }}"
 
     - name: Rebuild galaxy_config_merged with updated galaxy_config_default
-      set_fact:
+      ansible.builtin.set_fact:
         galaxy_config_merged: "{{ galaxy_config_default | combine(galaxy_config | default({}), recursive=True) }}"
 
     - name: Ensure dynamic job rules paths exists
-      file:
+      ansible.builtin.file:
         path: "{{ galaxy_dynamic_job_rules_dir }}/{{ item | dirname }}"
         state: directory
-        mode: 0755
+        mode: "0755"
       loop_control:
         label: "{{ galaxy_dynamic_job_rules_dir }}/{{ item | dirname }}"
       with_items: "{{ galaxy_dynamic_job_rules }}"
 
     - name: Install dynamic job rules (static)
-      copy:
+      ansible.builtin.copy:
         src: "{{ galaxy_dynamic_job_rules_src_dir }}/{{ item }}"
         dest: "{{ galaxy_dynamic_job_rules_dir }}/{{ item }}"
-        mode: 0644
+        mode: "0644"
       with_items: "{{ galaxy_dynamic_job_rules }}"
       when: not item.endswith(".j2")
 
     - name: Install dynamic job rules (template)
-      template:
+      ansible.builtin.template:
         src: "{{ galaxy_dynamic_job_rules_src_dir }}/{{ item }}"
         dest: "{{ galaxy_dynamic_job_rules_dir }}/{{ item | regex_replace(regex) }}"
-        mode: 0644
+        mode: "0644"
       vars:
-        regex: '\.j2$'
+        regex: "\\.j2$"
       with_items: "{{ galaxy_dynamic_job_rules }}"
       when: item.endswith(".j2")
 
     - name: Ensure dynamic rule __init__.py's exist
-      copy:
+      ansible.builtin.copy:
         content: ""
         dest: "{{ galaxy_dynamic_job_rules_dir }}/{{ item | dirname }}/__init__.py"
-        force: no
-        mode: 0644
+        force: false
+        mode: "0644"
       loop_control:
         label: "{{ galaxy_dynamic_job_rules_dir }}/{{ ((item | dirname) != '') | ternary ((item | dirname) ~ '/', '') }}__init__.py"
       with_items: "{{ galaxy_dynamic_job_rules }}"
 
     - name: Create Galaxy job metrics configuration file
-      copy:
+      ansible.builtin.copy:
         dest: "{{ galaxy_config_merged[galaxy_app_config_section].job_metrics_config_file }}"
         content: |
           ---
@@ -127,7 +112,7 @@
       when: galaxy_job_metrics_plugins is defined
 
     - name: Create Galaxy dependency resolvers configuration file
-      copy:
+      ansible.builtin.copy:
         dest: "{{ galaxy_config_merged[galaxy_app_config_section].dependency_resolvers_config_file }}"
         content: |
           ---
@@ -137,7 +122,7 @@
       when: galaxy_dependency_resolvers is defined
 
     - name: Create Galaxy container resolvers configuration file
-      copy:
+      ansible.builtin.copy:
         dest: "{{ galaxy_config_merged[galaxy_app_config_section].container_resolvers_config_file }}"
         content: |
           ---
@@ -147,7 +132,7 @@
       when: galaxy_container_resolvers is defined
 
     - name: Create Galaxy configuration file
-      template:
+      ansible.builtin.template:
         src: "{{ galaxy_config_file_template }}"
         dest: "{{ galaxy_config_file }}"
         backup: "{{ galaxy_backup_configfiles }}"
@@ -156,7 +141,3 @@
       notify:
         - galaxyctl update
         - restart galaxy
-
-  remote_user: "{{ galaxy_remote_users.privsep | default(__galaxy_remote_user) }}"
-  become: "{{ true if galaxy_become_users.privsep is defined else __galaxy_become }}"
-  become_user: "{{ galaxy_become_users.privsep | default(__galaxy_become_user) }}"

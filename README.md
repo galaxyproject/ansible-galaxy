@@ -200,7 +200,9 @@ Options for configuring Galaxy and controlling which version is installed.
 - `galaxy_config_templates`: List of hashes (with `src` and `dest` keys) of templates to fill from the control machine.
 - `galaxy_local_tools`: List of local tool files or directories to copy from the control machine, relative to
   `galaxy_local_tools_src_dir` (default: `files/galaxy/tools` in the playbook). List items can either be a tool
-  filename, or a dictionary with keys `file`, `section_name`, and, optionally, `section_id`. If no `section_name` is
+  filename, or a dictionary with keys `file`, `section_name`, and, optionally, `section_id`. To install a tool that
+  is a directory (e.g. with helper scripts), use a dictionary with `dir` instead: the whole directory is copied, and
+  `file` (the tool XML, relative to `dir`, default: `<dir>.xml`) is what gets registered. If no `section_name` is
   specified, tools will be placed in a section named **Local Tools**.
 - `galaxy_local_tools_dir`: Directory on the Galaxy server where local tools will be installed.
 - `galaxy_dynamic_job_rules`: List of dynamic job rules to copy from the control machine, relative to

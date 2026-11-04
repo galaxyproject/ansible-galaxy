@@ -4,9 +4,15 @@
 {% if tool is not mapping %}
 {% set tool = {'section_name': 'Local Tools', 'file': tool} %}
 {% endif %}
-{% if tool.file.endswith('.xml') %}
-    <section id="{{ tool.section_id | default(tool.section_name | regex_replace('[^A-Za-z0-9]', '_') | lower) }}" name="{{ tool.section_name }}">
-        <tool file="{{ tool.file }}" />
+{% if tool.dir is defined %}
+{% set tool_file = tool.dir ~ '/' ~ tool.file | default(tool.dir ~ '.xml') %}
+{% else %}
+{% set tool_file = tool.file %}
+{% endif %}
+{% set section_name = tool.section_name | default('Local Tools') %}
+{% if tool_file.endswith('.xml') %}
+    <section id="{{ tool.section_id | default(section_name | regex_replace('[^A-Za-z0-9]', '_') | lower) }}" name="{{ section_name }}">
+        <tool file="{{ tool_file }}" />
     </section>
 {% endif %}
 {% endfor %}

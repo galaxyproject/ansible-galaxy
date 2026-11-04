@@ -1,0 +1,104 @@
+---
+# tasks/local_tools.yml installs galaxy_local_tools and registers them in local_tool_conf.xml.
+# Regression test for #128 and #214: a directory entry was nested (my_tool/my_tool) and never registered.
+- name: Test local_tools.yml
+  hosts: localhost
+  gather_facts: false
+  vars:
+    galaxy_user: "{{ lookup('ansible.builtin.pipe', 'id -un') }}"
+    galaxy_privsep_user: root
+    __galaxy_user_group: "{{ lookup('ansible.builtin.pipe', 'id -gn') }}"
+    galaxy_local_tools:
+      - simple.xml
+      - dir: my_tool
+      - dir: other
+        file: custom_name.xml
+        section_name: Other Tools
+  tasks:
+    - name: Create a temporary directory
+      ansible.builtin.tempfile:
+        state: directory
+        prefix: galaxy_local_tools_test.
+      register: tmp
+      changed_when: false
+
+    - name: Run the local tools tasks
+      block:
+        - name: Create the fixture directories
+          ansible.builtin.file:
+            path: "{{ tmp.path }}/{{ item }}"
+            state: directory
+            mode: "0755"
+          loop: [src/my_tool, src/other, tools, config]
+          changed_when: false
+
+        - name: Create the fixture source files
+          ansible.builtin.copy:
+            dest: "{{ tmp.path }}/src/{{ item.path }}"
+            content: "{{ item.content }}\n"
+            mode: "0644"
+          loop:
+            - { path: simple.xml, content: '<tool id="simple" />' }
+            - { path: my_tool/my_tool.xml, content: '<tool id="my_tool" />' }
+            - { path: my_tool/helper.py, content: 'print("hi")' }
+            - { path: other/custom_name.xml, content: '<tool id="other" />' }
+            - { path: other/macros.xml, content: "<macros />" }
+          loop_control:
+            label: "{{ item.path }}"
+          changed_when: false
+
+        - name: Install the local tools
+          ansible.builtin.include_role:
+            name: galaxyproject.galaxy
+            tasks_from: local_tools
+          vars:
+            galaxy_local_tools_src_dir: "{{ tmp.path }}/src"
+            galaxy_local_tools_dir: "{{ tmp.path }}/tools"
+            galaxy_config_dir: "{{ tmp.path }}/config"
+            galaxy_config_perms: "0644"
+            galaxy_tool_config_files: []
+
+        - name: Read local_tool_conf.xml
+          ansible.builtin.slurp:
+            src: "{{ tmp.path }}/config/local_tool_conf.xml"
+          register: tool_conf
+
+        - name: Find the installed files
+          ansible.builtin.find:
+            paths: "{{ tmp.path }}/tools"
+            recurse: true
+            file_type: any
+          register: installed
+
+        - name: Check the files are installed without nesting
+          ansible.builtin.assert:
+            that:
+              - (installed.files | map(attribute='path') | map('regex_replace', '^.*/tools/', '') | sort | list) == expected
+          vars:
+            expected:
+              - my_tool
+              - my_tool/helper.py
+              - my_tool/my_tool.xml
+              - other
+              - other/custom_name.xml
+              - other/macros.xml
+              - simple.xml
+
+        - name: Check the tools are registered in local_tool_conf.xml
+          ansible.builtin.assert:
+            that:
+              - '''<tool file="simple.xml" />'' in conf'
+              - '''<tool file="my_tool/my_tool.xml" />'' in conf'
+              - '''<tool file="other/custom_name.xml" />'' in conf'
+              - "'macros.xml' not in conf"
+              - '''name="Other Tools"'' in conf'
+              - '''name="Local Tools"'' in conf'
+          vars:
+            conf: "{{ tool_conf.content | b64decode }}"
+
+      always:
+        - name: Remove the temporary directory
+          ansible.builtin.file:
+            path: "{{ tmp.path }}"
+            state: absent
+          changed_when: false
