@@ -5,7 +5,7 @@
   hosts: localhost
   gather_facts: false
   vars:
-    galaxy_user: "{{ lookup('ansible.builtin.env', 'USER') }}"
+    galaxy_user: "{{ lookup('ansible.builtin.pipe', 'id -un') }}"
     galaxy_privsep_user: root
     __galaxy_user_group: "{{ lookup('ansible.builtin.pipe', 'id -gn') }}"
     galaxy_local_tools:
