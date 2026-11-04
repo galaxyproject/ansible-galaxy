@@ -21,4 +21,5 @@ jobs:
         run: >-
           ansible-lint
           tasks/user-facts.yml
+          tests/test_systemd_unit.yml
           tests/test_user_facts.yml

@@ -19,7 +19,9 @@ ExecReload={{ galaxy_venv_dir }}/bin/galaxyctl graceful
 ExecStop={{ galaxy_venv_dir }}/bin/galaxyctl shutdown
 {% endif %}
 
+{% if galaxy_root is defined %}
 Environment=HOME={{ galaxy_root }}
+{% endif %}
 Environment=VIRTUAL_ENV={{ galaxy_venv_dir }}
 Environment=PATH={{ galaxy_venv_dir }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin
 Environment=DOCUTILSCONFIG=
