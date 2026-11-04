@@ -3,9 +3,11 @@
 - name: Schedule tmpclean cron job (root)
   ansible.builtin.cron:
     name: "galaxy_tmpclean"
-    job: "{{ galaxy_tmpclean_command }} {{ galaxy_tmpclean_age | quote }} {{ galaxy_tmpclean_dirs | map('quote') | join(' ') }} {{ galaxy_tmpclean_log_statement }}"
+    job: >-
+      {{ galaxy_tmpclean_command }} {{ galaxy_tmpclean_age | quote }}
+      {{ galaxy_tmpclean_dirs | map('quote') | join(' ') }} {{ galaxy_tmpclean_log_statement }}
     cron_file: "{{ galaxy_tmpclean_cron_file }}"
-    user: "{{ galaxy_user.name }}"
+    user: "{{ __galaxy_user_name }}"
     hour: "{{ galaxy_tmpclean_time.hour | default(omit) }}"
     minute: "{{ galaxy_tmpclean_time.minute | default(omit) }}"
     day: "{{ galaxy_tmpclean_time.day | default(omit) }}"
@@ -21,7 +23,9 @@
 - name: Schedule tmpclean cron job (user)
   ansible.builtin.cron:
     name: "galaxy_tmpclean"
-    job: "{{ galaxy_tmpclean_command }} {{ galaxy_tmpclean_age | quote }} {{ galaxy_tmpclean_dirs | map('quote') | join(' ') }} {{ galaxy_tmpclean_log_statement }}"
+    job: >-
+      {{ galaxy_tmpclean_command }} {{ galaxy_tmpclean_age | quote }}
+      {{ galaxy_tmpclean_dirs | map('quote') | join(' ') }} {{ galaxy_tmpclean_log_statement }}
     hour: "{{ galaxy_tmpclean_time.hour | default(omit) }}"
     minute: "{{ galaxy_tmpclean_time.minute | default(omit) }}"
     day: "{{ galaxy_tmpclean_time.day | default(omit) }}"
