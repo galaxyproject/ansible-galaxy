@@ -1,0 +1,81 @@
+---
+# tasks/_inc_client_check_prebuilt.yml must fail when the prebuilt client isn't in static/dist.
+# Regression test for #235. The yarn install and staging tasks need community.general and node,
+# so the test runs only the check that follows them.
+- name: Test the prebuilt client check
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Make a fake Galaxy static directory
+      ansible.builtin.tempfile:
+        state: directory
+        prefix: galaxy-static-
+      register: __static
+
+    - name: Test the check
+      vars:
+        galaxy_static_dir: "{{ __static.path }}"
+      block:
+        - name: Create an empty static/dist
+          ansible.builtin.file:
+            path: "{{ galaxy_static_dir }}/dist"
+            state: directory
+            mode: "0755"
+
+        - name: Run the check on an empty static/dist
+          block:
+            - name: Include the check
+              ansible.builtin.include_role:
+                name: galaxyproject.galaxy
+                tasks_from: _inc_client_check_prebuilt
+            - name: Fail if the check passed
+              ansible.builtin.fail:
+                msg: The check passed on an empty static/dist
+          rescue:
+            - name: Check the failure names the directory
+              ansible.builtin.assert:
+                that:
+                  - ansible_failed_result.msg is search(galaxy_static_dir ~ '/dist')
+                  - ansible_failed_result.msg is search('install')
+
+        - name: Run the check when static/dist is missing
+          block:
+            - name: Remove static/dist
+              ansible.builtin.file:
+                path: "{{ galaxy_static_dir }}/dist"
+                state: absent
+            - name: Include the check
+              ansible.builtin.include_role:
+                name: galaxyproject.galaxy
+                tasks_from: _inc_client_check_prebuilt
+            - name: Fail if the check passed
+              ansible.builtin.fail:
+                msg: The check passed with no static/dist
+          rescue:
+            - name: Check the failure names the directory
+              ansible.builtin.assert:
+                that:
+                  - ansible_failed_result.msg is search(galaxy_static_dir ~ '/dist')
+
+        - name: Create static/dist with a file in a subdirectory
+          ansible.builtin.file:
+            path: "{{ galaxy_static_dir }}/dist/sub"
+            state: directory
+            mode: "0755"
+
+        - name: Add a file
+          ansible.builtin.copy:
+            content: "console.log('client');\n"
+            dest: "{{ galaxy_static_dir }}/dist/sub/analysis.bundled.js"
+            mode: "0644"
+
+        - name: Run the check on a populated static/dist
+          ansible.builtin.include_role:
+            name: galaxyproject.galaxy
+            tasks_from: _inc_client_check_prebuilt
+
+      always:
+        - name: Remove the fake static directory
+          ansible.builtin.file:
+            path: "{{ __static.path }}"
+            state: absent

@@ -110,6 +110,10 @@
         VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
       when: __galaxy_major_version is version('26.0', '>=') and __pnpm_install.changed
 
+    - name: Include prebuilt client check
+      include_tasks: "_inc_client_check_prebuilt.yml"
+      when: not ansible_check_mode
+
   remote_user: "{{ galaxy_remote_users.privsep | default(__galaxy_remote_user) }}"
   become: "{{ true if galaxy_become_users.privsep is defined else __galaxy_become }}"
   become_user: "{{ galaxy_become_users.privsep | default(__galaxy_become_user) }}"
