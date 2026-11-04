@@ -142,6 +142,10 @@ galaxy_dynamic_job_rules_dir: "{{ galaxy_server_dir }}/lib/galaxy/jobs/rules"
 # List of dynamic rules to install
 galaxy_dynamic_job_rules: []
 
+# Whether the Galaxy venv should be completely removed prior to dependency installation, often a good idea to set once
+# when upgrading between Galaxy releases
+galaxy_force_clean_virtualenv: false
+
 #
 # Cleanup
 #
