@@ -4,6 +4,19 @@
 # once with $PYTHONPATH set (in case it's needed for virtualenv) and then once
 # the venv is created we upgrade pip with $PYTHONPATH unset
 
+- name: Remove Galaxy virtualenv if requested
+  file:
+    name: "{{ galaxy_venv_dir }}"
+    state: absent
+  when:
+    - galaxy_force_clean_virtualenv | bool
+    - not (__galaxy_venv_cleaned | default(false))
+
+- name: Ensure virtualenv is only removed once per playbook run
+  set_fact:
+    __galaxy_venv_cleaned: true
+  when: galaxy_force_clean_virtualenv | bool
+
 - name: Create Galaxy virtualenv
   pip:
     name: pip
