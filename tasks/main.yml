@@ -109,15 +109,6 @@
   tags:
     - galaxy_manage_mutable_setup
 
-- name: Include database management tasks
-  include_tasks:
-    file: database.yml
-    apply:
-      tags: galaxy_manage_database
-  when: galaxy_manage_database
-  tags:
-    - galaxy_manage_database
-
 - name: Include client build tasks
   include_tasks:
     file: client.yml
@@ -126,6 +117,15 @@
   when: galaxy_build_client
   tags:
     - galaxy_build_client
+
+- name: Include database management tasks
+  include_tasks:
+    file: database.yml
+    apply:
+      tags: galaxy_manage_database
+  when: galaxy_manage_database
+  tags:
+    - galaxy_manage_database
 
 - name: Include error document setup tasks
   include_tasks:
