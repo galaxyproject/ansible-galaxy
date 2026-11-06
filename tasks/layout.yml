@@ -7,7 +7,7 @@
 - name: Set any unset variables from layout defaults  # noqa var-naming
   set_fact:
     "{{ item }}": "{{ lookup('vars', '__' ~ item) }}"
-  when: item not in vars
+  when: not query('ansible.builtin.varnames', '^' ~ item ~ '$')
   with_items:
     - galaxy_venv_dir
     - galaxy_server_dir
@@ -26,7 +26,7 @@
     msg: "Value of '{{ 'galaxy_' ~ item }}' does not match value of '{{ item }}' in galaxy_config: {{ lookup('vars', 'galaxy_' ~ item) }} != {{ galaxy_config[galaxy_app_config_section][item] }}"
     # TODO: requires Ansible 2.7
     #success_msg: "Value of '{{ 'galaxy_' ~ item }}' matches galaxy_config value of '{{ item }}' in galaxy_config"
-  when: "'galaxy_' ~ item in vars and item in ((galaxy_config | default({}))[galaxy_app_config_section] | default({}))"
+  when: query('ansible.builtin.varnames', '^galaxy_' ~ item ~ '$') | length > 0 and item in ((galaxy_config | default({}))[galaxy_app_config_section] | default({}))
   with_items:
     - tool_dependency_dir
     - file_path
@@ -36,7 +36,7 @@
 - name: Set any unset variables corresponding to Galaxy config options from galaxy_config or layout defaults  # noqa var-naming
   set_fact:
     "{{ 'galaxy_' ~ item }}": "{{ ((galaxy_config | default({}))[galaxy_app_config_section] | default({}))[item] | default(lookup('vars', '__galaxy_' ~ item)) }}"
-  when: "'galaxy_' ~ item not in vars"
+  when: not query('ansible.builtin.varnames', '^galaxy_' ~ item ~ '$')
   with_items:
     - tool_dependency_dir
     - file_path
