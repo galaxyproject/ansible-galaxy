@@ -64,8 +64,8 @@ __galaxy_default_nonroot_become_users:
   root: root
   galaxy: "{{ __galaxy_user_name }}"
   privsep: "{{ __galaxy_privsep_user_name }}"
-__galaxy_default_become_users: "{{ __galaxy_default_root_become_users if ansible_user_uid == 0 else __galaxy_default_nonroot_become_users }}"
-galaxy_become_users: "{{ {} if ansible_user_id == __galaxy_user_name and not galaxy_separate_privileges else __galaxy_default_become_users }}"
+__galaxy_default_become_users: "{{ __galaxy_default_root_become_users if ansible_facts['user_uid'] == 0 else __galaxy_default_nonroot_become_users }}"
+galaxy_become_users: "{{ {} if ansible_facts['user_id'] == __galaxy_user_name and not galaxy_separate_privileges else __galaxy_default_become_users }}"
 
 # Some sites do not allow the use of passwordless `sudo` and require logging directly in to accounts using `ssh`, this
 # variable works like `galaxy_become_users` and accommodates such scenarios (if using you probably want to set
@@ -80,7 +80,7 @@ galaxy_remote_users: {}
 galaxy_separate_privileges: no
 
 # User that Galaxy runs as
-galaxy_user: "{{ ansible_user_id }}"
+galaxy_user: "{{ ansible_facts['user_id'] }}"
 
 # User that owns Galaxy code, configs, and virutalenv, and that runs `pip install` for dependencies
 galaxy_privsep_user: root
@@ -206,7 +206,7 @@ galaxy_tmpclean_log_statement: >-
       ''
   ) }}
   
-galaxy_tmpclean_command: "{{ _galaxy_tmpclean_command[(ansible_os_family | lower)] }}{{ galaxy_tmpclean_verbose_statement }}"
+galaxy_tmpclean_command: "{{ _galaxy_tmpclean_command[(ansible_facts['os_family'] | lower)] }}{{ galaxy_tmpclean_verbose_statement }}"
 
 #
 # Version control
@@ -412,7 +412,7 @@ __galaxy_node_version_max:
   "redhat7": "16.19.1"
 galaxy_node_version_max: >-
   {{
-    (__galaxy_node_version_max[(ansible_os_family | lower) ~ ansible_distribution_major_version]) | default(galaxy_node_version)
+    (__galaxy_node_version_max[(ansible_facts['os_family'] | lower) ~ ansible_facts['distribution_major_version']]) | default(galaxy_node_version)
   }}
 
 #
