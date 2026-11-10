@@ -18,6 +18,7 @@
       environment:
         PYTHONPATH: null
         VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+        UV_COMPILE_BYTECODE: "{{ galaxy_uv_compile_bytecode | ternary('1', '0') }}"
       register: __galaxy_uv_base
       changed_when: "'Installed ' in __galaxy_uv_base.stderr or 'Uninstalled ' in __galaxy_uv_base.stderr"
       when: galaxy_fetch_dependencies_with_uv
@@ -51,6 +52,7 @@
       environment:
         PYTHONPATH: null
         VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+        UV_COMPILE_BYTECODE: "{{ galaxy_uv_compile_bytecode | ternary('1', '0') }}"
       register: __galaxy_uv_conditional
       changed_when: "'Installed ' in __galaxy_uv_conditional.stderr or 'Uninstalled ' in __galaxy_uv_conditional.stderr"
       when: galaxy_fetch_dependencies_with_uv and (not ansible_check_mode) and conditional_dependencies.stdout_lines | length > 0
@@ -74,6 +76,7 @@
       environment:
         PYTHONPATH: null
         VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+        UV_COMPILE_BYTECODE: "{{ galaxy_uv_compile_bytecode | ternary('1', '0') }}"
       register: __galaxy_uv_additional
       changed_when: "'Installed ' in __galaxy_uv_additional.stderr or 'Uninstalled ' in __galaxy_uv_additional.stderr"
       when: galaxy_fetch_dependencies_with_uv and galaxy_additional_venv_packages | length > 0
