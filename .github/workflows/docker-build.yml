@@ -9,7 +9,7 @@ on:
   schedule:
     # Run weekly on Friday at 02:00 UTC to catch Galaxy breaking changes early
     - cron: '0 2 * * 5'
-
+permissions: {}
 jobs:
   docker-build:
     name: docker-build
@@ -22,16 +22,18 @@ jobs:
           - master
     steps:
       - name: Checkout ansible-galaxy role
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           path: ansible-galaxy-role
+          persist-credentials: false
 
       - name: Checkout Galaxy
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: galaxyproject/galaxy
           ref: ${{ matrix.galaxy-branch }}
           path: galaxy
+          persist-credentials: false
 
       - name: Fetch Dockerfile
         run: |
@@ -45,10 +47,10 @@ jobs:
           sed -i '/ansible-galaxy install -r requirements.yml/a COPY ansible-galaxy-role /tmp/ansible/galaxy-docker/roles/galaxy' galaxy/.k8s_ci.Dockerfile
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Build Docker image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: galaxy
           file: galaxy/.k8s_ci.Dockerfile
