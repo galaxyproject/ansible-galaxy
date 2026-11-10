@@ -8,7 +8,7 @@
     executable: "yarn --network-timeout 300000 --check-files"
     path: "{{ galaxy_server_dir }}/client"
   environment:
-    PATH: "{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
+    PATH: "{{ galaxy_venv_dir }}/bin:{{ ansible_facts['env']['PATH'] }}"
     VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
   when: __galaxy_major_version is version('26.0', '<')
 
@@ -17,7 +17,7 @@
   args:
     chdir: "{{ galaxy_server_dir }}/client"
   environment:
-    PATH: "{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
+    PATH: "{{ galaxy_venv_dir }}/bin:{{ ansible_facts['env']['PATH'] }}"
     VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
   when: __galaxy_major_version is version('26.0', '>=')
 
@@ -34,7 +34,7 @@
     chdir: "{{ galaxy_server_dir }}/client"
   with_items: "{{ galaxy_client_build_steps[__galaxy_major_version] | default(galaxy_client_build_steps.default) }}"
   environment:
-    PATH: "{{ galaxy_server_dir }}/client/node_modules/.bin:{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
+    PATH: "{{ galaxy_server_dir }}/client/node_modules/.bin:{{ galaxy_venv_dir }}/bin:{{ ansible_facts['env']['PATH'] }}"
     VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
     NODE_ENV: "{{ galaxy_client_node_env }}"
   when: __galaxy_major_version is version('26.0', '<')
@@ -44,7 +44,7 @@
   args:
     chdir: "{{ galaxy_server_dir }}/client"
   environment:
-    PATH: "{{ galaxy_server_dir }}/client/node_modules/.bin:{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
+    PATH: "{{ galaxy_server_dir }}/client/node_modules/.bin:{{ galaxy_venv_dir }}/bin:{{ ansible_facts['env']['PATH'] }}"
     VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
     NODE_ENV: "{{ galaxy_client_node_env }}"
   when: __galaxy_major_version is version('26.0', '>=')
@@ -54,7 +54,7 @@
   args:
     chdir: "{{ galaxy_server_dir }}/client"
   environment:
-    PATH: "{{ galaxy_server_dir }}/client/node_modules/.bin:{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
+    PATH: "{{ galaxy_server_dir }}/client/node_modules/.bin:{{ galaxy_venv_dir }}/bin:{{ ansible_facts['env']['PATH'] }}"
     VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
     NODE_OPTIONS: --max_old_space_size=8192
   when: __galaxy_major_version is version('26.0', '<')
@@ -64,7 +64,7 @@
   args:
     chdir: "{{ galaxy_server_dir }}/client"
   environment:
-    PATH: "{{ galaxy_server_dir }}/client/node_modules/.bin:{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
+    PATH: "{{ galaxy_server_dir }}/client/node_modules/.bin:{{ galaxy_venv_dir }}/bin:{{ ansible_facts['env']['PATH'] }}"
     VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
     NODE_OPTIONS: --max_old_space_size=8192
     SKIP_VIZ: "1"
@@ -75,6 +75,6 @@
   args:
     chdir: "{{ galaxy_server_dir }}/client"
   environment:
-    PATH: "{{ galaxy_server_dir }}/client/node_modules/.bin:{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
+    PATH: "{{ galaxy_server_dir }}/client/node_modules/.bin:{{ galaxy_venv_dir }}/bin:{{ ansible_facts['env']['PATH'] }}"
     VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
   when: __galaxy_major_version is version('23.0', '>=') and __galaxy_major_version is version('26.0', '<')
