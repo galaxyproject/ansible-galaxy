@@ -41,6 +41,7 @@
       ansible.builtin.command: "{{ galaxy_venv_dir }}/bin/python {{ galaxy_server_dir }}/scripts/manage_db.py -c {{ galaxy_config_file }} upgrade"
       args:
         chdir: "{{ galaxy_server_dir }}"
+      register: upgrade_db
       changed_when: true
       when:
         - not ansible_check_mode
@@ -48,3 +49,8 @@
         - "'migrate.exceptions.DatabaseNotControlledError' not in current_db_version.stderr"
         - "'galaxy.model.migrations.NoVersionTableError' not in current_db_version.stderr"
         - "'galaxy.model.migrations.exceptions.NoVersionTableError' not in current_db_version.stderr"
+
+    - name: Show the Galaxy DB upgrade output
+      ansible.builtin.debug:
+        msg: "{{ upgrade_db.stdout_lines + upgrade_db.stderr_lines }}"
+      when: upgrade_db is not skipped

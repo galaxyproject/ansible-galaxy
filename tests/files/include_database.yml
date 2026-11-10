@@ -1,0 +1,11 @@
+---
+# Runs tasks/database.yml once. test_database.yml runs it in a nested ansible-playbook, so that it can read the
+# play's output, which include_role can't register.
+- name: Run the database tasks
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Include the database tasks
+      ansible.builtin.include_role:
+        name: galaxyproject.galaxy
+        tasks_from: database
