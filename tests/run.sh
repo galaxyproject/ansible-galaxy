@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Run every tests/test_*.yml playbook against localhost and fail if any of them fails.
 # Usage: tests/run.sh [test_name.yml ...]
-set -u
+set -eu
 cd "$(dirname "$0")"
 mkdir -p roles
 ln -sfn ../.. roles/galaxyproject.galaxy
