@@ -21,6 +21,7 @@ jobs:
         run: >-
           ansible-lint
           tasks/_inc_galaxy_version.yml
+          tasks/database.yml
           tasks/local_tools.yml
           tasks/static_setup.yml
           tasks/user-facts.yml
