@@ -6,7 +6,7 @@
   hosts: localhost
   gather_facts: false
   vars:
-    fake_user: "{{ lookup('ansible.builtin.env', 'USER') }}"
+    fake_user: "{{ lookup('ansible.builtin.pipe', 'id -un') }}"
   tasks:
     - name: Make a directory for the fake Galaxy
       ansible.builtin.tempfile:
