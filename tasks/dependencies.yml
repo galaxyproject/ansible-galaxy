@@ -18,6 +18,8 @@
       environment:
         PYTHONPATH: null
         VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+      register: __galaxy_uv_base
+      changed_when: "'Installed ' in __galaxy_uv_base.stderr or 'Uninstalled ' in __galaxy_uv_base.stderr"
       when: galaxy_fetch_dependencies_with_uv
 
     # virtualenv_command is still required if `virtualenv` isn't on $PATH, even if the venv already exists.
@@ -49,6 +51,8 @@
       environment:
         PYTHONPATH: null
         VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+      register: __galaxy_uv_conditional
+      changed_when: "'Installed ' in __galaxy_uv_conditional.stderr or 'Uninstalled ' in __galaxy_uv_conditional.stderr"
       when: galaxy_fetch_dependencies_with_uv and (not ansible_check_mode) and conditional_dependencies.stdout_lines | length > 0
 
     - name: Install Galaxy conditional dependencies (pip)
@@ -70,6 +74,8 @@
       environment:
         PYTHONPATH: null
         VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+      register: __galaxy_uv_additional
+      changed_when: "'Installed ' in __galaxy_uv_additional.stderr or 'Uninstalled ' in __galaxy_uv_additional.stderr"
       when: galaxy_fetch_dependencies_with_uv and galaxy_additional_venv_packages | length > 0
 
     - name: Install additional packages into galaxy's virtual environment (pip)
