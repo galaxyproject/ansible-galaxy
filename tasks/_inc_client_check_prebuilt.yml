@@ -1,0 +1,18 @@
+---
+# Fail unless the staged prebuilt client is in static/dist (#235).
+- name: Find the staged prebuilt client
+  ansible.builtin.find:
+    paths: "{{ galaxy_static_dir }}/dist"
+    file_type: file
+    recurse: true
+  register: __galaxy_prebuilt_client_files
+
+- name: Ensure the prebuilt client is in static/dist
+  ansible.builtin.assert:
+    that:
+      - __galaxy_prebuilt_client_files.files | length > 0
+    success_msg: "Prebuilt client is in {{ galaxy_static_dir }}/dist"
+    fail_msg: >-
+      The prebuilt client is not installed: {{ galaxy_static_dir }}/dist has no files.
+      The client install may have failed, or the client package may not be published
+      for Galaxy version {{ __galaxy_major_version | default('(unknown)') }}.
