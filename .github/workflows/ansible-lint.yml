@@ -20,6 +20,7 @@ jobs:
       - name: Lint
         run: >-
           ansible-lint
+          defaults/main.yml
           tasks/database.yml
           tasks/user-facts.yml
           tests/test_user_facts.yml
