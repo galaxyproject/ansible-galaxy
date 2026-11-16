@@ -1,0 +1,33 @@
+---
+# Included by test_handlers.yml: sets up a fake galaxyctl that logs each call as one line.
+# Sets fake_dir (a temp dir, removed by the caller) and points galaxy_gravity_command at the fake.
+- name: Create a temp dir for the fake galaxyctl
+  ansible.builtin.tempfile:
+    state: directory
+    prefix: galaxy-handlers-test.
+  register: fake_tmp
+
+- name: Set fake_dir
+  ansible.builtin.set_fact:
+    fake_dir: "{{ fake_tmp.path }}"
+    galaxy_gravity_command: "{{ fake_tmp.path }}/galaxyctl"
+    fake_log: "{{ fake_tmp.path }}/calls.log"
+
+- name: Make the temp dir usable by the handlers' become user
+  ansible.builtin.file:
+    path: "{{ fake_dir }}"
+    mode: "0777"
+
+- name: Create an empty, world-writable log
+  ansible.builtin.copy:
+    content: ""
+    dest: "{{ fake_log }}"
+    mode: "0666"
+
+- name: Install the fake galaxyctl
+  ansible.builtin.copy:
+    dest: "{{ galaxy_gravity_command }}"
+    mode: "0755"
+    content: |
+      #!/bin/sh
+      echo "argv=$*|state=$GRAVITY_STATE_DIR|bytecode=$PYTHONDONTWRITEBYTECODE|config=$GRAVITY_CONFIG_FILE|user=$(id -un)" >> "{{ fake_log }}"

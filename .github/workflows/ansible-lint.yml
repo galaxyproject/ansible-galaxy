@@ -20,6 +20,9 @@ jobs:
       - name: Lint
         run: >-
           ansible-lint
+          handlers/main.yml
           tasks/database.yml
           tasks/user-facts.yml
+          tests/fake_galaxyctl.yml
+          tests/test_handlers.yml
           tests/test_user_facts.yml
