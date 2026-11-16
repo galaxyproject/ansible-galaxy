@@ -1,0 +1,103 @@
+---
+# tasks/layout.yml sets the path variables that are unset from galaxy_config or the layout defaults.
+# Regression test for #115: tool_data_path in galaxy_config was ignored when creating the directory.
+# set_fact values last for the rest of the run on a host, so each case runs on its own host.
+- name: Create one local host per case
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Add the case hosts
+      ansible.builtin.add_host:
+        name: "{{ item }}"
+        ansible_connection: local
+        ansible_python_interpreter: "{{ ansible_playbook_python }}"
+      loop:
+        - config_only
+        - neither
+        - variable_only
+        - mismatch
+
+- name: Test layout.yml with tool_data_path only in galaxy_config
+  hosts: config_only
+  gather_facts: false
+  vars:
+    galaxy_layout: root-dir
+    galaxy_root: /srv/galaxy
+    galaxy_config:
+      galaxy:
+        tool_data_path: /srv/x/tool-data
+  tasks:
+    - name: Set layout variables
+      ansible.builtin.include_role:
+        name: galaxyproject.galaxy
+        tasks_from: layout
+
+    - name: Check the tool data path
+      ansible.builtin.assert:
+        that:
+          - galaxy_tool_data_path == '/srv/x/tool-data'
+
+- name: Test layout.yml with neither set
+  hosts: neither
+  gather_facts: false
+  vars:
+    galaxy_layout: root-dir
+    galaxy_root: /srv/galaxy
+  tasks:
+    - name: Set layout variables
+      ansible.builtin.include_role:
+        name: galaxyproject.galaxy
+        tasks_from: layout
+
+    - name: Check the tool data path
+      ansible.builtin.assert:
+        that:
+          - galaxy_tool_data_path == '/srv/galaxy/var/tool_data'
+
+- name: Test layout.yml with galaxy_tool_data_path set
+  hosts: variable_only
+  gather_facts: false
+  vars:
+    galaxy_layout: root-dir
+    galaxy_root: /srv/galaxy
+    galaxy_tool_data_path: /srv/y/tool-data
+  tasks:
+    - name: Set layout variables
+      ansible.builtin.include_role:
+        name: galaxyproject.galaxy
+        tasks_from: layout
+
+    - name: Check the tool data path
+      ansible.builtin.assert:
+        that:
+          - galaxy_tool_data_path == '/srv/y/tool-data'
+
+- name: Test layout.yml with galaxy_tool_data_path and tool_data_path set to different values
+  hosts: mismatch
+  gather_facts: false
+  vars:
+    galaxy_layout: root-dir
+    galaxy_root: /srv/galaxy
+    galaxy_tool_data_path: /srv/y/tool-data
+    galaxy_config:
+      galaxy:
+        tool_data_path: /srv/x/tool-data
+  tasks:
+    - name: Check the layout tasks reject the mismatch
+      block:
+        - name: Set layout variables
+          ansible.builtin.include_role:
+            name: galaxyproject.galaxy
+            tasks_from: layout
+
+        - name: Fail if the mismatch was accepted
+          ansible.builtin.fail:
+            msg: layout.yml accepted mismatched galaxy_tool_data_path and tool_data_path
+      rescue:
+        - name: Check the failure is the mismatch assert
+          ansible.builtin.assert:
+            that:
+              - "'galaxy_tool_data_path' in failures"
+              - "'does not match' in failures"
+          vars:
+            failures: "{{ ansible_failed_result.results | default([ansible_failed_result]) | map(attribute='msg', default='') | join(' ') }}"

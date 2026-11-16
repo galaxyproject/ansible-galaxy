@@ -21,5 +21,7 @@ jobs:
         run: >-
           ansible-lint
           tasks/database.yml
+          tasks/layout.yml
           tasks/user-facts.yml
+          tests/test_layout.yml
           tests/test_user_facts.yml
