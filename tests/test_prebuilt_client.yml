@@ -81,6 +81,38 @@
                 that:
                   - ansible_failed_result.msg is search(galaxy_server_dir ~ '/static/dist')
 
+        # Staging copies the client's files to the top level of static/dist, so a file only in a subdirectory
+        # (e.g. left over from something else) doesn't count.
+        - name: Run the check with a file only in a subdirectory of static/dist
+          block:
+            - name: Create static/dist/sub
+              ansible.builtin.file:
+                path: "{{ galaxy_server_dir }}/static/dist/sub"
+                state: directory
+                mode: "0755"
+            - name: Add a file to static/dist/sub
+              ansible.builtin.copy:
+                content: "console.log('nested');\n"
+                dest: "{{ galaxy_server_dir }}/static/dist/sub/analysis.bundled.js"
+                mode: "0644"
+            - name: Include the check
+              ansible.builtin.include_role:
+                name: galaxyproject.galaxy
+                tasks_from: _inc_client_check_prebuilt
+            - name: Fail if the check passed
+              ansible.builtin.fail:
+                msg: The check passed with a file only in a subdirectory of static/dist
+          rescue:
+            - name: Check the failure names the directory
+              ansible.builtin.assert:
+                that:
+                  - ansible_failed_result.msg is search(galaxy_server_dir ~ '/static/dist')
+          always:
+            - name: Remove static/dist/sub
+              ansible.builtin.file:
+                path: "{{ galaxy_server_dir }}/static/dist/sub"
+                state: absent
+
         - name: Create static/dist
           ansible.builtin.file:
             path: "{{ galaxy_server_dir }}/static/dist"
