@@ -76,6 +76,16 @@
         __unit_text: "{{ lookup('ansible.builtin.file', __unit_dir.path ~ '/galaxy-extra-directives.service', rstrip=false) }}"
         __service_section: "{{ __unit_text.split('[Service]')[1].split('[Install]')[0] }}"
 
+    # The directives must be the only difference: an empty list renders nothing, not even a blank line, so the
+    # default unit is unchanged. Both renders use the same vars apart from the directives.
+    - name: Check the directive lines are the only difference from the unit without them
+      ansible.builtin.assert:
+        that:
+          - __with_directives | replace('ProtectSystem=yes\nNoNewPrivileges=yes\n', '', 1) == __without_directives
+      vars:
+        __with_directives: "{{ lookup('ansible.builtin.file', __unit_dir.path ~ '/galaxy-extra-directives.service', rstrip=false) }}"
+        __without_directives: "{{ lookup('ansible.builtin.file', __unit_dir.path ~ '/galaxy-no-root.service', rstrip=false) }}"
+
     # The plays above set galaxy_systemd_extra_directives themselves, so check the role's own default adds nothing.
     - name: Check the role adds no extra directives by default
       ansible.builtin.assert:
