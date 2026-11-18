@@ -108,7 +108,8 @@
             path: "{{ scratch.path }}/ctime/old_read"
           register: read_stat
 
-        # tar restores the member's old mtime on extraction, and the extracted file gets a fresh ctime.
+        # tar restores the member's old mtime on extraction, and the extracted file gets a fresh ctime. The test runs
+        # tar itself, as a job would, rather than the unarchive module (ansible-core has no module to create one).
         - name: Create the archive source directory
           ansible.builtin.file:
             path: "{{ scratch.path }}/archive_src"
@@ -124,12 +125,12 @@
             mode: "0644"
           changed_when: false
 
-        - name: Archive it
+        - name: Archive it  # noqa: command-instead-of-module
           ansible.builtin.command:
             cmd: tar -cf {{ (scratch.path ~ '/old.tar') | quote }} -C {{ (scratch.path ~ '/archive_src') | quote }} extracted
           changed_when: false
 
-        - name: Extract the archive into each tree
+        - name: Extract the archive into each tree  # noqa: command-instead-of-module
           ansible.builtin.command:
             cmd: tar -xf {{ (scratch.path ~ '/old.tar') | quote }} -C {{ (scratch.path ~ '/' ~ item) | quote }}
           loop: [ctime, mtime]
