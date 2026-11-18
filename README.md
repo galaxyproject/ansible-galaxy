@@ -301,8 +301,9 @@ service with the `systemctl` utility as the `root` user or with `sudo`:
 ```
 
 You can add your own directives to the `[Service]` section of the Galaxy unit with `galaxy_systemd_extra_directives`, a
-list with one directive per item (default: `[]`). For example, this set hardens the unit (`systemd-analyze security`
-rates it 4.4 instead of 9.2):
+list with one directive per item (default: `[]`). For example, this set from #145 hardens the unit. There,
+`systemd-analyze security` rated it 4.4 instead of 9.2, measured with an extra `SystemCallFilter` line that's left out
+here because it didn't seem to work:
 
 ```yaml
 galaxy_systemd_extra_directives:
@@ -324,8 +325,18 @@ galaxy_systemd_extra_directives:
   - NoNewPrivileges=yes
 ```
 
-Some directives (e.g. `ProtectHome`, `PrivateTmp`) can break your layout or local jobs, so test them first. Most have
-no effect in a user unit (`galaxy_systemd_root: false`).
+Test these before relying on them. For example:
+
+- `ProtectHome` hides `/home`, `/root` and `/run/user`, so it breaks a layout, venv or job directory under `/home`.
+- `PrivateTmp` gives the unit its own `/tmp`, so it breaks anything that shares files through `/tmp` with processes
+  outside the unit.
+- `NoNewPrivileges` and `RestrictNamespaces` can break container runners such as Apptainer, and the
+  `CapabilityBoundingSet` above leaves out `CAP_SETUID` and `CAP_SETGID`, which running jobs as the real user needs.
+
+In a user unit (`galaxy_systemd_root: false`), `ProtectControlGroups` isn't supported, and the namespace options
+(`ProtectHome`, `PrivateTmp`, `PrivateDevices`, `ProtectKernel*`, `ProtectHostname`) turn on `PrivateUsers=`
+implicitly. That needs unprivileged user namespaces in the kernel, and inside it other users' files appear to be owned
+by `nobody`.
 
 You can use systemd user mode if you do not have root privileges on your system by setting `galaxy_systemd_root` to
 `false`. Add `--user` to the `systemctl` commands above to interact with systemd in user mode:
