@@ -4,6 +4,28 @@
 - name: Manage dependencies
   block:
 
+    # The venv is emptied rather than removed: the privsep user may not be able to write to its parent directory, and
+    # the directory keeps the ownership and mode set by the path management tasks. This is done here, and not in
+    # virtualenv.yml, so that the venv is only cleaned in a run that also reinstalls the dependencies.
+    - name: Find contents of Galaxy virtualenv to clean
+      ansible.builtin.find:
+        paths: "{{ galaxy_venv_dir }}"
+        file_type: any
+        hidden: true
+      register: __galaxy_venv_contents
+      when: galaxy_force_clean_virtualenv | bool
+
+    - name: Remove contents of Galaxy virtualenv
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ __galaxy_venv_contents.files | default([]) }}"
+      loop_control:
+        label: "{{ item.path }}"
+      when: galaxy_force_clean_virtualenv | bool
+      notify:
+        - restart galaxy
+
     - name: Include virtualenv setup tasks
       import_tasks: virtualenv.yml
 

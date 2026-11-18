@@ -215,6 +215,11 @@ Options for configuring Galaxy and controlling which version is installed.
   updated to. Specifying a branch will update to the latest commit on that branch. Using a real commit id is the only
   way to explicitly lock Galaxy at a specific version.
 - `galaxy_force_checkout` (default: `no`): If `yes`, any modified files in the Galaxy repository will be discarded.
+- `galaxy_force_clean_virtualenv` (default: `no`): If `yes`, everything in `galaxy_venv_dir` is removed before Galaxy's
+  dependencies are installed, so the virtualenv is rebuilt from scratch. Often a good idea when upgrading between Galaxy
+  releases. Only takes effect when `galaxy_fetch_dependencies` is enabled, and notifies the `restart galaxy` handler.
+  Galaxy has no usable virtualenv until the dependencies are installed again, so set it for a single run (e.g. `-e
+  galaxy_force_clean_virtualenv=true`) rather than permanently.
 - `galaxy_clone_depth` (default: unset): Depth to use when performing git clone. Leave unspecified to clone entire
    history.
 
