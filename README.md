@@ -301,9 +301,10 @@ service with the `systemctl` utility as the `root` user or with `sudo`:
 ```
 
 You can add your own directives to the `[Service]` section of the Galaxy unit with `galaxy_systemd_extra_directives`, a
-list with one directive per item (default: `[]`). For example, this set from #145 hardens the unit. There,
-`systemd-analyze security` rated it 4.4 instead of 9.2, measured with an extra `SystemCallFilter` line that's left out
-here because it didn't seem to work:
+list with one directive per item (default: `[]`). For example, this set from #145 hardens the unit. With systemd 259,
+`systemd-analyze security --offline=true` rates the Galaxy unit 3.7 with it and 9.0 without (scores vary between
+systemd versions). #145 also had `SystemCallFilter=~@clock @obsolete @privileged`, which is left out here because it
+didn't seem to work there:
 
 ```yaml
 galaxy_systemd_extra_directives:
