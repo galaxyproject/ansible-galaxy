@@ -120,10 +120,12 @@
 - name: Test galaxy_manage_restart false skips the 23.0+ Gravity handlers
   hosts: localhost
   gather_facts: false
-  vars:
-    <<: *handler_test_vars
-    galaxy_manage_restart: false
+  vars: *handler_test_vars
   tasks:
+    - name: Set the variables this test changes
+      ansible.builtin.set_fact:
+        galaxy_manage_restart: false
+
     - name: Load the role's handlers and run only user-facts.yml
       ansible.builtin.import_role:
         name: galaxyproject.galaxy
@@ -169,10 +171,12 @@
 - name: Test galaxy_manage_restart given as the string false skips the handlers
   hosts: localhost
   gather_facts: false
-  vars:
-    <<: *handler_test_vars
-    galaxy_manage_restart: "false"
+  vars: *handler_test_vars
   tasks:
+    - name: Set the variables this test changes
+      ansible.builtin.set_fact:
+        galaxy_manage_restart: "false"
+
     - name: Load the role's handlers and run only user-facts.yml
       ansible.builtin.import_role:
         name: galaxyproject.galaxy
@@ -211,12 +215,14 @@
 - name: Test galaxy_manage_restart false skips the 22.05 Gravity handlers
   hosts: localhost
   gather_facts: false
-  vars:
-    <<: *handler_test_vars
-    galaxy_manage_restart: false
-    galaxy_manage_systemd: true
-    __galaxy_major_version: "22.05"
+  vars: *handler_test_vars
   tasks:
+    - name: Set the variables this test changes
+      ansible.builtin.set_fact:
+        galaxy_manage_restart: false
+        galaxy_manage_systemd: true
+        __galaxy_major_version: "22.05"
+
     - name: Load the role's handlers and run only user-facts.yml
       ansible.builtin.import_role:
         name: galaxyproject.galaxy
@@ -257,13 +263,13 @@
   hosts: localhost
   gather_facts: false
   vars:
-    handlers: "{{ lookup('ansible.builtin.file', playbook_dir | dirname ~ '/handlers/main.yml') | from_yaml }}"
+    handler_list: "{{ lookup('ansible.builtin.file', playbook_dir | dirname ~ '/handlers/main.yml') | from_yaml }}"
   tasks:
     - name: Check the reload handler is not gated
       ansible.builtin.assert:
         that:
-          - (handlers | selectattr('name', 'equalto', 'Reload systemd daemon for Galaxy') | list | length) == 1
-          - handlers | selectattr('name', 'equalto', 'Reload systemd daemon for Galaxy') | selectattr('when', 'defined') | list | length == 0
+          - (handler_list | selectattr('name', 'equalto', 'Reload systemd daemon for Galaxy') | list | length) == 1
+          - handler_list | selectattr('name', 'equalto', 'Reload systemd daemon for Galaxy') | selectattr('when', 'defined') | list | length == 0
 
     - name: Check every other handler is gated
       ansible.builtin.assert:
@@ -271,6 +277,6 @@
           - item.when is search('^galaxy_manage_restart \| bool and ')
         fail_msg: "Handler '{{ item.name }}' isn't gated on galaxy_manage_restart."
         quiet: true
-      loop: "{{ handlers | rejectattr('name', 'equalto', 'Reload systemd daemon for Galaxy') | list }}"
+      loop: "{{ handler_list | rejectattr('name', 'equalto', 'Reload systemd daemon for Galaxy') | list }}"
       loop_control:
         label: "{{ item.name }}"
