@@ -162,12 +162,15 @@ galaxy_tmpclean_dirs:
   - "{{ galaxy_job_working_directory }}"
   - "{{ galaxy_config.galaxy.new_file_path | default((galaxy_mutable_data_dir, 'tmp') | path_join) }}"
 
-# Files and directories older than this are removed, judged by the timestamp in galaxy_tmpclean_timestamp
+# Files older than this are removed, judged by galaxy_tmpclean_timestamp. Empty directories are judged by their mtime.
 galaxy_tmpclean_age: 30d
 
 # The timestamp to age files by, ctime (inode change time) or mtime (modification time). Tools that extract archives
 # (tar, unzip) restore the original mtime, so files a running job has just extracted look old and are removed. They
-# can't set ctime back, and ctime is never earlier than mtime, so ctime only ever keeps files for longer.
+# can't set ctime back, so by ctime those files are aged from when they were extracted.
+# tmpwatch (Red Hat) then goes by ctime alone. tmpreaper (Debian) checks ctime in addition to atime, so a file read
+# within galaxy_tmpclean_age is also kept. On a relatime mount, anything that reads these files regularly (a backup, a
+# scanner) can keep them from being removed.
 galaxy_tmpclean_timestamp: ctime
 
 # Log the command output, default (true) is cron mail, set to a path to log to file instead or YAML null to send to
