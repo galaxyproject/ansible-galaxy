@@ -27,11 +27,13 @@
       ansible.builtin.set_fact:
         galaxy_tmpclean_timestamp: mtime
 
-    - name: Check the Debian mtime setting ages files by mtime
+    # mtime must give back exactly the command the role used before galaxy_tmpclean_timestamp existed.
+    - name: Check the Debian mtime setting ages files by mtime, as before
       ansible.builtin.assert:
         that:
           - "'--mtime ' in galaxy_tmpclean_command"
           - "'--ctime' not in galaxy_tmpclean_command"
+          - galaxy_tmpclean_command == '/usr/sbin/tmpreaper --all --mtime --mtime-dir --runtime=72000'
         quiet: true
 
     - name: Restore the default galaxy_tmpclean_timestamp after Debian
@@ -53,11 +55,12 @@
       ansible.builtin.set_fact:
         galaxy_tmpclean_timestamp: mtime
 
-    - name: Check the RedHat mtime setting ages files by mtime
+    - name: Check the RedHat mtime setting ages files by mtime, as before
       ansible.builtin.assert:
         that:
           - "'--mtime ' in galaxy_tmpclean_command"
           - "'--ctime' not in galaxy_tmpclean_command"
+          - galaxy_tmpclean_command == '/usr/bin/tmpwatch -all --mtime --dirmtime'
         quiet: true
 
     - name: Restore the default galaxy_tmpclean_timestamp after RedHat
