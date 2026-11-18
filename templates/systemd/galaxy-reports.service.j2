@@ -12,7 +12,9 @@ Group={{ __galaxy_user_group }}
 WorkingDirectory={{ galaxy_server_dir }}
 TimeoutStartSec=10
 ExecStart={{ galaxy_venv_dir }}/bin/uwsgi {{ '--yaml' if galaxy_config_style in ('yaml', 'yml') else '--ini' }} {{ galaxy_reports_path }}
+{% if galaxy_root is defined %}
 Environment=HOME={{ galaxy_root }}
+{% endif %}
 Environment=VIRTUAL_ENV={{ galaxy_venv_dir }}
 Environment=PATH={{ galaxy_venv_dir }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin
 Environment=DOCUTILSCONFIG=

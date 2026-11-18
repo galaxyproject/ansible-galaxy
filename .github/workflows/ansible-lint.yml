@@ -24,4 +24,5 @@ jobs:
           tasks/user-facts.yml
           tests/files/include_database.yml
           tests/test_database.yml
+          tests/test_systemd_unit.yml
           tests/test_user_facts.yml
