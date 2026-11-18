@@ -6,19 +6,19 @@
   hosts: localhost
   gather_facts: false
   tasks:
-    - name: Make a fake Galaxy static directory
+    - name: Make a fake Galaxy server directory
       ansible.builtin.tempfile:
         state: directory
-        prefix: galaxy-static-
-      register: __static
+        prefix: galaxy-server-
+      register: __server
 
     - name: Test the check
       vars:
-        galaxy_static_dir: "{{ __static.path }}"
+        galaxy_server_dir: "{{ __server.path }}"
       block:
         - name: Create an empty static/dist
           ansible.builtin.file:
-            path: "{{ galaxy_static_dir }}/dist"
+            path: "{{ galaxy_server_dir }}/static/dist"
             state: directory
             mode: "0755"
 
@@ -35,14 +35,14 @@
             - name: Check the failure names the directory
               ansible.builtin.assert:
                 that:
-                  - ansible_failed_result.msg is search(galaxy_static_dir ~ '/dist')
+                  - ansible_failed_result.msg is search(galaxy_server_dir ~ '/static/dist')
                   - ansible_failed_result.msg is search('install')
 
         - name: Run the check when static/dist is missing
           block:
             - name: Remove static/dist
               ansible.builtin.file:
-                path: "{{ galaxy_static_dir }}/dist"
+                path: "{{ galaxy_server_dir }}/static/dist"
                 state: absent
             - name: Include the check
               ansible.builtin.include_role:
@@ -55,18 +55,18 @@
             - name: Check the failure names the directory
               ansible.builtin.assert:
                 that:
-                  - ansible_failed_result.msg is search(galaxy_static_dir ~ '/dist')
+                  - ansible_failed_result.msg is search(galaxy_server_dir ~ '/static/dist')
 
-        - name: Create static/dist with a file in a subdirectory
+        - name: Create static/dist
           ansible.builtin.file:
-            path: "{{ galaxy_static_dir }}/dist/sub"
+            path: "{{ galaxy_server_dir }}/static/dist"
             state: directory
             mode: "0755"
 
         - name: Add a file
           ansible.builtin.copy:
             content: "console.log('client');\n"
-            dest: "{{ galaxy_static_dir }}/dist/sub/analysis.bundled.js"
+            dest: "{{ galaxy_server_dir }}/static/dist/analysis.bundled.js"
             mode: "0644"
 
         - name: Run the check on a populated static/dist
@@ -75,7 +75,7 @@
             tasks_from: _inc_client_check_prebuilt
 
       always:
-        - name: Remove the fake static directory
+        - name: Remove the fake server directory
           ansible.builtin.file:
-            path: "{{ __static.path }}"
+            path: "{{ __server.path }}"
             state: absent
