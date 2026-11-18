@@ -1,0 +1,236 @@
+---
+# Run the real tmpreaper (Debian) or tmpwatch (RedHat) with the role's own galaxy_tmpclean_command, once
+# with galaxy_tmpclean_timestamp ctime and once with mtime, and check what each keeps and removes (#266).
+# test_tmpclean_command.yml only checks the command text, this checks what the tools do with it.
+#
+# The command hard-codes the tool's path. If the tool isn't installed here the play ends without
+# failing, so tests/run.sh still passes on a host without it. To try a tool from somewhere else, pass
+# -e tmpclean_test_bin=/path/to/tool.
+#
+# You can't set a file's ctime back, so "old" files are created first and the play waits until they are
+# older than the age. The file with a fresh ctime and an old mtime, as tar or unzip leave behind, is
+# created after the wait. tmpreaper takes seconds, tmpwatch's smallest unit is a minute.
+- name: Test the real tmpclean tool with the role's command
+  hosts: localhost
+  gather_facts: true
+  vars:
+    age_by_family:
+      debian: 10s
+      redhat: 1m
+    wait_by_family:
+      debian: 12
+      redhat: 65
+    old_time: "202001010000.00"
+  tasks:
+    - name: Load the role defaults
+      ansible.builtin.include_vars:
+        file: "{{ playbook_dir }}/../defaults/main.yml"
+
+    # A set_fact can't use a value it sets in the same task, so each timestamp is set, then the command read.
+    - name: Set galaxy_tmpclean_timestamp to ctime
+      ansible.builtin.set_fact:
+        galaxy_tmpclean_timestamp: ctime
+
+    - name: Get the ctime command
+      ansible.builtin.set_fact:
+        cmd_ctime: "{{ galaxy_tmpclean_command }}"
+
+    - name: Set galaxy_tmpclean_timestamp to mtime
+      ansible.builtin.set_fact:
+        galaxy_tmpclean_timestamp: mtime
+
+    - name: Get the mtime command
+      ansible.builtin.set_fact:
+        cmd_mtime: "{{ galaxy_tmpclean_command }}"
+
+    - name: Work out the tool, its path and the age
+      ansible.builtin.set_fact:
+        family: "{{ ansible_facts['os_family'] | lower }}"
+        tool: "{{ tmpclean_test_bin | default(cmd_ctime.split()[0]) }}"
+        age: "{{ age_by_family[ansible_facts['os_family'] | lower] }}"
+        age_wait: "{{ wait_by_family[ansible_facts['os_family'] | lower] }}"
+
+    - name: Look for the tool
+      ansible.builtin.stat:
+        path: "{{ tool }}"
+      register: tool_stat
+
+    - name: Skip when the tool isn't installed
+      ansible.builtin.meta: end_play
+      when: not tool_stat.stat.exists
+
+    - name: Run the tool and check what it keeps
+      block:
+        - name: Make a scratch directory that this user owns
+          ansible.builtin.tempfile:
+            state: directory
+            prefix: galaxy-tmpclean-real
+          register: scratch
+          changed_when: false
+
+        # One tree for each run, so that the first run doesn't remove what the second one checks.
+        - name: Create the trees
+          ansible.builtin.file:
+            path: "{{ scratch.path }}/{{ item }}"
+            state: directory
+            mode: "0755"
+          loop: [ctime, mtime]
+          changed_when: false
+
+        - name: Create the old files, and an empty directory with an old mtime
+          ansible.builtin.file:
+            path: "{{ scratch.path }}/{{ item.0 }}/{{ item.1.name }}"
+            state: "{{ item.1.state }}"
+            modification_time: "{{ old_time }}"
+            access_time: "{{ old_time }}"
+            mode: "{{ '0755' if item.1.state == 'directory' else '0644' }}"
+          loop: "{{ ['ctime', 'mtime'] | product(old_things) | list }}"
+          vars:
+            old_things:
+              - {name: old_all, state: touch}
+              - {name: old_read, state: touch}
+              - {name: old_empty_dir, state: directory}
+          changed_when: false
+
+        - name: Wait until the old files are older than the age
+          ansible.builtin.wait_for:
+            timeout: "{{ age_wait | int }}"
+
+        # Reading it sets a fresh atime and leaves ctime and mtime alone.
+        - name: Read a file whose ctime and mtime are old
+          ansible.builtin.slurp:
+            src: "{{ scratch.path }}/{{ item }}/old_read"
+          loop: [ctime, mtime]
+          changed_when: false
+
+        - name: Check this mount records the read in atime
+          ansible.builtin.stat:
+            path: "{{ scratch.path }}/ctime/old_read"
+          register: read_stat
+
+        # ctime changes with the file, so touch's -d, which leaves an old mtime and sets a fresh ctime,
+        # stands in for tar and unzip.
+        - name: Create a file with an old mtime but a fresh ctime
+          ansible.builtin.file:
+            path: "{{ scratch.path }}/{{ item }}/extracted"
+            state: touch
+            modification_time: "{{ old_time }}"
+            access_time: "{{ old_time }}"
+            mode: "0644"
+          loop: [ctime, mtime]
+          changed_when: false
+
+        - name: Create a directory with fresh contents
+          ansible.builtin.file:
+            path: "{{ scratch.path }}/{{ item }}/fresh_dir"
+            state: directory
+            mode: "0755"
+          loop: [ctime, mtime]
+          changed_when: false
+
+        - name: Create a fresh file in it
+          ansible.builtin.file:
+            path: "{{ scratch.path }}/{{ item }}/fresh_dir/fresh"
+            state: touch
+            mode: "0644"
+          loop: [ctime, mtime]
+          changed_when: false
+
+        - name: Run the command with ctime
+          ansible.builtin.command:
+            argv: "{{ (cmd_ctime ~ ' ' ~ age ~ ' ' ~ scratch.path ~ '/ctime') | replace(cmd_ctime.split()[0], tool, 1) | split }}"
+          changed_when: false
+
+        - name: Run the command with mtime
+          ansible.builtin.command:
+            argv: "{{ (cmd_mtime ~ ' ' ~ age ~ ' ' ~ scratch.path ~ '/mtime') | replace(cmd_mtime.split()[0], tool, 1) | split }}"
+          changed_when: false
+
+        - name: List what is left
+          ansible.builtin.find:
+            paths: "{{ scratch.path }}/{{ item }}"
+            file_type: any
+            recurse: true
+            hidden: true
+          loop: [ctime, mtime]
+          register: left
+
+        - name: Work out which files are left
+          ansible.builtin.set_fact:
+            kept_ctime: "{{ left.results[0].files | map(attribute='path') | map('basename') | list }}"
+            kept_mtime: "{{ left.results[1].files | map(attribute='path') | map('basename') | list }}"
+            read_recorded: "{{ (now(utc=true).timestamp() - read_stat.stat.atime) < 5 }}"
+
+        - name: Check ctime keeps the file extracted with an old mtime
+          ansible.builtin.assert:
+            that: "'extracted' in kept_ctime"
+            fail_msg: "ctime removed a file with an old mtime and a fresh ctime, as tar leaves it"
+            quiet: true
+
+        - name: Check mtime removes the file extracted with an old mtime
+          ansible.builtin.assert:
+            that: "'extracted' not in kept_mtime"
+            fail_msg: "mtime kept a file with an old mtime, which is what ctime is for"
+            quiet: true
+
+        - name: Check both remove a file with old ctime, mtime and atime
+          ansible.builtin.assert:
+            that:
+              - "'old_all' not in kept_ctime"
+              - "'old_all' not in kept_mtime"
+            fail_msg: old_all is too old to be kept
+            quiet: true
+
+        # tmpreaper also checks atime with --ctime. tmpwatch goes by ctime alone.
+        - name: Check what ctime does with a file that was read recently
+          ansible.builtin.assert:
+            that: "('old_read' in kept_ctime) == (family == 'debian')"
+            fail_msg: "ctime and a recent read: tmpreaper keeps the file, tmpwatch removes it"
+            quiet: true
+          when: read_recorded | bool
+
+        - name: Check mtime removes a file that was read recently
+          ansible.builtin.assert:
+            that: "'old_read' not in kept_mtime"
+            quiet: true
+          when: read_recorded | bool
+
+        - name: Check both remove an empty directory with an old mtime
+          ansible.builtin.assert:
+            that:
+              - "'old_empty_dir' not in kept_ctime"
+              - "'old_empty_dir' not in kept_mtime"
+            quiet: true
+
+        - name: Check both keep a directory with fresh contents
+          ansible.builtin.assert:
+            that:
+              - "'fresh_dir' in kept_ctime"
+              - "'fresh' in kept_ctime"
+              - "'fresh_dir' in kept_mtime"
+              - "'fresh' in kept_mtime"
+            quiet: true
+
+        # tmpreaper refuses to age by both, which is why the role swaps the option.
+        - name: Run tmpreaper with both --ctime and --mtime
+          ansible.builtin.command:
+            argv: "{{ (cmd_ctime ~ ' --mtime ' ~ age ~ ' ' ~ scratch.path ~ '/ctime') | replace(cmd_ctime.split()[0], tool, 1) | split }}"
+          register: both
+          changed_when: false
+          failed_when: false
+          when: family == 'debian'
+
+        - name: Check tmpreaper refuses both
+          ansible.builtin.assert:
+            that:
+              - both.rc == 1
+              - "'conflicts' in both.stderr"
+            quiet: true
+          when: family == 'debian'
+      always:
+        - name: Remove the scratch directory
+          ansible.builtin.file:
+            path: "{{ scratch.path }}"
+            state: absent
+          changed_when: false
+          when: scratch is defined and scratch.path is defined
