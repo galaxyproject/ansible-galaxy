@@ -180,6 +180,10 @@ Several variables control which functions this role will perform (all default to
   `client-production` and `client-production-maps`. See [Galaxy client readme][client-build] for details.
 - `galaxy_manage_systemd` (default: `no`): Install a [systemd][systemd] service unit to start and stop Galaxy with the
   system (and using the `systemctl` command).
+- `galaxy_manage_restart` (default: `yes`): Run the role's handlers that start or restart Galaxy or run `galaxyctl update`
+  (the ones listening on `restart galaxy`, `start galaxy` and `galaxyctl update`). Set it to `no` if you restart Galaxy
+  yourself, e.g. with your own handler listening on `restart galaxy` because you only have limited `sudo` rights. Your
+  handler still runs. The `systemd daemon reload` handler isn't a restart, so it still runs.
 - `galaxy_manage_errordocs` (default: `no`): Install Galaxy-styled 413 and 502 HTTP error documents for nginx. Requires
   write privileges for the nginx error document directory.
 - `galaxy_manage_cleanup` (default: `no`): Install a cron job to clean up Galaxy framework and job execution temporary

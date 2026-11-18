@@ -114,3 +114,163 @@
         fail_msg: "Handler name '{{ item }}' isn't specific to this role. Name it after Galaxy or Gravity."
         quiet: true
       loop: "{{ lookup('ansible.builtin.file', playbook_dir | dirname ~ '/handlers/main.yml') | from_yaml | map(attribute='name') }}"
+
+# galaxy_manage_restart: false leaves restarting to the playbook, e.g. its own handler listening on `restart galaxy`.
+# The role's handlers are skipped, but the playbook's handler still runs.
+- name: Test galaxy_manage_restart false skips the 23.0+ Gravity handlers
+  hosts: localhost
+  gather_facts: false
+  vars:
+    <<: *handler_test_vars
+    galaxy_manage_restart: false
+  tasks:
+    - name: Load the role's handlers and run only user-facts.yml
+      ansible.builtin.import_role:
+        name: galaxyproject.galaxy
+        tasks_from: user-facts
+
+    - name: Set up the fake galaxyctl
+      ansible.builtin.include_tasks: fake_galaxyctl.yml
+
+    - name: Notify the handlers
+      ansible.builtin.debug:
+        msg: Notifying
+      changed_when: true
+      notify:
+        - restart galaxy
+        - galaxyctl update
+
+    - name: Run the handlers
+      ansible.builtin.meta: flush_handlers
+
+    - name: Read the log
+      ansible.builtin.slurp:
+        src: "{{ fake_log }}"
+      register: calls
+
+    - name: Check only the playbook's own handler ran
+      ansible.builtin.assert:
+        that:
+          - (calls.content | b64decode).splitlines() == ['own handler']
+
+    - name: Remove the temp dir
+      ansible.builtin.file:
+        path: "{{ fake_dir }}"
+        state: absent
+
+  handlers:
+    - name: Restart Galaxy in the playbook
+      ansible.builtin.shell: echo 'own handler' >> "{{ fake_log }}"
+      changed_when: true
+      listen: restart galaxy
+
+# A string such as "false" (from `-e galaxy_manage_restart=false` or an INI inventory) is truthy in a bare Jinja `and`,
+# so the handlers have to convert it with `| bool`.
+- name: Test galaxy_manage_restart given as the string false skips the handlers
+  hosts: localhost
+  gather_facts: false
+  vars:
+    <<: *handler_test_vars
+    galaxy_manage_restart: "false"
+  tasks:
+    - name: Load the role's handlers and run only user-facts.yml
+      ansible.builtin.import_role:
+        name: galaxyproject.galaxy
+        tasks_from: user-facts
+
+    - name: Set up the fake galaxyctl
+      ansible.builtin.include_tasks: fake_galaxyctl.yml
+
+    - name: Notify the handlers
+      ansible.builtin.debug:
+        msg: Notifying
+      changed_when: true
+      notify:
+        - restart galaxy
+        - galaxyctl update
+
+    - name: Run the handlers
+      ansible.builtin.meta: flush_handlers
+
+    - name: Read the log
+      ansible.builtin.slurp:
+        src: "{{ fake_log }}"
+      register: calls
+
+    - name: Check galaxyctl wasn't called
+      ansible.builtin.assert:
+        that:
+          - (calls.content | b64decode).splitlines() | length == 0
+
+    - name: Remove the temp dir
+      ansible.builtin.file:
+        path: "{{ fake_dir }}"
+        state: absent
+
+# The 22.05 handlers only run with galaxy_manage_systemd, so turn that on to check they are skipped too.
+- name: Test galaxy_manage_restart false skips the 22.05 Gravity handlers
+  hosts: localhost
+  gather_facts: false
+  vars:
+    <<: *handler_test_vars
+    galaxy_manage_restart: false
+    galaxy_manage_systemd: true
+    __galaxy_major_version: "22.05"
+  tasks:
+    - name: Load the role's handlers and run only user-facts.yml
+      ansible.builtin.import_role:
+        name: galaxyproject.galaxy
+        tasks_from: user-facts
+
+    - name: Set up the fake galaxyctl
+      ansible.builtin.include_tasks: fake_galaxyctl.yml
+
+    - name: Notify the handlers
+      ansible.builtin.debug:
+        msg: Notifying
+      changed_when: true
+      notify:
+        - restart galaxy
+        - galaxyctl update
+
+    - name: Run the handlers
+      ansible.builtin.meta: flush_handlers
+
+    - name: Read the log
+      ansible.builtin.slurp:
+        src: "{{ fake_log }}"
+      register: calls
+
+    - name: Check galaxyctl wasn't called
+      ansible.builtin.assert:
+        that:
+          - (calls.content | b64decode).splitlines() | length == 0
+
+    - name: Remove the temp dir
+      ansible.builtin.file:
+        path: "{{ fake_dir }}"
+        state: absent
+
+# Running the start, restart and reload handlers would need systemd, so check the handlers file instead: every handler
+# except the daemon reload is gated on galaxy_manage_restart, and the reload (not a restart) isn't.
+- name: Test which handlers galaxy_manage_restart gates
+  hosts: localhost
+  gather_facts: false
+  vars:
+    handlers: "{{ lookup('ansible.builtin.file', playbook_dir | dirname ~ '/handlers/main.yml') | from_yaml }}"
+  tasks:
+    - name: Check the reload handler is not gated
+      ansible.builtin.assert:
+        that:
+          - (handlers | selectattr('name', 'equalto', 'Reload systemd daemon for Galaxy') | list | length) == 1
+          - handlers | selectattr('name', 'equalto', 'Reload systemd daemon for Galaxy') | selectattr('when', 'defined') | list | length == 0
+
+    - name: Check every other handler is gated
+      ansible.builtin.assert:
+        that:
+          - item.when is search('^galaxy_manage_restart \| bool and ')
+        fail_msg: "Handler '{{ item.name }}' isn't gated on galaxy_manage_restart."
+        quiet: true
+      loop: "{{ handlers | rejectattr('name', 'equalto', 'Reload systemd daemon for Galaxy') | list }}"
+      loop_control:
+        label: "{{ item.name }}"
