@@ -8,8 +8,8 @@
 # -e tmpclean_test_bin=/path/to/tool.
 #
 # You can't set a file's ctime back, so "old" files are created first and the play waits until they are
-# older than the age. The file with a fresh ctime and an old mtime, as tar or unzip leave behind, is
-# created after the wait. tmpreaper takes seconds, tmpwatch's smallest unit is a minute.
+# older than the age. The file with a fresh ctime and an old mtime is extracted from a tar archive after
+# the wait, as a job would. tmpreaper takes seconds, tmpwatch's smallest unit is a minute.
 - name: Test the real tmpclean tool with the role's command
   hosts: localhost
   gather_facts: true
@@ -108,15 +108,30 @@
             path: "{{ scratch.path }}/ctime/old_read"
           register: read_stat
 
-        # ctime changes with the file, so touch's -d, which leaves an old mtime and sets a fresh ctime,
-        # stands in for tar and unzip.
-        - name: Create a file with an old mtime but a fresh ctime
+        # tar restores the member's old mtime on extraction, and the extracted file gets a fresh ctime.
+        - name: Create the archive source directory
           ansible.builtin.file:
-            path: "{{ scratch.path }}/{{ item }}/extracted"
+            path: "{{ scratch.path }}/archive_src"
+            state: directory
+            mode: "0755"
+
+        - name: Create an archive member with an old mtime
+          ansible.builtin.file:
+            path: "{{ scratch.path }}/archive_src/extracted"
             state: touch
             modification_time: "{{ old_time }}"
             access_time: "{{ old_time }}"
             mode: "0644"
+          changed_when: false
+
+        - name: Archive it
+          ansible.builtin.command:
+            cmd: tar -cf {{ (scratch.path ~ '/old.tar') | quote }} -C {{ (scratch.path ~ '/archive_src') | quote }} extracted
+          changed_when: false
+
+        - name: Extract the archive into each tree
+          ansible.builtin.command:
+            cmd: tar -xf {{ (scratch.path ~ '/old.tar') | quote }} -C {{ (scratch.path ~ '/' ~ item) | quote }}
           loop: [ctime, mtime]
           changed_when: false
 
