@@ -107,7 +107,7 @@
         VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
       when:
         - __galaxy_major_version is version('26.0', '<')
-        - __galaxy_prebuilt_client_needs_stage
+        - __galaxy_prebuilt_client_needs_stage | bool
 
     - name: Stage prebuilt client (pnpm) # noqa no-changed-when
       command: "pnpm run stage"
@@ -118,7 +118,7 @@
         VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
       when:
         - __galaxy_major_version is version('26.0', '>=')
-        - __galaxy_prebuilt_client_needs_stage
+        - __galaxy_prebuilt_client_needs_stage | bool
 
     - name: Include prebuilt client check
       include_tasks: "_inc_client_check_prebuilt.yml"
