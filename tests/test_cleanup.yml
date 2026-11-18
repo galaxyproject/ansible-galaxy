@@ -1,0 +1,54 @@
+---
+# tasks/cleanup.yml schedules the tmpclean cron job as the Galaxy user.
+# Regression test for #171: galaxy_user can be a plain string, which has no `name` attribute.
+# Runs in check mode so no cron job is written. The cron module looks for `crontab` even in check
+# mode, so a stub stands in for it when the test host has none.
+- name: Test cleanup.yml with galaxy_user as a string
+  hosts: localhost
+  gather_facts: true
+  vars:
+    galaxy_user: "{{ lookup('ansible.builtin.pipe', 'id -un') }}"
+    __galaxy_remote_user: "{{ ansible_facts['user_id'] }}"
+    __galaxy_become: false
+    __galaxy_become_user: "{{ ansible_facts['user_id'] }}"
+    # An absolute path makes the root task use this file instead of /etc/cron.d.
+    galaxy_tmpclean_cron_file: /tmp/galaxy_tmpclean_test
+    galaxy_tmpclean_dirs:
+      - /tmp/galaxy-test-jobs
+  tasks:
+    - name: Create a directory for the stub crontab
+      ansible.builtin.tempfile:
+        state: directory
+        prefix: galaxy-test-bin
+      register: stub_dir
+      changed_when: false
+
+    - name: Create the stub crontab
+      ansible.builtin.copy:
+        content: |
+          #!/bin/sh
+          exit 0
+        dest: "{{ stub_dir.path }}/crontab"
+        mode: "0755"
+      changed_when: false
+
+    - name: Schedule the tmpclean cron job
+      ansible.builtin.include_role:
+        name: galaxyproject.galaxy
+        tasks_from: cleanup
+      args:
+        apply:
+          check_mode: true
+          environment:
+            PATH: "{{ stub_dir.path }}:{{ ansible_facts['env']['PATH'] }}"
+
+    - name: Check cleanup.yml ran to the end
+      ansible.builtin.assert:
+        that:
+          - galaxy_user is string
+
+    - name: Remove the stub crontab
+      ansible.builtin.file:
+        path: "{{ stub_dir.path }}"
+        state: absent
+      changed_when: false
