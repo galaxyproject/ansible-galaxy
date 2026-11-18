@@ -58,7 +58,7 @@
 
     - name: Render the Galaxy unit with extra directives
       ansible.builtin.template:
-        src: roles/galaxyproject.galaxy/templates/systemd/galaxy.service.j2
+        src: "{{ playbook_dir | dirname }}/templates/systemd/galaxy.service.j2"
         dest: "{{ __unit_dir.path }}/galaxy-extra-directives.service"
         mode: "0644"
       vars:
