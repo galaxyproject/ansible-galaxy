@@ -17,9 +17,9 @@
 # This is a temporary solution.
 - name: Set privilege separation default variables
   set_fact:
-    __galaxy_remote_user: "{{ ansible_user_id | default(omit) }}"
-    __galaxy_become: "{{ ansible_env.SUDO_USER is defined }}"
-    __galaxy_become_user: "{{ ansible_user_id | default(omit) }}"
+    __galaxy_remote_user: "{{ ansible_facts['user_id'] | default(omit) }}"
+    __galaxy_become: "{{ ansible_facts['env']['SUDO_USER'] is defined }}"
+    __galaxy_become_user: "{{ ansible_facts['user_id'] | default(omit) }}"
   tags: always
 
 - name: Import layout variable tasks
@@ -109,15 +109,6 @@
   tags:
     - galaxy_manage_mutable_setup
 
-- name: Include database management tasks
-  include_tasks:
-    file: database.yml
-    apply:
-      tags: galaxy_manage_database
-  when: galaxy_manage_database
-  tags:
-    - galaxy_manage_database
-
 - name: Include client build tasks
   include_tasks:
     file: client.yml
@@ -126,6 +117,15 @@
   when: galaxy_build_client
   tags:
     - galaxy_build_client
+
+- name: Include database management tasks
+  include_tasks:
+    file: database.yml
+    apply:
+      tags: galaxy_manage_database
+  when: galaxy_manage_database
+  tags:
+    - galaxy_manage_database
 
 - name: Include error document setup tasks
   include_tasks:

@@ -33,7 +33,7 @@
 
     - name: Render the units without galaxy_root
       ansible.builtin.template:
-        src: roles/galaxyproject.galaxy/templates/systemd/{{ item }}.service.j2
+        src: "{{ playbook_dir | dirname }}/templates/systemd/{{ item }}.service.j2"
         dest: "{{ __unit_dir.path }}/{{ item }}-no-root.service"
         mode: "0644"
       loop: &units
@@ -42,7 +42,7 @@
 
     - name: Render the units with galaxy_root
       ansible.builtin.template:
-        src: roles/galaxyproject.galaxy/templates/systemd/{{ item }}.service.j2
+        src: "{{ playbook_dir | dirname }}/templates/systemd/{{ item }}.service.j2"
         dest: "{{ __unit_dir.path }}/{{ item }}-with-root.service"
         mode: "0644"
       loop: *units

@@ -6,7 +6,7 @@
 - name: Enable corepack shims  # noqa no-changed-when
   command: "corepack enable --install-directory {{ galaxy_venv_dir }}/bin"
   environment:
-    PATH: "{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
+    PATH: "{{ galaxy_venv_dir }}/bin:{{ ansible_facts['env']['PATH'] }}"
     VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
     COREPACK_ENABLE_DOWNLOAD_PROMPT: "0"
   when: __galaxy_major_version is version('25.1', '>=')
@@ -38,7 +38,7 @@
     - name: Install or upgrade node
       command: "nodeenv -n {{ galaxy_node_version }} -p"
       environment:
-        PATH: "{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
+        PATH: "{{ galaxy_venv_dir }}/bin:{{ ansible_facts['env']['PATH'] }}"
         VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
       when: (not __galaxy_node_is_installed.stat.exists) or (('v' ~ galaxy_node_version) != __galaxy_installed_node_version.stdout)
 
@@ -48,5 +48,5 @@
         name: yarn
         global: yes
       environment:
-        PATH: "{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
+        PATH: "{{ galaxy_venv_dir }}/bin:{{ ansible_facts['env']['PATH'] }}"
         VIRTUAL_ENV: "{{ galaxy_venv_dir }}"

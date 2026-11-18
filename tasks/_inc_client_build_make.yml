@@ -5,7 +5,7 @@
     chdir: "{{ galaxy_server_dir }}"
     target: "{{ galaxy_client_make_target }}"
   environment:
-    PATH: "{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
+    PATH: "{{ galaxy_venv_dir }}/bin:{{ ansible_facts['env']['PATH'] }}"
     VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
     COREPACK_ENABLE_DOWNLOAD_PROMPT: 0
 
