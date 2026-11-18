@@ -1,0 +1,95 @@
+---
+# tasks/database.yml upgrades the Galaxy database when it is behind, and must show the upgrade's output (#75).
+# A fake venv python stands in for Galaxy's manage_db.py. Each case runs the tasks in a nested ansible-playbook so
+# the test can read what the play prints.
+- name: Test database.yml
+  hosts: localhost
+  gather_facts: false
+  vars:
+    fake_user: "{{ lookup('ansible.builtin.pipe', 'id -un') }}"
+  tasks:
+    - name: Make a directory for the fake Galaxy
+      ansible.builtin.tempfile:
+        state: directory
+        prefix: galaxy-db-test-
+      register: tmp
+
+    - name: Set the fake Galaxy path
+      ansible.builtin.set_fact:
+        fake_dir: "{{ tmp.path }}"
+
+    - name: Create the fake Galaxy directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ fake_dir }}/venv/bin"
+        - "{{ fake_dir }}/server/scripts"
+
+    - name: Create the fake venv python
+      ansible.builtin.copy:
+        dest: "{{ fake_dir }}/venv/bin/python"
+        mode: "0755"
+        content: |
+          #!/bin/sh
+          # Called as: python manage_db.py -c <config> <command>
+          for command; do :; done
+          echo "$command" >> "{{ fake_dir }}/calls"
+          case "$command" in
+            db_version) echo "$FAKE_DB_CURRENT" ;;
+            version) echo "2" ;;
+            upgrade)
+              echo "stdout: upgrading"
+              echo "INFO [alembic.runtime.migration] Running upgrade abc -> def" >&2
+              ;;
+          esac
+
+    - name: Write the role variables
+      ansible.builtin.copy:
+        dest: "{{ fake_dir }}/vars.yml"
+        mode: "0644"
+        content: |
+          galaxy_venv_dir: {{ fake_dir }}/venv
+          galaxy_server_dir: {{ fake_dir }}/server
+          galaxy_config_file: {{ fake_dir }}/galaxy.yml
+          __galaxy_remote_user: {{ fake_user }}
+          __galaxy_become: false
+          __galaxy_become_user: {{ fake_user }}
+
+    - name: Run the database tasks with the database behind
+      ansible.builtin.command: ansible-playbook {{ playbook_dir }}/files/include_database.yml -e @{{ fake_dir }}/vars.yml
+      environment:
+        FAKE_DB_CURRENT: "1"
+      register: behind
+      changed_when: false
+
+    - name: Check the upgrade ran and its output was shown
+      ansible.builtin.assert:
+        that:
+          - "'upgrade' in lookup('ansible.builtin.file', fake_dir ~ '/calls').splitlines()"
+          - "'Running upgrade abc -> def' in behind.stdout"
+          - "'stdout: upgrading' in behind.stdout"
+
+    - name: Clear the call log
+      ansible.builtin.file:
+        path: "{{ fake_dir }}/calls"
+        state: absent
+
+    - name: Run the database tasks with the database up to date
+      ansible.builtin.command: ansible-playbook {{ playbook_dir }}/files/include_database.yml -e @{{ fake_dir }}/vars.yml
+      environment:
+        FAKE_DB_CURRENT: "2"
+      register: current
+      changed_when: false
+
+    - name: Check there was no upgrade and no upgrade output
+      ansible.builtin.assert:
+        that:
+          - "'upgrade' not in lookup('ansible.builtin.file', fake_dir ~ '/calls').splitlines()"
+          - "'alembic' not in current.stdout"
+
+    - name: Remove the fake Galaxy
+      ansible.builtin.file:
+        path: "{{ fake_dir }}"
+        state: absent
