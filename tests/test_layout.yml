@@ -15,6 +15,7 @@
         - config_only
         - neither
         - variable_only
+        - both_same
         - mismatch
 
 - name: Test layout.yml with tool_data_path only in galaxy_config
@@ -71,6 +72,27 @@
       ansible.builtin.assert:
         that:
           - galaxy_tool_data_path == '/srv/y/tool-data'
+
+- name: Test layout.yml with galaxy_tool_data_path and tool_data_path set to the same value
+  hosts: both_same
+  gather_facts: false
+  vars:
+    galaxy_layout: root-dir
+    galaxy_root: /srv/galaxy
+    galaxy_tool_data_path: /srv/x/tool-data
+    galaxy_config:
+      galaxy:
+        tool_data_path: /srv/x/tool-data
+  tasks:
+    - name: Set layout variables
+      ansible.builtin.include_role:
+        name: galaxyproject.galaxy
+        tasks_from: layout
+
+    - name: Check the tool data path
+      ansible.builtin.assert:
+        that:
+          - galaxy_tool_data_path == '/srv/x/tool-data'
 
 - name: Test layout.yml with galaxy_tool_data_path and tool_data_path set to different values
   hosts: mismatch

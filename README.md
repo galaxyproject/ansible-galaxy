@@ -161,7 +161,13 @@ Several variables control which functions this role will perform (all default to
   production Galaxy instances submitting jobs to a cluster will manage users in a directory service (e.g.  LDAP). This
   option is useful for standalone servers. Requires superuser privileges.
 - `galaxy_manage_paths` (default: `no`): Create and manage ownership/permissions of configured Galaxy paths. Requires
-  superuser privileges.
+  superuser privileges. The paths are those in `galaxy_dirs` (owned by the Galaxy user) and `galaxy_privsep_dirs`
+  (owned by the privilege separation user). `galaxy_dirs` includes the directories for Galaxy's `file_path`,
+  `job_working_directory`, `tool_dependency_dir` and `tool_data_path` options, including when they are only set in
+  `galaxy_config`. If one of them is on shared or read-only storage that the role shouldn't change, override
+  `galaxy_dirs` to leave it out. Each of these options also has a role variable (e.g. `galaxy_tool_data_path`): when the
+  variable isn't set it takes the value from `galaxy_config`, or else the layout default, and when both are set they
+  must match.
 - `galaxy_manage_clone`: Clone Galaxy from the source repository and maintain it at a specified version (commit), as
   well as set up a [virtualenv][virtualenv] from which it can be run.
 - `galaxy_manage_download`: Download and unpack Galaxy from a remote archive url, as
