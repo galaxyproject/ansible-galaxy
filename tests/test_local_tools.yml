@@ -13,6 +13,8 @@
       - dir: sub/nested
         section_name: R&D <Tools>
       - dir: slash/
+      # A plain entry that names a directory keeps its old behaviour: copied to plaindir/plaindir, not registered.
+      - plaindir
       - dir: other
         file: custom_name.xml
         section_name: Other Tools
@@ -31,7 +33,7 @@
             path: "{{ tmp.path }}/{{ item }}"
             state: directory
             mode: "0755"
-          loop: [src/my_tool, src/other, src/sub/nested, src/slash, tools, config]
+          loop: [src/my_tool, src/other, src/sub/nested, src/slash, src/plaindir, tools, config]
           changed_when: false
 
         - name: Create the fixture source files
@@ -44,6 +46,7 @@
             - { path: simple2.xml, content: '<tool id="simple2" />' }
             - { path: sub/nested/nested.xml, content: '<tool id="nested" />' }
             - { path: slash/slash.xml, content: '<tool id="slash" />' }
+            - { path: plaindir/plaindir.xml, content: '<tool id="plaindir" />' }
             - { path: my_tool/my_tool.xml, content: '<tool id="my_tool" />' }
             - { path: my_tool/helper.py, content: 'print("hi")' }
             - { path: other/custom_name.xml, content: '<tool id="other" />' }
@@ -87,6 +90,9 @@
               - other
               - other/custom_name.xml
               - other/macros.xml
+              - plaindir
+              - plaindir/plaindir
+              - plaindir/plaindir/plaindir.xml
               - simple.xml
               - simple2.xml
               - slash
@@ -107,6 +113,7 @@
               - '''<tool file="my_tool/my_tool.xml" />'' in conf'
               - '''<tool file="other/custom_name.xml" />'' in conf'
               - "'macros.xml' not in conf"
+              - "'plaindir' not in conf"
               - '''name="Other Tools"'' in conf'
               - '''name="Local Tools"'' in conf'
           vars:
