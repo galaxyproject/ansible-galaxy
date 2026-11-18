@@ -202,8 +202,10 @@ Options for configuring Galaxy and controlling which version is installed.
   `galaxy_local_tools_src_dir` (default: `files/galaxy/tools` in the playbook). List items can either be a tool
   filename, or a dictionary with keys `file`, `section_name`, and, optionally, `section_id`. To install a tool that
   is a directory (e.g. with helper scripts), use a dictionary with `dir` instead: the whole directory is copied, and
-  `file` (the tool XML, relative to `dir`, default: `<dir>.xml`) is what gets registered. If no `section_name` is
-  specified, tools will be placed in a section named **Local Tools**.
+  `file` (the tool XML, relative to `dir`, default: the last component of `dir` plus `.xml`) is what gets registered.
+  A directory has to use the `dir` form to be registered: a plain filename entry that names a directory is copied
+  (to `<dir>/<dir>`, as before) but isn't added to `local_tool_conf.xml`. If no `section_name` is specified, tools
+  will be placed in a section named **Local Tools**.
 - `galaxy_local_tools_dir`: Directory on the Galaxy server where local tools will be installed.
 - `galaxy_dynamic_job_rules`: List of dynamic job rules to copy from the control machine, relative to
   `galaxy_dynamic_job_rules_src_dir` (default: `files/galaxy/dynamic_job_rules` in the playbook).

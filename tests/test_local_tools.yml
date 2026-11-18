@@ -5,12 +5,14 @@
   hosts: localhost
   gather_facts: false
   vars:
-    galaxy_user: "{{ lookup('ansible.builtin.pipe', 'id -un') }}"
-    galaxy_privsep_user: root
     __galaxy_user_group: "{{ lookup('ansible.builtin.pipe', 'id -gn') }}"
     galaxy_local_tools:
       - simple.xml
+      - file: simple2.xml
       - dir: my_tool
+      - dir: sub/nested
+        section_name: R&D <Tools>
+      - dir: slash/
       - dir: other
         file: custom_name.xml
         section_name: Other Tools
@@ -29,7 +31,7 @@
             path: "{{ tmp.path }}/{{ item }}"
             state: directory
             mode: "0755"
-          loop: [src/my_tool, src/other, tools, config]
+          loop: [src/my_tool, src/other, src/sub/nested, src/slash, tools, config]
           changed_when: false
 
         - name: Create the fixture source files
@@ -39,6 +41,9 @@
             mode: "0644"
           loop:
             - { path: simple.xml, content: '<tool id="simple" />' }
+            - { path: simple2.xml, content: '<tool id="simple2" />' }
+            - { path: sub/nested/nested.xml, content: '<tool id="nested" />' }
+            - { path: slash/slash.xml, content: '<tool id="slash" />' }
             - { path: my_tool/my_tool.xml, content: '<tool id="my_tool" />' }
             - { path: my_tool/helper.py, content: 'print("hi")' }
             - { path: other/custom_name.xml, content: '<tool id="other" />' }
@@ -83,11 +88,22 @@
               - other/custom_name.xml
               - other/macros.xml
               - simple.xml
+              - simple2.xml
+              - slash
+              - slash/slash.xml
+              - sub
+              - sub/nested
+              - sub/nested/nested.xml
 
         - name: Check the tools are registered in local_tool_conf.xml
           ansible.builtin.assert:
             that:
               - '''<tool file="simple.xml" />'' in conf'
+              - '''<tool file="simple2.xml" />'' in conf'
+              - '''<tool file="sub/nested/nested.xml" />'' in conf'
+              - '''<tool file="slash/slash.xml" />'' in conf'
+              - '''name="R&amp;D &lt;Tools&gt;"'' in conf'
+              - "'R&D <' not in conf"
               - '''<tool file="my_tool/my_tool.xml" />'' in conf'
               - '''<tool file="other/custom_name.xml" />'' in conf'
               - "'macros.xml' not in conf"

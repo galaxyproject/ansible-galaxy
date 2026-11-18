@@ -1,10 +1,12 @@
 ---
-# Install local tools and the local_tool_conf.xml that registers them
+# Install local tools and the local_tool_conf.xml that registers them.
+# The include in static_setup.yml already checks galaxy_local_tools is defined. The checks here are for running this
+# file on its own with tasks_from: local_tools.
 
 - name: Install local tools
   ansible.builtin.copy:
-    src: "{{ galaxy_local_tools_src_dir }}/{{ item.dir ~ '/' if item.dir is defined else item.file | default(item) }}"
-    dest: "{{ galaxy_local_tools_dir }}/{{ item.dir ~ '/' if item.dir is defined else item.file | default(item) }}"
+    src: "{{ galaxy_local_tools_src_dir }}/{{ (item.dir | regex_replace('/+$', '')) ~ '/' if item.dir is defined else item.file | default(item) }}"
+    dest: "{{ galaxy_local_tools_dir }}/{{ (item.dir | regex_replace('/+$', '')) ~ '/' if item.dir is defined else item.file | default(item) }}"
     mode: preserve
   loop: "{{ galaxy_local_tools | default([]) }}"
   when: galaxy_local_tools is defined
