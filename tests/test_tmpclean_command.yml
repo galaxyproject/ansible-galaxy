@@ -1,8 +1,9 @@
 ---
 # galaxy_tmpclean_command must age files by ctime unless galaxy_tmpclean_timestamp says mtime (#266).
 # The role defaults are loaded with include_vars, so this checks the real defaults. include_vars
-# outranks task vars, so each case overrides with set_fact. The OS family is overridden in both
-# spellings, so the test passes whether the role reads ansible_os_family or ansible_facts['os_family'].
+# outranks task vars, so each case overrides with set_fact. The role picks the command by
+# ansible_facts['os_family'], so each case overrides that fact. The checks look for '--mtime ' with a
+# trailing space, so they don't match tmpreaper's separate --mtime-dir option.
 - name: Test which timestamp tmpclean ages files by
   hosts: localhost
   gather_facts: true
@@ -13,7 +14,6 @@
 
     - name: Use the Debian command
       ansible.builtin.set_fact:
-        ansible_os_family: Debian
         ansible_facts: "{{ ansible_facts | combine({'os_family': 'Debian'}) }}"
 
     - name: Check the Debian default ages files by ctime
@@ -40,7 +40,6 @@
 
     - name: Use the RedHat command
       ansible.builtin.set_fact:
-        ansible_os_family: RedHat
         ansible_facts: "{{ ansible_facts | combine({'os_family': 'RedHat'}) }}"
 
     - name: Check the RedHat default ages files by ctime
@@ -83,5 +82,5 @@
           ansible.builtin.assert:
             that:
               - "'galaxy_tmpclean_timestamp' in ansible_failed_result.msg"
-              - "'ctime' in ansible_failed_result.msg"
+              - "'must be ctime or mtime' in ansible_failed_result.msg"
             quiet: true
