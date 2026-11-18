@@ -20,8 +20,14 @@ jobs:
       - name: Lint
         run: >-
           ansible-lint
+          defaults/main.yml
+          tasks/cleanup.yml
           tasks/database.yml
           tasks/layout.yml
           tasks/user-facts.yml
+          tests/files/include_database.yml
+          tests/test_cleanup.yml
+          tests/test_database.yml
           tests/test_layout.yml
+          tests/test_systemd_unit.yml
           tests/test_user_facts.yml

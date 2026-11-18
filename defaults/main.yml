@@ -7,32 +7,32 @@
 
 # Control which tasks are included, in case you need to perform different options on different hosts or server
 # directories.
-galaxy_create_user: no
-galaxy_manage_paths: no
-galaxy_manage_clone: yes
-galaxy_manage_download: no
-galaxy_manage_existing: no
-galaxy_manage_static_setup: yes
-galaxy_manage_mutable_setup: yes
-galaxy_manage_database: yes
-galaxy_fetch_dependencies: yes
-galaxy_install_uv: yes
-galaxy_fetch_dependencies_with_uv: yes
+galaxy_create_user: false
+galaxy_manage_paths: false
+galaxy_manage_clone: true
+galaxy_manage_download: false
+galaxy_manage_existing: false
+galaxy_manage_static_setup: true
+galaxy_manage_mutable_setup: true
+galaxy_manage_database: true
+galaxy_fetch_dependencies: true
+galaxy_install_uv: true
+galaxy_fetch_dependencies_with_uv: true
 # uv doesn't compile bytecode unless asked. Without it, the first Python to import a package writes its
 # __pycache__, and galaxyctl runs as root by default (galaxy_systemd_root), so the venv fills with root-owned files
 # that the next uv run as the privilege separation user can't replace. Compile at install time instead.
-galaxy_uv_compile_bytecode: yes
-galaxy_build_client: yes
-galaxy_manage_errordocs: no
-galaxy_backup_configfiles: yes
+galaxy_uv_compile_bytecode: true
+galaxy_build_client: true
+galaxy_manage_errordocs: false
+galaxy_backup_configfiles: true
 galaxy_manage_gravity: "{{ false if __galaxy_major_version is version('22.05', '<') else true }}"
-galaxy_manage_systemd: no # For Galaxy
-galaxy_manage_systemd_reports: no # For Reports
-galaxy_manage_cleanup: no
+galaxy_manage_systemd: false # For Galaxy
+galaxy_manage_systemd_reports: false # For Reports
+galaxy_manage_cleanup: false
 galaxy_manage_themes: "{{ galaxy_manage_static_setup and (galaxy_themes is defined or galaxy_themes_subdomains | length > 0) }}"
-galaxy_manage_subdomain_static: no
-galaxy_manage_host_filters: no
-galaxy_auto_brand: no # automatically sets the subdomain name as brand
+galaxy_manage_subdomain_static: false
+galaxy_manage_host_filters: false
+galaxy_auto_brand: false # automatically sets the subdomain name as brand
 
 
 # Control whether to output verbose task diffs (e.g. when performing a git update) when running Ansible with --diff.
@@ -55,7 +55,7 @@ galaxy_diff_mode_verbose: "{{ ansible_diff_mode }}"
 # using privilege separation, it is possible to run this role as an unprivileged user with no escalation. In such a
 # case, set `galaxy_become_users` to an empty hash like so:
 #
-#galaxy_become_users: {}
+# galaxy_become_users: {}
 
 # Attempt to automatically decide whether to use `become` and which users to `become`. To disable, set
 # `galaxy_become_users` to an empty hash.
@@ -81,7 +81,7 @@ galaxy_remote_users: {}
 #
 
 # Privilege separation mode switch
-galaxy_separate_privileges: no
+galaxy_separate_privileges: false
 
 # User that Galaxy runs as
 galaxy_user: "{{ ansible_facts['user_id'] }}"
@@ -93,7 +93,7 @@ galaxy_privsep_user: root
 # privilege separation without making configs world-readable, the users should share a common group. This group will be
 # created if `galaxy_create_user` is enabled and it does not exist. Ideally this is the primary group of `galaxy_user`,
 # on most Linux systems, just set this to the same value as `galaxy_user` if you want to enable this feature.
-#galaxy_group:
+# galaxy_group:
 
 # Because these vars can be either a bare username or a dict
 __galaxy_user_name: "{{ galaxy_user.name | default(galaxy_user) }}"
@@ -178,7 +178,7 @@ galaxy_tmpclean_verbose: false
 # When to run the cron job, hash keys correspond to the cron module options:
 #   https://docs.ansible.com/ansible/latest/collections/ansible/builtin/cron_module.html
 #
-#galaxy_tmpclean_time:
+# galaxy_tmpclean_time:
 #  special_time:
 #  hour:
 #  minute:
@@ -209,7 +209,7 @@ galaxy_tmpclean_log_statement: >-
       )),
       ''
   ) }}
-  
+
 galaxy_tmpclean_command: "{{ _galaxy_tmpclean_command[(ansible_facts['os_family'] | lower)] }}{{ galaxy_tmpclean_verbose_statement }}"
 
 #
@@ -217,16 +217,16 @@ galaxy_tmpclean_command: "{{ _galaxy_tmpclean_command[(ansible_facts['os_family'
 #
 
 # This is now automatically determined in tasks/_inc_node_version.yml, but it can be set to force a version
-#galaxy_node_version: "XX.YY.Z"
+# galaxy_node_version: "XX.YY.Z"
 
 # Where to clone Galaxy from. Backwards compatibility with galaxy_git_repo
 galaxy_repo: "{{ galaxy_git_repo | default('https://github.com/galaxyproject/galaxy.git') }}"
 
 # Automatically delete things in the repo that do not belong there
-galaxy_force_checkout: no
+galaxy_force_checkout: false
 
 # Git clone depth for the galaxy repository. Leave unset to ignore.
-#galaxy_clone_depth:
+# galaxy_clone_depth:
 
 # This can be a tag (as shown here) but doing so will cause the revision check task to always report "changed".
 # Backwards compatibility with galaxy_changeset_id.
@@ -240,7 +240,7 @@ galaxy_download_url: "{{ galaxy_repo | replace('.git', '') }}/archive/{{ galaxy_
 #
 
 # Directory layout for deployment (legacy is the default)
-#galaxy_layout: legacy
+# galaxy_layout: legacy
 
 # List of tool configs to load
 galaxy_tool_config_files:
@@ -265,8 +265,8 @@ galaxy_config_file: "{{ galaxy_config_dir }}/{{ galaxy_config_file_basename }}"
 galaxy_app_config_section: "{{ 'galaxy' if galaxy_config_style in ('yaml', 'yml') else 'app:main' }}"
 
 # Galaxy configuration files will be written with these permissions (mode argument to Ansible copy/template module)
-galaxy_config_perms: 0640
-galaxy_config_perms_public: 0644
+galaxy_config_perms: "0640"
+galaxy_config_perms_public: "0644"
 
 # The default Galaxy configuration, ensures that Galaxy can find all of the configs if galaxy_config_dir !=
 # galaxy_server_dir
@@ -382,7 +382,7 @@ galaxy_uwsgi_config_default:
   enable-threads: true
 
 # TODO: Implement something like this for starter/restarter
-#galaxy_server_type: paste_singleprocess
+# galaxy_server_type: paste_singleprocess
 
 #
 # Client build settings
@@ -458,10 +458,10 @@ __galaxy_systemd_memory_limit:
   # This is for the entire group of uWSGI master, web worker, and mule processes
   mule: 16
   reports: 5
-  #workflow: 5
-  #zergpool: 8
-  #zergling: 16
-  #handler: 5
+  # workflow: 5
+  # zergpool: 8
+  # zergling: 16
+  # handler: 5
 __galaxy_systemd_memory_limit_merged: "{{ __galaxy_systemd_memory_limit | combine(galaxy_systemd_memory_limit | default({})) }}"
 
 # A list of KEY=val strings to be added as `Environment=KEY=val` to the systemd service unit
