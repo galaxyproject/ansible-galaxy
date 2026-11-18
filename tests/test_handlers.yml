@@ -100,3 +100,17 @@
       ansible.builtin.file:
         path: "{{ fake_dir }}"
         state: absent
+
+# Handler names are global to a play: a notify by name runs only the last handler loaded with that name, so a generic
+# name (e.g. "Reload systemd daemon") could replace another role's handler, or be replaced by it.
+- name: Test that every handler name is specific to Galaxy
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Check each handler name mentions Galaxy or Gravity
+      ansible.builtin.assert:
+        that:
+          - item is search('Galaxy|Gravity')
+        fail_msg: "Handler name '{{ item }}' isn't specific to this role. Name it after Galaxy or Gravity."
+        quiet: true
+      loop: "{{ lookup('ansible.builtin.file', playbook_dir | dirname ~ '/handlers/main.yml') | from_yaml | map(attribute='name') }}"
