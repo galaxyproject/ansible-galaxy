@@ -201,7 +201,9 @@ galaxy_tmpclean_tmpreaper_runtime: "{{ 20 * 60 * 60 }}"
 
 # You generally shouldn't have to mess with the rest of the options in this section
 
-_galaxy_tmpclean_timestamp_option: "{{ {'ctime': '--ctime', 'mtime': '--mtime'}[galaxy_tmpclean_timestamp] | mandatory('galaxy_tmpclean_timestamp must be ctime or mtime') }}"
+_galaxy_tmpclean_timestamp_option: >-
+  {{ {'ctime': '--ctime', 'mtime': '--mtime'}[galaxy_tmpclean_timestamp]
+  | mandatory('galaxy_tmpclean_timestamp must be ctime or mtime') }}
 
 _galaxy_tmpclean_command:
   redhat: "/usr/bin/tmpwatch -all {{ _galaxy_tmpclean_timestamp_option }} --dirmtime"
