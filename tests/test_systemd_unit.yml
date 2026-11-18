@@ -76,10 +76,11 @@
         __unit_text: "{{ lookup('ansible.builtin.file', __unit_dir.path ~ '/galaxy-extra-directives.service', rstrip=false) }}"
         __service_section: "{{ __unit_text.split('[Service]')[1].split('[Install]')[0] }}"
 
-    - name: Check the Galaxy unit has no extra directives by default
+    # The plays above set galaxy_systemd_extra_directives themselves, so check the role's own default adds nothing.
+    - name: Check the role adds no extra directives by default
       ansible.builtin.assert:
         that:
-          - "'ProtectSystem' not in lookup('ansible.builtin.file', __unit_dir.path ~ '/galaxy-no-root.service')"
+          - (lookup('ansible.builtin.file', playbook_dir | dirname ~ '/defaults/main.yml') | from_yaml).galaxy_systemd_extra_directives == []
 
     - name: Remove the temporary directory
       ansible.builtin.file:
