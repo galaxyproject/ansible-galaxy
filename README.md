@@ -23,7 +23,7 @@ the same play as this role:
       apt:
         name: "{{ item }}"
       become: yes
-      when: ansible_os_family == 'Debian'
+      when: ansible_facts['os_family'] == 'Debian'
       with_items:
         - git
         - python-pip
@@ -32,7 +32,7 @@ the same play as this role:
       yum:
         name: "{{ item }}"
       become: yes
-      when: ansible_os_family == 'RedHat'
+      when: ansible_facts['os_family'] == 'RedHat'
       with_items:
         - git
         - python-virtualenv

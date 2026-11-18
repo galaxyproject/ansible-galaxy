@@ -5,7 +5,7 @@
   hosts: localhost
   gather_facts: false
   vars:
-    galaxy_user: "{{ lookup('ansible.builtin.env', 'USER') }}"
+    galaxy_user: "{{ lookup('ansible.builtin.pipe', 'id -un') }}"
     galaxy_privsep_user: root
   tasks:
     - name: Set Galaxy user facts
@@ -18,12 +18,16 @@
         that:
           - __galaxy_user_group == lookup('ansible.builtin.pipe', 'id -gn')
           - __galaxy_privsep_user_group == lookup('ansible.builtin.pipe', 'id -gn root')
+          # 0750 only when both users share a group, e.g. when the tests run as root
+          - >-
+            __galaxy_dir_perms == ('0750' if lookup('ansible.builtin.pipe', 'id -gn')
+            == lookup('ansible.builtin.pipe', 'id -gn root') else '0755')
 
 - name: Test user-facts.yml with galaxy_group set
   hosts: localhost
   gather_facts: false
   vars:
-    galaxy_user: "{{ lookup('ansible.builtin.env', 'USER') }}"
+    galaxy_user: "{{ lookup('ansible.builtin.pipe', 'id -un') }}"
     galaxy_privsep_user: root
     galaxy_group:
       name: galaxy
@@ -38,3 +42,4 @@
         that:
           - __galaxy_user_group == 'galaxy'
           - __galaxy_privsep_user_group == 'galaxy'
+          - __galaxy_dir_perms == '0750'

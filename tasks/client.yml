@@ -76,7 +76,7 @@
         executable: "yarn --check-files"
         path: "{{ galaxy_server_dir }}"
       environment:
-        PATH: "{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
+        PATH: "{{ galaxy_venv_dir }}/bin:{{ ansible_facts['env']['PATH'] }}"
         VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
       register: __yarn_install
       changed_when: "'already up-to-date' not in __yarn_install.out | lower"
@@ -87,7 +87,7 @@
       args:
         chdir: "{{ galaxy_server_dir }}"
       environment:
-        PATH: "{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
+        PATH: "{{ galaxy_venv_dir }}/bin:{{ ansible_facts['env']['PATH'] }}"
         VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
       register: __pnpm_install
       when: __galaxy_major_version is version('26.0', '>=')
@@ -97,7 +97,7 @@
       args:
         chdir: "{{ galaxy_server_dir }}"
       environment:
-        PATH: "{{ galaxy_server_dir }}/client/node_modules/.bin:{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
+        PATH: "{{ galaxy_server_dir }}/client/node_modules/.bin:{{ galaxy_venv_dir }}/bin:{{ ansible_facts['env']['PATH'] }}"
         VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
       when: __galaxy_major_version is version('26.0', '<') and __yarn_install.changed
 
@@ -106,7 +106,7 @@
       args:
         chdir: "{{ galaxy_server_dir }}"
       environment:
-        PATH: "{{ galaxy_server_dir }}/client/node_modules/.bin:{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
+        PATH: "{{ galaxy_server_dir }}/client/node_modules/.bin:{{ galaxy_venv_dir }}/bin:{{ ansible_facts['env']['PATH'] }}"
         VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
       when: __galaxy_major_version is version('26.0', '>=') and __pnpm_install.changed
 

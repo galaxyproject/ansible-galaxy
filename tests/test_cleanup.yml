@@ -7,7 +7,7 @@
   hosts: localhost
   gather_facts: true
   vars:
-    galaxy_user: "{{ lookup('ansible.builtin.env', 'USER') }}"
+    galaxy_user: "{{ lookup('ansible.builtin.pipe', 'id -un') }}"
     __galaxy_remote_user: "{{ ansible_facts['user_id'] }}"
     __galaxy_become: false
     __galaxy_become_user: "{{ ansible_facts['user_id'] }}"
