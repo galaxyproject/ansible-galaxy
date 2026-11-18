@@ -13,16 +13,11 @@
     galaxy_gravity_command: "{{ fake_tmp.path }}/galaxyctl"
     fake_log: "{{ fake_tmp.path }}/calls.log"
 
-- name: Make the temp dir usable by the handlers' become user
-  ansible.builtin.file:
-    path: "{{ fake_dir }}"
-    mode: "0777"
-
-- name: Create an empty, world-writable log
+- name: Create an empty log
   ansible.builtin.copy:
     content: ""
     dest: "{{ fake_log }}"
-    mode: "0666"
+    mode: "0644"
 
 - name: Install the fake galaxyctl
   ansible.builtin.copy:
@@ -30,4 +25,4 @@
     mode: "0755"
     content: |
       #!/bin/sh
-      echo "argv=$*|state=$GRAVITY_STATE_DIR|bytecode=$PYTHONDONTWRITEBYTECODE|config=$GRAVITY_CONFIG_FILE|user=$(id -un)" >> "{{ fake_log }}"
+      echo "argv=$*|bytecode=$PYTHONDONTWRITEBYTECODE|user=$(id -un)" >> "{{ fake_log }}"

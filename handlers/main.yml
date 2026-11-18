@@ -1,7 +1,7 @@
 ---
 # defaults file for galaxyproject.galaxy
 
-- name: Reload systemd daemon
+- name: Reload systemd daemon for Galaxy
   ansible.builtin.systemd:
     daemon_reload: true
     scope: "{{ galaxy_systemd_root | ternary(omit, 'user') }}"
