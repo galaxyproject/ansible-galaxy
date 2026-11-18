@@ -1,0 +1,116 @@
+---
+# Regression tests for the Gravity handlers in handlers/main.yml.
+# The role's handlers are loaded without running its tasks, and galaxyctl is replaced by a fake that logs each call.
+# `import_role` is static, so it registers the role's handlers at parse time. Its tasks_from is user-facts.yml,
+# the one task file with no side effects (it only sets the user's group facts), so no other role task runs.
+# (`when: false` doesn't work: it skips the handlers too.)
+- name: Test the 23.0+ Gravity handlers
+  hosts: localhost
+  gather_facts: false
+  # The handlers run as the current user, and setting galaxy_group keeps user-facts.yml from needing getent.
+  vars: &handler_test_vars
+    galaxy_systemd_mode: gravity
+    __galaxy_major_version: "23.0"
+    galaxy_config_file: /srv/galaxy/config/galaxy.yml
+    galaxy_gravity_restart_action: graceful
+    galaxy_gravity_graceful_start_if_stopped: false
+    galaxy_manage_systemd: false
+    galaxy_systemd_root: false
+    __galaxy_gravity_pm: supervisor
+    galaxy_user: "{{ lookup('ansible.builtin.pipe', 'id -un') }}"
+    galaxy_group: "{{ lookup('ansible.builtin.pipe', 'id -gn') }}"
+    __galaxy_user_name: "{{ galaxy_user }}"
+  tasks:
+    - name: Load the role's handlers and run only user-facts.yml
+      ansible.builtin.import_role:
+        name: galaxyproject.galaxy
+        tasks_from: user-facts
+
+    - name: Set up the fake galaxyctl
+      ansible.builtin.include_tasks: fake_galaxyctl.yml
+
+    - name: Notify the handlers by their listen topics
+      ansible.builtin.debug:
+        msg: Notifying
+      changed_when: true
+      notify:
+        - restart galaxy
+        - galaxyctl update
+
+    - name: Run the handlers
+      ansible.builtin.meta: flush_handlers
+
+    - name: Read the log
+      ansible.builtin.slurp:
+        src: "{{ fake_log }}"
+      register: calls
+
+    - name: Check galaxyctl was called to update and then to restart
+      ansible.builtin.assert:
+        that:
+          - (calls.content | b64decode).splitlines() | length == 2
+          - (calls.content | b64decode).splitlines()[0] is search('argv=-c ' ~ galaxy_config_file ~ ' update\|')
+          - (calls.content | b64decode).splitlines()[1] is search('argv=-c ' ~ galaxy_config_file ~ ' graceful\|')
+          - (calls.content | b64decode).splitlines() | select('search', 'bytecode=1\|') | list | length == 2
+          - (calls.content | b64decode).splitlines() | select('search', 'user=' ~ __galaxy_user_name ~ '$') | list | length == 2
+
+    - name: Remove the temp dir
+      ansible.builtin.file:
+        path: "{{ fake_dir }}"
+        state: absent
+
+# Playbooks may notify handlers by name, so renaming a handler must keep its old name working.
+- name: Test that the 23.0+ Gravity handlers can be notified by their old names
+  hosts: localhost
+  gather_facts: false
+  vars: *handler_test_vars
+  tasks:
+    - name: Load the role's handlers and run only user-facts.yml
+      ansible.builtin.import_role:
+        name: galaxyproject.galaxy
+        tasks_from: user-facts
+
+    - name: Set up the fake galaxyctl
+      ansible.builtin.include_tasks: fake_galaxyctl.yml
+
+    - name: Notify the handlers by their old names
+      ansible.builtin.debug:
+        msg: Notifying
+      changed_when: true
+      notify:
+        - galaxyctl update (23.0+)
+        - galaxy gravity restart (23.0+)
+
+    - name: Run the handlers
+      ansible.builtin.meta: flush_handlers
+
+    - name: Read the log
+      ansible.builtin.slurp:
+        src: "{{ fake_log }}"
+      register: calls
+
+    - name: Check both handlers ran
+      ansible.builtin.assert:
+        that:
+          - (calls.content | b64decode).splitlines() | length == 2
+          - (calls.content | b64decode).splitlines()[0] is search('argv=-c ' ~ galaxy_config_file ~ ' update\|')
+          - (calls.content | b64decode).splitlines()[1] is search('argv=-c ' ~ galaxy_config_file ~ ' graceful\|')
+
+    - name: Remove the temp dir
+      ansible.builtin.file:
+        path: "{{ fake_dir }}"
+        state: absent
+
+# Handler names are global to a play: a notify by name runs only the last handler loaded with that name, so a generic
+# name (e.g. "Reload systemd daemon") could replace another role's handler, or be replaced by it.
+- name: Test that every handler name is specific to Galaxy
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Check each handler name mentions Galaxy or Gravity
+      ansible.builtin.assert:
+        that:
+          - item is search('Galaxy|Gravity')
+        fail_msg: "Handler name '{{ item }}' isn't specific to this role. Name it after Galaxy or Gravity."
+        quiet: true
+      loop: "{{ lookup('ansible.builtin.file', playbook_dir | dirname ~ '/handlers/main.yml') | from_yaml | map(attribute='name') }}"
