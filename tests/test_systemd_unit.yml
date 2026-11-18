@@ -54,6 +54,22 @@
           - "'Environment=HOME=/srv/galaxy\n' in lookup('ansible.builtin.file', __unit_dir.path ~ '/' ~ item ~ '-with-root.service', rstrip=false)"
       loop: *units
 
+    # systemd 258 removed cgroup v1 support and ignores MemoryLimit=, CPUAccounting= and BlockIOAccounting=, so a limit
+    # set with them is silently not applied. MemoryMax= and IOAccounting= replace them (systemd 231 and 230).
+    - name: Check the units set the memory limit with MemoryMax= and use no removed directives
+      ansible.builtin.assert:
+        that:
+          - "'\nMemoryMax=' ~ __limit ~ 'G\n' in __unit"
+          - "'\nMemoryAccounting=yes\n' in __unit"
+          - "'\nIOAccounting=yes\n' in __unit"
+          - "__unit | regex_search('^(MemoryLimit|CPUAccounting|BlockIOAccounting)=', multiline=True) is none"
+      vars:
+        __unit: "{{ lookup('ansible.builtin.file', __unit_dir.path ~ '/' ~ item.unit ~ '-no-root.service', rstrip=false) }}"
+        __limit: "{{ __galaxy_systemd_memory_limit_merged[item.limit] }}"
+      loop:
+        - {unit: galaxy, limit: mule}
+        - {unit: galaxy-reports, limit: reports}
+
     - name: Remove the temporary directory
       ansible.builtin.file:
         path: "{{ __unit_dir.path }}"
