@@ -12,6 +12,7 @@
     galaxy_systemd_mode: gravity
     __galaxy_major_version: "23.0"
     galaxy_config_file: /srv/galaxy/config/galaxy.yml
+    galaxy_gravity_state_dir: /srv/galaxy/custom gravity
     galaxy_gravity_restart_action: graceful
     galaxy_gravity_graceful_start_if_stopped: false
     galaxy_manage_systemd: false
@@ -52,6 +53,7 @@
           - (calls.content | b64decode).splitlines()[0] is search('argv=-c ' ~ galaxy_config_file ~ ' update\|')
           - (calls.content | b64decode).splitlines()[1] is search('argv=-c ' ~ galaxy_config_file ~ ' graceful\|')
           - (calls.content | b64decode).splitlines() | select('search', 'bytecode=1\|') | list | length == 2
+          - (calls.content | b64decode).splitlines() | select('search', 'state=' ~ galaxy_gravity_state_dir ~ '\|') | list | length == 2
           - (calls.content | b64decode).splitlines() | select('search', 'user=' ~ __galaxy_user_name ~ '$') | list | length == 2
 
     - name: Remove the temp dir
@@ -95,6 +97,7 @@
           - (calls.content | b64decode).splitlines() | length == 2
           - (calls.content | b64decode).splitlines()[0] is search('argv=-c ' ~ galaxy_config_file ~ ' update\|')
           - (calls.content | b64decode).splitlines()[1] is search('argv=-c ' ~ galaxy_config_file ~ ' graceful\|')
+          - (calls.content | b64decode).splitlines() | select('search', 'state=' ~ galaxy_gravity_state_dir ~ '\|') | list | length == 2
 
     - name: Remove the temp dir
       ansible.builtin.file:

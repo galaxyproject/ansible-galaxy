@@ -60,6 +60,7 @@
   changed_when: true
   environment:
     PYTHONDONTWRITEBYTECODE: "1"
+    GRAVITY_STATE_DIR: "{{ galaxy_gravity_state_dir }}"
   listen:
     - galaxyctl update
     - galaxyctl update (23.0+)
@@ -74,6 +75,7 @@
   changed_when: true
   environment:
     PYTHONDONTWRITEBYTECODE: "1"
+    GRAVITY_STATE_DIR: "{{ galaxy_gravity_state_dir }}"
   listen:
     - restart galaxy
     - galaxy gravity restart (23.0+)
