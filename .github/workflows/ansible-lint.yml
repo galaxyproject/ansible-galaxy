@@ -22,6 +22,7 @@ jobs:
           ansible-lint
           defaults/main.yml
           tasks/_inc_client_check_prebuilt.yml
+          tasks/_inc_client_prebuilt_needs_stage.yml
           tasks/cleanup.yml
           tasks/database.yml
           tasks/user-facts.yml

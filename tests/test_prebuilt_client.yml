@@ -1,7 +1,7 @@
 ---
 # tasks/_inc_client_check_prebuilt.yml must fail when the prebuilt client isn't in static/dist.
 # Regression test for #235. The yarn install and staging tasks need community.general and node,
-# so the test runs only the check that follows them.
+# so the test runs only the stage decision before them and the check that follows them.
 - name: Test the prebuilt client check
   hosts: localhost
   gather_facts: false
@@ -15,12 +15,36 @@
     - name: Test the check
       vars:
         galaxy_server_dir: "{{ __server.path }}"
+        # Galaxy's stage script writes to static/dist in galaxy_server_dir whatever galaxy_static_dir is, so the check
+        # must not look in galaxy_static_dir. Give it a populated dist that the check has to ignore.
+        galaxy_static_dir: "{{ __server.path }}/elsewhere"
       block:
-        - name: Create an empty static/dist
+        - name: Create an empty static/dist and a populated galaxy_static_dir/dist
           ansible.builtin.file:
-            path: "{{ galaxy_server_dir }}/static/dist"
+            path: "{{ item }}"
             state: directory
             mode: "0755"
+          loop:
+            - "{{ galaxy_server_dir }}/static/dist"
+            - "{{ galaxy_static_dir }}/dist"
+
+        - name: Add a file to galaxy_static_dir/dist
+          ansible.builtin.copy:
+            content: "console.log('elsewhere');\n"
+            dest: "{{ galaxy_static_dir }}/dist/analysis.bundled.js"
+            mode: "0644"
+
+        - name: Stage when the install changed nothing but static/dist is empty
+          ansible.builtin.include_role:
+            name: galaxyproject.galaxy
+            tasks_from: _inc_client_prebuilt_needs_stage
+          vars:
+            __galaxy_prebuilt_client_install_changed: false
+
+        - name: Check staging is needed
+          ansible.builtin.assert:
+            that:
+              - __galaxy_prebuilt_client_needs_stage | bool
 
         - name: Run the check on an empty static/dist
           block:
@@ -73,6 +97,30 @@
           ansible.builtin.include_role:
             name: galaxyproject.galaxy
             tasks_from: _inc_client_check_prebuilt
+
+        - name: Don't stage when the install changed nothing and static/dist has files
+          ansible.builtin.include_role:
+            name: galaxyproject.galaxy
+            tasks_from: _inc_client_prebuilt_needs_stage
+          vars:
+            __galaxy_prebuilt_client_install_changed: false
+
+        - name: Check staging isn't needed
+          ansible.builtin.assert:
+            that:
+              - not (__galaxy_prebuilt_client_needs_stage | bool)
+
+        - name: Stage when the install changed something, even if static/dist has files
+          ansible.builtin.include_role:
+            name: galaxyproject.galaxy
+            tasks_from: _inc_client_prebuilt_needs_stage
+          vars:
+            __galaxy_prebuilt_client_install_changed: true
+
+        - name: Check staging is needed after an install change
+          ansible.builtin.assert:
+            that:
+              - __galaxy_prebuilt_client_needs_stage | bool
 
       always:
         - name: Remove the fake server directory

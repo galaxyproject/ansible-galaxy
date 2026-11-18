@@ -92,13 +92,11 @@
       register: __pnpm_install
       when: __galaxy_major_version is version('26.0', '>=')
 
-    # Staging is skipped when the install reports no change, so also stage when static/dist is empty, e.g. after a run
-    # whose install succeeded but staging failed.
-    - name: Find the staged prebuilt client before staging
-      ansible.builtin.find:
-        paths: "{{ galaxy_server_dir }}/static/dist"
-        file_type: file
-      register: __galaxy_prebuilt_client_before_stage
+    - name: Include prebuilt client stage decision
+      ansible.builtin.include_tasks: "_inc_client_prebuilt_needs_stage.yml"
+      vars:
+        __galaxy_prebuilt_client_install_changed: >-
+          {{ __yarn_install.changed if __galaxy_major_version is version('26.0', '<') else __pnpm_install.changed }}
 
     - name: Stage prebuilt client (yarn) # noqa no-changed-when
       command: "yarn run stage"
@@ -109,7 +107,7 @@
         VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
       when:
         - __galaxy_major_version is version('26.0', '<')
-        - __yarn_install.changed or __galaxy_prebuilt_client_before_stage.files | length == 0
+        - __galaxy_prebuilt_client_needs_stage
 
     - name: Stage prebuilt client (pnpm) # noqa no-changed-when
       command: "pnpm run stage"
@@ -120,7 +118,7 @@
         VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
       when:
         - __galaxy_major_version is version('26.0', '>=')
-        - __pnpm_install.changed or __galaxy_prebuilt_client_before_stage.files | length == 0
+        - __galaxy_prebuilt_client_needs_stage
 
     - name: Include prebuilt client check
       include_tasks: "_inc_client_check_prebuilt.yml"
