@@ -1,0 +1,19 @@
+---
+# Fail unless the staged prebuilt client is in static/dist (#235).
+# Galaxy's stage script always copies the client's top-level dist files to static/dist in galaxy_server_dir, whatever
+# galaxy_static_dir is. This only checks that files are there: _inc_client_prebuilt_needs_stage.yml makes sure they
+# are staged again when they aren't the installed version. The version marker is hidden, so the find doesn't count it.
+- name: Find the staged prebuilt client
+  ansible.builtin.find:
+    paths: "{{ galaxy_server_dir }}/static/dist"
+    file_type: file
+  register: __galaxy_prebuilt_client_files
+
+- name: Ensure the prebuilt client is in static/dist
+  ansible.builtin.assert:
+    that:
+      - __galaxy_prebuilt_client_files.files | length > 0
+    success_msg: "Prebuilt client is in {{ galaxy_server_dir }}/static/dist"
+    fail_msg: >-
+      The prebuilt client is not installed: {{ galaxy_server_dir }}/static/dist has no files.
+      Staging the client into static/dist may have failed.

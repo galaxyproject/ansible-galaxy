@@ -1,0 +1,45 @@
+---
+# Regression test for #208: the galaxyctl wrapper script must use the same Gravity state dir as the handlers and the
+# systemd unit, or running it by hand (e.g. `galaxyctl status`) talks to a different supervisord.
+- name: Test the galaxyctl wrapper script
+  hosts: localhost
+  gather_facts: false
+  vars:
+    __galaxy_major_version: "23.0"
+    galaxy_config_file: /srv/galaxy/config/galaxy.yml
+    # A space, to check the value is quoted in the script
+    galaxy_gravity_state_dir: /srv/galaxy/custom gravity
+    __galaxy_remote_user: "{{ lookup('ansible.builtin.pipe', 'id -un') }}"
+    __galaxy_become: false
+    __galaxy_become_user: "{{ __galaxy_remote_user }}"
+  tasks:
+    - name: Set up the fake galaxyctl
+      ansible.builtin.include_tasks: fake_galaxyctl.yml
+
+    - name: Deploy the wrapper script
+      ansible.builtin.include_role:
+        name: galaxyproject.galaxy
+        tasks_from: gravity
+      vars:
+        galaxy_gravity_wrapper_path: "{{ fake_dir }}/galaxyctl-wrapper"
+
+    - name: Run the wrapper
+      ansible.builtin.command: "{{ fake_dir }}/galaxyctl-wrapper status"
+      changed_when: false
+
+    - name: Read the log
+      ansible.builtin.slurp:
+        src: "{{ fake_log }}"
+      register: calls
+
+    - name: Check the wrapper passed the arguments and the state dir to galaxyctl
+      ansible.builtin.assert:
+        that:
+          - (calls.content | b64decode).splitlines() | length == 1
+          - (calls.content | b64decode).splitlines()[0] is search('^argv=status\|')
+          - (calls.content | b64decode).splitlines()[0] is search('\|state=' ~ galaxy_gravity_state_dir ~ '\|')
+
+    - name: Remove the temp dir
+      ansible.builtin.file:
+        path: "{{ fake_dir }}"
+        state: absent
