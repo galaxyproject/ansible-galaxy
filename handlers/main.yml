@@ -3,9 +3,10 @@
 
 # The conditions of the handlers below depend on the Galaxy version, which is not set if the play was limited (e.g. with
 # --tags) to tasks that do not determine it. This must stay ahead of the handlers that listen on the same topics.
+# With galaxy_manage_restart false those handlers are skipped before they look at the version, so it isn't needed.
 - name: Ensure Galaxy version is set for the handlers
   ansible.builtin.include_tasks: _inc_galaxy_version.yml
-  when: __galaxy_major_version is undefined
+  when: "galaxy_manage_restart | bool and __galaxy_major_version is undefined"
   listen:
     - start galaxy
     - restart galaxy
@@ -70,6 +71,7 @@
   changed_when: true
   environment:
     PYTHONDONTWRITEBYTECODE: "1"
+    GRAVITY_STATE_DIR: "{{ galaxy_gravity_state_dir }}"
   listen:
     - galaxyctl update
     - galaxyctl update (23.0+)
@@ -84,6 +86,7 @@
   changed_when: true
   environment:
     PYTHONDONTWRITEBYTECODE: "1"
+    GRAVITY_STATE_DIR: "{{ galaxy_gravity_state_dir }}"
   listen:
     - restart galaxy
     - galaxy gravity restart (23.0+)
