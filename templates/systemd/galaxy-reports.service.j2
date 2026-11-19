@@ -18,12 +18,11 @@ Environment=HOME={{ galaxy_root }}
 Environment=VIRTUAL_ENV={{ galaxy_venv_dir }}
 Environment=PATH={{ galaxy_venv_dir }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin
 Environment=DOCUTILSCONFIG=
-MemoryLimit={{ __galaxy_systemd_memory_limit_merged.reports }}G
+MemoryMax={{ __galaxy_systemd_memory_limit_merged.reports }}G
 Restart=always
 
 MemoryAccounting=yes
-CPUAccounting=yes
-BlockIOAccounting=yes
+IOAccounting=yes
 
 [Install]
 WantedBy=multi-user.target
