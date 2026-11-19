@@ -25,4 +25,4 @@
     mode: "0755"
     content: |
       #!/bin/sh
-      echo "argv=$*|bytecode=$PYTHONDONTWRITEBYTECODE|user=$(id -un)" >> "{{ fake_log }}"
+      echo "argv=$*|bytecode=$PYTHONDONTWRITEBYTECODE|state=$GRAVITY_STATE_DIR|user=$(id -un)" >> "{{ fake_log }}"

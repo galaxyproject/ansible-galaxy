@@ -3,6 +3,12 @@
 - name: Build Galaxy client
   block:
 
+    # A source build replaces the prebuilt client in static/dist, so the record of the staged prebuilt version is stale.
+    - name: Remove the staged prebuilt client version
+      file:
+        path: "{{ __galaxy_prebuilt_client_marker }}"
+        state: absent
+
     - name: Ensure client_build_hash.txt exists
       copy:
         content: "new-unbuilt"
@@ -71,44 +77,8 @@
     - name: Include client install tools process
       include_tasks: "_inc_client_install_tools.yml"
 
-    - name: Install prebuilt client with yarn
-      yarn:
-        executable: "yarn --check-files"
-        path: "{{ galaxy_server_dir }}"
-      environment:
-        PATH: "{{ galaxy_venv_dir }}/bin:{{ ansible_facts['env']['PATH'] }}"
-        VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
-      register: __yarn_install
-      changed_when: "'already up-to-date' not in __yarn_install.out | lower"
-      when: __galaxy_major_version is version('26.0', '<')
-
-    - name: Install prebuilt client with pnpm
-      command: "pnpm install"
-      args:
-        chdir: "{{ galaxy_server_dir }}"
-      environment:
-        PATH: "{{ galaxy_venv_dir }}/bin:{{ ansible_facts['env']['PATH'] }}"
-        VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
-      register: __pnpm_install
-      when: __galaxy_major_version is version('26.0', '>=')
-
-    - name: Stage prebuilt client (yarn) # noqa no-changed-when
-      command: "yarn run stage"
-      args:
-        chdir: "{{ galaxy_server_dir }}"
-      environment:
-        PATH: "{{ galaxy_server_dir }}/client/node_modules/.bin:{{ galaxy_venv_dir }}/bin:{{ ansible_facts['env']['PATH'] }}"
-        VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
-      when: __galaxy_major_version is version('26.0', '<') and __yarn_install.changed
-
-    - name: Stage prebuilt client (pnpm) # noqa no-changed-when
-      command: "pnpm run stage"
-      args:
-        chdir: "{{ galaxy_server_dir }}"
-      environment:
-        PATH: "{{ galaxy_server_dir }}/client/node_modules/.bin:{{ galaxy_venv_dir }}/bin:{{ ansible_facts['env']['PATH'] }}"
-        VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
-      when: __galaxy_major_version is version('26.0', '>=') and __pnpm_install.changed
+    - name: Include prebuilt client install process
+      include_tasks: "_inc_client_prebuilt.yml"
 
   remote_user: "{{ galaxy_remote_users.privsep | default(__galaxy_remote_user) }}"
   become: "{{ true if galaxy_become_users.privsep is defined else __galaxy_become }}"

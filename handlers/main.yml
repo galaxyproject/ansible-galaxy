@@ -1,6 +1,17 @@
 ---
 # defaults file for galaxyproject.galaxy
 
+# The conditions of the handlers below depend on the Galaxy version, which is not set if the play was limited (e.g. with
+# --tags) to tasks that do not determine it. This must stay ahead of the handlers that listen on the same topics.
+# With galaxy_manage_restart false those handlers are skipped before they look at the version, so it isn't needed.
+- name: Ensure Galaxy version is set for the handlers
+  ansible.builtin.include_tasks: _inc_galaxy_version.yml
+  when: "galaxy_manage_restart | bool and __galaxy_major_version is undefined"
+  listen:
+    - start galaxy
+    - restart galaxy
+    - galaxyctl update
+
 - name: Reload systemd daemon for Galaxy
   ansible.builtin.systemd:
     daemon_reload: true
@@ -12,7 +23,7 @@
     name: galaxy.service
     state: started
     scope: "{{ galaxy_systemd_root | ternary(omit, 'user') }}"
-  when: "galaxy_systemd_mode == 'gravity' and galaxy_manage_systemd"
+  when: "galaxy_manage_restart | bool and galaxy_systemd_mode == 'gravity' and galaxy_manage_systemd"
   listen:
     - start galaxy
     - galaxy systemd start
@@ -22,7 +33,7 @@
     name: galaxy.service
     state: restarted
     scope: "{{ galaxy_systemd_root | ternary(omit, 'user') }}"
-  when: "galaxy_systemd_mode == 'mule' and galaxy_manage_systemd"
+  when: "galaxy_manage_restart | bool and galaxy_systemd_mode == 'mule' and galaxy_manage_systemd"
   listen:
     - restart galaxy
     - galaxy mule restart
@@ -38,7 +49,7 @@
   listen:
     - restart galaxy
     - galaxy gravity restart (22.05)
-  when: "galaxy_systemd_mode == 'gravity' and galaxy_manage_systemd and __galaxy_major_version is version('23.0', '<')"
+  when: "galaxy_manage_restart | bool and galaxy_systemd_mode == 'gravity' and galaxy_manage_systemd and __galaxy_major_version is version('23.0', '<')"
   become: true
   become_user: "{{ __galaxy_user_name }}"
 
@@ -50,7 +61,7 @@
   listen:
     - galaxyctl update
     - galaxyctl update (22.05)
-  when: "galaxy_systemd_mode == 'gravity' and galaxy_manage_systemd and __galaxy_major_version is version('23.0', '<')"
+  when: "galaxy_manage_restart | bool and galaxy_systemd_mode == 'gravity' and galaxy_manage_systemd and __galaxy_major_version is version('23.0', '<')"
   become: true
   become_user: "{{ __galaxy_user_name }}"
 
@@ -60,10 +71,11 @@
   changed_when: true
   environment:
     PYTHONDONTWRITEBYTECODE: "1"
+    GRAVITY_STATE_DIR: "{{ galaxy_gravity_state_dir }}"
   listen:
     - galaxyctl update
     - galaxyctl update (23.0+)
-  when: "galaxy_systemd_mode == 'gravity' and __galaxy_major_version is version('23.0', '>=')"
+  when: "galaxy_manage_restart | bool and galaxy_systemd_mode == 'gravity' and __galaxy_major_version is version('23.0', '>=')"
   become: true
   become_user: "{{ (__galaxy_gravity_pm == 'systemd' and galaxy_systemd_root) | ternary('root', __galaxy_user_name) }}"
 
@@ -74,9 +86,10 @@
   changed_when: true
   environment:
     PYTHONDONTWRITEBYTECODE: "1"
+    GRAVITY_STATE_DIR: "{{ galaxy_gravity_state_dir }}"
   listen:
     - restart galaxy
     - galaxy gravity restart (23.0+)
-  when: "galaxy_systemd_mode == 'gravity' and __galaxy_major_version is version('23.0', '>=')"
+  when: "galaxy_manage_restart | bool and galaxy_systemd_mode == 'gravity' and __galaxy_major_version is version('23.0', '>=')"
   become: true
   become_user: "{{ (__galaxy_gravity_pm == 'systemd' and galaxy_systemd_root) | ternary('root', __galaxy_user_name) }}"

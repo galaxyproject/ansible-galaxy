@@ -27,6 +27,9 @@ galaxy_manage_errordocs: false
 galaxy_backup_configfiles: true
 galaxy_manage_gravity: "{{ false if __galaxy_major_version is version('22.05', '<') else true }}"
 galaxy_manage_systemd: false # For Galaxy
+# Run the role's handlers that start, restart and update Galaxy. Set to false to do it yourself, e.g. with your own handler
+# listening on `restart galaxy`.
+galaxy_manage_restart: true
 galaxy_manage_systemd_reports: false # For Reports
 galaxy_manage_cleanup: false
 galaxy_manage_themes: "{{ galaxy_manage_static_setup and (galaxy_themes is defined or galaxy_themes_subdomains | length > 0) }}"
@@ -146,6 +149,10 @@ galaxy_dynamic_job_rules_dir: "{{ galaxy_server_dir }}/lib/galaxy/jobs/rules"
 # List of dynamic rules to install
 galaxy_dynamic_job_rules: []
 
+# Whether the contents of the Galaxy venv should be completely removed prior to dependency installation (requires
+# galaxy_fetch_dependencies), often a good idea to set once when upgrading between Galaxy releases
+galaxy_force_clean_virtualenv: false
+
 #
 # Cleanup
 #
@@ -162,8 +169,16 @@ galaxy_tmpclean_dirs:
   - "{{ galaxy_job_working_directory }}"
   - "{{ galaxy_config.galaxy.new_file_path | default((galaxy_mutable_data_dir, 'tmp') | path_join) }}"
 
-# Files and directories with a *modification time* older than this are removed
+# Files older than this are removed, judged by galaxy_tmpclean_timestamp. Empty directories are judged by their mtime.
 galaxy_tmpclean_age: 30d
+
+# The timestamp to age files by, ctime (inode change time) or mtime (modification time). Tools that extract archives
+# (tar, unzip) restore the original mtime, so files a running job has just extracted look old and are removed. They
+# can't set ctime back, so by ctime those files are aged from when they were extracted.
+# tmpwatch (Red Hat) then goes by ctime alone. tmpreaper (Debian) checks ctime in addition to atime, so a file read
+# within galaxy_tmpclean_age is also kept. On a relatime mount, anything that reads these files regularly (a backup, a
+# scanner) can keep them from being removed.
+galaxy_tmpclean_timestamp: ctime
 
 # Log the command output, default (true) is cron mail, set to a path to log to file instead or YAML null to send to
 # /dev/null
@@ -196,9 +211,13 @@ galaxy_tmpclean_tmpreaper_runtime: "{{ 20 * 60 * 60 }}"
 
 # You generally shouldn't have to mess with the rest of the options in this section
 
+_galaxy_tmpclean_timestamp_option: >-
+  {{ {'ctime': '--ctime', 'mtime': '--mtime'}[galaxy_tmpclean_timestamp]
+  | mandatory('galaxy_tmpclean_timestamp must be ctime or mtime') }}
+
 _galaxy_tmpclean_command:
-  redhat: "/usr/bin/tmpwatch -all --mtime --dirmtime"
-  debian: "/usr/sbin/tmpreaper --all --mtime --mtime-dir --runtime={{ galaxy_tmpclean_tmpreaper_runtime }}"
+  redhat: "/usr/bin/tmpwatch -all {{ _galaxy_tmpclean_timestamp_option }} --dirmtime"
+  debian: "/usr/sbin/tmpreaper --all {{ _galaxy_tmpclean_timestamp_option }} --mtime-dir --runtime={{ galaxy_tmpclean_tmpreaper_runtime }}"
 
 galaxy_tmpclean_verbose_statement: "{{ galaxy_tmpclean_verbose | ternary(' -v', '') }}"
 galaxy_tmpclean_log_statement: >-
@@ -393,6 +412,9 @@ galaxy_uwsgi_config_default:
 # This mimics the behavior of the GALAXY_INSTALL_PREBUILT_CLIENT=1 setting when running Galaxy with run.sh.
 # When setting this to true, none of the other client settings below will be used.
 galaxy_client_use_prebuilt: false
+# The installed prebuilt client package, and the file in which the role records the version it staged into static/dist.
+__galaxy_prebuilt_client_package: "{{ galaxy_server_dir }}/node_modules/@galaxyproject/galaxy-client/package.json"
+__galaxy_prebuilt_client_marker: "{{ galaxy_server_dir }}/static/dist/.prebuilt_client_version"
 
 # Options include: client / client-production / client-production-maps (default). Set to null to invoke each step of the
 # build separately, but this is not guaranteed to work for all version of Galaxy - using `make` is the safer choice.
