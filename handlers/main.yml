@@ -1,6 +1,16 @@
 ---
 # defaults file for galaxyproject.galaxy
 
+# The conditions of the handlers below depend on the Galaxy version, which is not set if the play was limited (e.g. with
+# --tags) to tasks that do not determine it. This must stay ahead of the handlers that listen on the same topics.
+- name: ensure Galaxy version is set
+  include_tasks: _inc_galaxy_version.yml
+  when: __galaxy_major_version is undefined
+  listen:
+    - "start galaxy"
+    - "restart galaxy"
+    - "galaxyctl update"
+
 - name: systemd daemon reload
   systemd:
     daemon_reload: yes
