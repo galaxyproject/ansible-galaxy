@@ -5,11 +5,14 @@
 # staging that failed partway, and after static/dist was removed. It is also needed when static/dist has no files, since
 # `rm static/dist/*` leaves the hidden marker behind.
 # Sets __galaxy_prebuilt_client_version and __galaxy_prebuilt_client_needs_stage.
+# Both files may be missing, which slurp reports as "file not found". Any other error reading them fails.
 - name: Read the installed prebuilt client package
   ansible.builtin.slurp:
     src: "{{ __galaxy_prebuilt_client_package }}"
   register: __galaxy_prebuilt_client_package_json
-  failed_when: false
+  failed_when:
+    - __galaxy_prebuilt_client_package_json.failed | default(false)
+    - (__galaxy_prebuilt_client_package_json.msg | default('')) is not search('(?i)not found')
 
 # In check mode the install doesn't run, so the package can be missing.
 - name: Ensure the prebuilt client package is installed
@@ -27,7 +30,9 @@
   ansible.builtin.slurp:
     src: "{{ __galaxy_prebuilt_client_marker }}"
   register: __galaxy_prebuilt_client_marker_file
-  failed_when: false
+  failed_when:
+    - __galaxy_prebuilt_client_marker_file.failed | default(false)
+    - (__galaxy_prebuilt_client_marker_file.msg | default('')) is not search('(?i)not found')
 
 - name: Find the staged prebuilt client before staging
   ansible.builtin.find:

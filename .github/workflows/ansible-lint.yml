@@ -24,6 +24,7 @@ jobs:
           handlers/main.yml
           tasks/_inc_client_check_prebuilt.yml
           tasks/_inc_client_prebuilt.yml
+          tasks/_inc_client_prebuilt_install_yarn.yml
           tasks/_inc_client_prebuilt_needs_stage.yml
           tasks/_inc_galaxy_version.yml
           tasks/clean_virtualenv.yml

@@ -5,13 +5,16 @@
   ansible.builtin.include_tasks: "_inc_client_prebuilt_install_yarn.yml"
   when: __galaxy_major_version is version('26.0', '<')
 
-- name: Install prebuilt client with pnpm # noqa no-changed-when
+# pnpm prints "Already up to date" when it has nothing to install.
+- name: Install prebuilt client with pnpm
   ansible.builtin.command: "pnpm install"
   args:
     chdir: "{{ galaxy_server_dir }}"
   environment:
     PATH: "{{ galaxy_venv_dir }}/bin:{{ ansible_facts['env']['PATH'] }}"
     VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+  register: __galaxy_prebuilt_client_pnpm_install
+  changed_when: "'already up to date' not in __galaxy_prebuilt_client_pnpm_install.stdout | lower"
   when: __galaxy_major_version is version('26.0', '>=')
 
 - name: Include prebuilt client stage decision
@@ -38,6 +41,15 @@
   when:
     - __galaxy_major_version is version('26.0', '>=')
     - __galaxy_prebuilt_client_needs_stage | bool
+
+# The stage commands and the version record below don't run in check mode, so report the pending staging here.
+- name: Report that the prebuilt client would be staged
+  ansible.builtin.debug:
+    msg: "The prebuilt client would be staged into {{ galaxy_server_dir }}/static/dist"
+  changed_when: true
+  when:
+    - __galaxy_prebuilt_client_needs_stage | bool
+    - ansible_check_mode
 
 # Written only after the stage command succeeded, so a failed staging is repeated on the next run.
 - name: Record the staged prebuilt client version
