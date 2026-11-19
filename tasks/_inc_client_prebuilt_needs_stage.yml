@@ -1,0 +1,16 @@
+---
+# Decide whether to stage the prebuilt client into static/dist (#235).
+# Staging normally follows an install that changed something. Also stage when static/dist has no files, so a run after
+# one whose install succeeded but whose staging failed recovers: the install then reports no change.
+# Expects __galaxy_prebuilt_client_install_changed. Sets __galaxy_prebuilt_client_needs_stage.
+- name: Find the staged prebuilt client before staging
+  ansible.builtin.find:
+    paths: "{{ galaxy_server_dir }}/static/dist"
+    file_type: file
+  register: __galaxy_prebuilt_client_before_stage
+
+- name: Decide whether to stage the prebuilt client
+  ansible.builtin.set_fact:
+    __galaxy_prebuilt_client_needs_stage: >-
+      {{ __galaxy_prebuilt_client_install_changed | bool
+         or __galaxy_prebuilt_client_before_stage.files | length == 0 }}

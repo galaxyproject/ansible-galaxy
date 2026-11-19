@@ -92,6 +92,12 @@
       register: __pnpm_install
       when: __galaxy_major_version is version('26.0', '>=')
 
+    - name: Include prebuilt client stage decision
+      ansible.builtin.include_tasks: "_inc_client_prebuilt_needs_stage.yml"
+      vars:
+        __galaxy_prebuilt_client_install_changed: >-
+          {{ __yarn_install.changed if __galaxy_major_version is version('26.0', '<') else __pnpm_install.changed }}
+
     - name: Stage prebuilt client (yarn) # noqa no-changed-when
       command: "yarn run stage"
       args:
@@ -99,7 +105,9 @@
       environment:
         PATH: "{{ galaxy_server_dir }}/client/node_modules/.bin:{{ galaxy_venv_dir }}/bin:{{ ansible_facts['env']['PATH'] }}"
         VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
-      when: __galaxy_major_version is version('26.0', '<') and __yarn_install.changed
+      when:
+        - __galaxy_major_version is version('26.0', '<')
+        - __galaxy_prebuilt_client_needs_stage | bool
 
     - name: Stage prebuilt client (pnpm) # noqa no-changed-when
       command: "pnpm run stage"
@@ -108,7 +116,13 @@
       environment:
         PATH: "{{ galaxy_server_dir }}/client/node_modules/.bin:{{ galaxy_venv_dir }}/bin:{{ ansible_facts['env']['PATH'] }}"
         VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
-      when: __galaxy_major_version is version('26.0', '>=') and __pnpm_install.changed
+      when:
+        - __galaxy_major_version is version('26.0', '>=')
+        - __galaxy_prebuilt_client_needs_stage | bool
+
+    - name: Include prebuilt client check
+      include_tasks: "_inc_client_check_prebuilt.yml"
+      when: not ansible_check_mode
 
   remote_user: "{{ galaxy_remote_users.privsep | default(__galaxy_remote_user) }}"
   become: "{{ true if galaxy_become_users.privsep is defined else __galaxy_become }}"
