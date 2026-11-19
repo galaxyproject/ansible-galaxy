@@ -36,6 +36,7 @@ jobs:
           tests/files/include_database.yml
           tests/test_cleanup.yml
           tests/test_database.yml
+          tests/test_gravity_wrapper.yml
           tests/test_handlers.yml
           tests/test_layout.yml
           tests/test_local_tools.yml
