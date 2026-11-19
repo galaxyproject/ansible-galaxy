@@ -35,4 +35,6 @@ jobs:
           tests/test_handlers.yml
           tests/test_local_tools.yml
           tests/test_systemd_unit.yml
+          tests/test_tmpclean_command.yml
+          tests/test_tmpclean_real.yml
           tests/test_user_facts.yml
