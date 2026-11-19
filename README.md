@@ -101,7 +101,8 @@ The role can manage the Galaxy service using [gravity][gravity]. This is the def
 Additionally, support for the `galaxy_restart_handler_name` variable has been removed. If you need to enable your own
 custom restart handler, you can use the "`listen`" option to the handler as explained in the [handler
 documentation](https://docs.ansible.com/ansible/latest/user_guide/playbooks_handlers.html#using-variables-with-handlers).
-The handler should "listen" to the topic `"restart galaxy"`.
+The handler should "listen" to the topic `"restart galaxy"`. The role's own handlers still run alongside yours; set
+`galaxy_manage_restart: false` (see "Feature control" below) to turn them off.
 
 [gravity]: https://github.com/galaxyproject/gravity
 
@@ -187,6 +188,12 @@ Several variables control which functions this role will perform (all default to
   `client-production` and `client-production-maps`. See [Galaxy client readme][client-build] for details.
 - `galaxy_manage_systemd` (default: `no`): Install a [systemd][systemd] service unit to start and stop Galaxy with the
   system (and using the `systemctl` command).
+- `galaxy_manage_restart` (default: `yes`): Run the role's handlers that start or restart Galaxy or run `galaxyctl update`
+  (the ones listening on `restart galaxy`, `start galaxy` and `galaxyctl update`). Set it to `no` if you restart Galaxy
+  yourself, e.g. with your own handler listening on `restart galaxy` because you only have limited `sudo` rights. Your
+  handler still runs. The `systemd daemon reload` handler isn't a restart, so it still runs. If you use Gravity, also
+  add your own handlers listening on `galaxyctl update` (notified when the Gravity configuration changes) and
+  `start galaxy` (notified when the systemd unit is installed), otherwise those steps are skipped.
 - `galaxy_manage_errordocs` (default: `no`): Install Galaxy-styled 413 and 502 HTTP error documents for nginx. Requires
   write privileges for the nginx error document directory.
 - `galaxy_manage_cleanup` (default: `no`): Install a cron job to clean up Galaxy framework and job execution temporary
@@ -229,6 +236,11 @@ Options for configuring Galaxy and controlling which version is installed.
   updated to. Specifying a branch will update to the latest commit on that branch. Using a real commit id is the only
   way to explicitly lock Galaxy at a specific version.
 - `galaxy_force_checkout` (default: `no`): If `yes`, any modified files in the Galaxy repository will be discarded.
+- `galaxy_force_clean_virtualenv` (default: `no`): If `yes`, everything in `galaxy_venv_dir` is removed before Galaxy's
+  dependencies are installed, so the virtualenv is rebuilt from scratch. Often a good idea when upgrading between Galaxy
+  releases. Only takes effect when `galaxy_fetch_dependencies` is enabled, and notifies the `restart galaxy` handler.
+  Galaxy has no usable virtualenv until the dependencies are installed again, so set it for a single run (e.g. `-e
+  galaxy_force_clean_virtualenv=true`) rather than permanently.
 - `galaxy_clone_depth` (default: unset): Depth to use when performing git clone. Leave unspecified to clone entire
    history.
 

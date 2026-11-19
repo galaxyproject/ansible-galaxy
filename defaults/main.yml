@@ -27,6 +27,9 @@ galaxy_manage_errordocs: false
 galaxy_backup_configfiles: true
 galaxy_manage_gravity: "{{ false if __galaxy_major_version is version('22.05', '<') else true }}"
 galaxy_manage_systemd: false # For Galaxy
+# Run the role's handlers that start, restart and update Galaxy. Set to false to do it yourself, e.g. with your own handler
+# listening on `restart galaxy`.
+galaxy_manage_restart: true
 galaxy_manage_systemd_reports: false # For Reports
 galaxy_manage_cleanup: false
 galaxy_manage_themes: "{{ galaxy_manage_static_setup and (galaxy_themes is defined or galaxy_themes_subdomains | length > 0) }}"
@@ -145,6 +148,10 @@ galaxy_dynamic_job_rules_dir: "{{ galaxy_server_dir }}/lib/galaxy/jobs/rules"
 
 # List of dynamic rules to install
 galaxy_dynamic_job_rules: []
+
+# Whether the contents of the Galaxy venv should be completely removed prior to dependency installation (requires
+# galaxy_fetch_dependencies), often a good idea to set once when upgrading between Galaxy releases
+galaxy_force_clean_virtualenv: false
 
 #
 # Cleanup

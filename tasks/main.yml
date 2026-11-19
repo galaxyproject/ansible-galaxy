@@ -60,6 +60,16 @@
   tags:
     - galaxy_manage_paths
 
+# This runs before any of the tasks that use the virtualenv, so that a broken virtualenv can be cleaned, but only if
+# the dependencies are installed again later in the same run.
+- name: Include virtualenv cleaning tasks
+  include_tasks:
+    file: clean_virtualenv.yml
+    apply:
+      tags: galaxy_fetch_dependencies
+  when: galaxy_force_clean_virtualenv and galaxy_fetch_dependencies
+  tags: galaxy_fetch_dependencies
+
 - name: Include clone tasks
   include_tasks:
     file: clone.yml
