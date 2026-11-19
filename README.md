@@ -103,6 +103,10 @@ custom restart handler, you can use the "`listen`" option to the handler as expl
 documentation](https://docs.ansible.com/ansible/latest/user_guide/playbooks_handlers.html#using-variables-with-handlers).
 The handler should "listen" to the topic `"restart galaxy"`.
 
+Gravity keeps its state, such as the supervisord configuration and socket, in `galaxy_gravity_state_dir` (default:
+`<galaxy_mutable_data_dir>/gravity`). The role passes it as `GRAVITY_STATE_DIR` to the handlers, the systemd unit and
+the `galaxyctl` wrapper script, so all three use the same Gravity state.
+
 [gravity]: https://github.com/galaxyproject/gravity
 
 **Galaxy Themes**
