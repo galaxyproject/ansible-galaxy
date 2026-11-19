@@ -412,6 +412,9 @@ galaxy_uwsgi_config_default:
 # This mimics the behavior of the GALAXY_INSTALL_PREBUILT_CLIENT=1 setting when running Galaxy with run.sh.
 # When setting this to true, none of the other client settings below will be used.
 galaxy_client_use_prebuilt: false
+# The installed prebuilt client package, and the file in which the role records the version it staged into static/dist.
+__galaxy_prebuilt_client_package: "{{ galaxy_server_dir }}/node_modules/@galaxyproject/galaxy-client/package.json"
+__galaxy_prebuilt_client_marker: "{{ galaxy_server_dir }}/static/dist/.prebuilt_client_version"
 
 # Options include: client / client-production / client-production-maps (default). Set to null to invoke each step of the
 # build separately, but this is not guaranteed to work for all version of Galaxy - using `make` is the safer choice.

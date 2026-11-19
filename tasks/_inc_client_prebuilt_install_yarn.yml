@@ -1,0 +1,12 @@
+---
+# In its own file because the yarn module is in community.general: Ansible resolves a module when it loads the file, so
+# keeping it here lets Galaxy >= 26.0, which uses pnpm, install the prebuilt client without that collection.
+- name: Install prebuilt client with yarn
+  yarn:
+    executable: "yarn --check-files"
+    path: "{{ galaxy_server_dir }}"
+  environment:
+    PATH: "{{ galaxy_venv_dir }}/bin:{{ ansible_facts['env']['PATH'] }}"
+    VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+  register: __yarn_install
+  changed_when: "'already up-to-date' not in __yarn_install.out | lower"

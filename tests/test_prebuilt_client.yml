@@ -1,10 +1,20 @@
 ---
-# tasks/_inc_client_check_prebuilt.yml must fail when the prebuilt client isn't in static/dist.
-# Regression test for #235. The yarn install and staging tasks need community.general and node,
-# so the test runs only the stage decision before them and the check that follows them.
-- name: Test the prebuilt client check
+# tasks/_inc_client_prebuilt.yml must stage the prebuilt client whenever static/dist doesn't hold the installed version,
+# and fail when the client isn't there afterwards. Regression test for #235.
+# Runs the Galaxy >= 26.0 path with a fake pnpm. The < 26.0 path installs with the yarn module, which needs
+# community.general, and shares everything after the install.
+- name: Test the prebuilt client install
   hosts: localhost
-  gather_facts: false
+  gather_facts: true
+  gather_subset:
+    - env
+  vars:
+    __galaxy_major_version: "26.0"
+    staged: "{{ galaxy_server_dir }}/static/dist"
+    package: "{{ galaxy_server_dir }}/node_modules/@galaxyproject/galaxy-client"
+    stage_calls: >-
+      {{ lookup('ansible.builtin.file', galaxy_venv_dir ~ '/calls.log').splitlines() | select('equalto', 'run stage') | length }}
+    staged_version: "{{ lookup('ansible.builtin.file', staged ~ '/.prebuilt_client_version') }}"
   tasks:
     - name: Make a fake Galaxy server directory
       ansible.builtin.tempfile:
@@ -12,74 +22,176 @@
         prefix: galaxy-server-
       register: __server
 
-    - name: Test the check
+    - name: Test the install
       vars:
         galaxy_server_dir: "{{ __server.path }}"
-        # Galaxy's stage script writes to static/dist in galaxy_server_dir whatever galaxy_static_dir is, so the check
-        # must not look in galaxy_static_dir. Give it a populated dist that the check has to ignore.
+        galaxy_venv_dir: "{{ __server.path }}/venv"
+        # Galaxy's stage script writes to static/dist in galaxy_server_dir whatever galaxy_static_dir is, so the role
+        # must not look in galaxy_static_dir. Give it a populated dist that the role has to ignore.
         galaxy_static_dir: "{{ __server.path }}/elsewhere"
       block:
-        - name: Create an empty static/dist and a populated galaxy_static_dir/dist
+        - name: Create the directories
           ansible.builtin.file:
             path: "{{ item }}"
             state: directory
             mode: "0755"
           loop:
-            - "{{ galaxy_server_dir }}/static/dist"
+            - "{{ galaxy_venv_dir }}/bin"
             - "{{ galaxy_static_dir }}/dist"
 
         - name: Add a file to galaxy_static_dir/dist
           ansible.builtin.copy:
-            content: "console.log('elsewhere');\n"
+            content: "elsewhere\n"
             dest: "{{ galaxy_static_dir }}/dist/analysis.bundled.js"
             mode: "0644"
 
-        - name: Stage when the install changed nothing but static/dist is empty
+        # The role runs pnpm in galaxy_server_dir with VIRTUAL_ENV set to galaxy_venv_dir.
+        # "install" installs the client version named in $VIRTUAL_ENV/client_version, or nothing if that file is missing.
+        # Like pnpm, it prints "Already up to date" when that version is installed.
+        # "run stage" copies the client's two files to static/dist; if $VIRTUAL_ENV/fail_stage exists it copies one
+        # and fails, and if $VIRTUAL_ENV/empty_stage exists it copies nothing and succeeds.
+        - name: Install a fake pnpm
+          ansible.builtin.copy:
+            dest: "{{ galaxy_venv_dir }}/bin/pnpm"
+            mode: "0755"
+            content: |
+              #!/bin/sh
+              echo "$*" >> "$VIRTUAL_ENV/calls.log"
+              pkg=node_modules/@galaxyproject/galaxy-client
+              case "$*" in
+                install)
+                  version=$(cat "$VIRTUAL_ENV/client_version" 2>/dev/null || true)
+                  if [ -n "$version" ] && grep -q "\"$version\"" "$pkg/package.json" 2>/dev/null; then
+                    echo "Already up to date"
+                    exit 0
+                  fi
+                  rm -rf "$pkg"
+                  [ -n "$version" ] || exit 0
+                  mkdir -p "$pkg/dist"
+                  printf '{"name": "@galaxyproject/galaxy-client", "version": "%s"}\n' "$version" > "$pkg/package.json"
+                  echo "$version" > "$pkg/dist/analysis.bundled.js"
+                  echo "$version" > "$pkg/dist/base.css"
+                  ;;
+                "run stage")
+                  if [ -f "$VIRTUAL_ENV/empty_stage" ]; then exit 0; fi
+                  mkdir -p static/dist
+                  cp "$pkg/dist/analysis.bundled.js" static/dist/
+                  if [ -f "$VIRTUAL_ENV/fail_stage" ]; then exit 1; fi
+                  cp "$pkg/dist/base.css" static/dist/
+                  ;;
+              esac
+
+        - name: Publish client 26.0.1
+          ansible.builtin.copy:
+            content: "26.0.1\n"
+            dest: "{{ galaxy_venv_dir }}/client_version"
+            mode: "0644"
+
+        - name: Run the first install
           ansible.builtin.include_role:
             name: galaxyproject.galaxy
-            tasks_from: _inc_client_prebuilt_needs_stage
-          vars:
-            __galaxy_prebuilt_client_install_changed: false
+            tasks_from: _inc_client_prebuilt
 
-        - name: Check staging is needed
+        - name: Check the client was staged and its version recorded
           ansible.builtin.assert:
             that:
-              - __galaxy_prebuilt_client_needs_stage | bool
+              - stage_calls | int == 1
+              - staged_version == '26.0.1'
+              - lookup('ansible.builtin.file', staged ~ '/base.css') == '26.0.1'
 
-        - name: Run the check on an empty static/dist
+        - name: Run the install again
+          ansible.builtin.include_role:
+            name: galaxyproject.galaxy
+            tasks_from: _inc_client_prebuilt
+
+        - name: Check the same version wasn't staged again and the install reported no change
+          ansible.builtin.assert:
+            that:
+              - stage_calls | int == 1
+              - __galaxy_prebuilt_client_pnpm_install is not changed
+
+        - name: Publish client 26.0.2
+          ansible.builtin.copy:
+            content: "26.0.2\n"
+            dest: "{{ galaxy_venv_dir }}/client_version"
+            mode: "0644"
+
+        - name: Run the install after an upgrade
+          ansible.builtin.include_role:
+            name: galaxyproject.galaxy
+            tasks_from: _inc_client_prebuilt
+
+        - name: Check the new version replaced the old client in static/dist
+          ansible.builtin.assert:
+            that:
+              - __galaxy_prebuilt_client_pnpm_install is changed
+              - stage_calls | int == 2
+              - staged_version == '26.0.2'
+              - lookup('ansible.builtin.file', staged ~ '/base.css') == '26.0.2'
+
+        - name: Publish client 26.0.3 and make staging fail partway
+          ansible.builtin.copy:
+            content: "26.0.3\n"
+            dest: "{{ galaxy_venv_dir }}/{{ item }}"
+            mode: "0644"
+          loop:
+            - client_version
+            - fail_stage
+
+        - name: Run the install with a staging that fails partway
           block:
-            - name: Include the check
+            - name: Include the install
               ansible.builtin.include_role:
                 name: galaxyproject.galaxy
-                tasks_from: _inc_client_check_prebuilt
-            - name: Fail if the check passed
+                tasks_from: _inc_client_prebuilt
+            - name: Fail if the install passed
               ansible.builtin.fail:
-                msg: The check passed on an empty static/dist
+                msg: The install passed although staging failed
           rescue:
-            - name: Check the failure names the directory
+            - name: Check static/dist is partly staged and still recorded as the old version
               ansible.builtin.assert:
                 that:
-                  - ansible_failed_result.msg is search(galaxy_server_dir ~ '/static/dist')
-                  - ansible_failed_result.msg is search('install')
+                  - ansible_failed_task.name is search('Stage prebuilt client')
+                  - lookup('ansible.builtin.file', staged ~ '/analysis.bundled.js') == '26.0.3'
+                  - lookup('ansible.builtin.file', staged ~ '/base.css') == '26.0.2'
+                  - staged_version == '26.0.2'
 
-        - name: Run the check when static/dist is missing
-          block:
-            - name: Remove static/dist
-              ansible.builtin.file:
-                path: "{{ galaxy_server_dir }}/static/dist"
-                state: absent
-            - name: Include the check
-              ansible.builtin.include_role:
-                name: galaxyproject.galaxy
-                tasks_from: _inc_client_check_prebuilt
-            - name: Fail if the check passed
-              ansible.builtin.fail:
-                msg: The check passed with no static/dist
-          rescue:
-            - name: Check the failure names the directory
-              ansible.builtin.assert:
-                that:
-                  - ansible_failed_result.msg is search(galaxy_server_dir ~ '/static/dist')
+        - name: Let staging work again
+          ansible.builtin.file:
+            path: "{{ galaxy_venv_dir }}/fail_stage"
+            state: absent
+
+        - name: Run the install after the failed staging
+          ansible.builtin.include_role:
+            name: galaxyproject.galaxy
+            tasks_from: _inc_client_prebuilt
+
+        - name: Check the partly staged client was staged again
+          ansible.builtin.assert:
+            that:
+              - stage_calls | int == 4
+              - staged_version == '26.0.3'
+              - lookup('ansible.builtin.file', staged ~ '/base.css') == '26.0.3'
+
+        # `rm static/dist/*` leaves the hidden version marker behind.
+        - name: Remove the staged files but not the version marker
+          ansible.builtin.file:
+            path: "{{ staged }}/{{ item }}"
+            state: absent
+          loop:
+            - analysis.bundled.js
+            - base.css
+
+        - name: Run the install with an emptied static/dist
+          ansible.builtin.include_role:
+            name: galaxyproject.galaxy
+            tasks_from: _inc_client_prebuilt
+
+        - name: Check the client was staged again
+          ansible.builtin.assert:
+            that:
+              - stage_calls | int == 5
+              - (staged ~ '/base.css') is exists
 
         # Staging copies the client's files to the top level of static/dist, so a file only in a subdirectory
         # (e.g. left over from something else) doesn't count.
@@ -87,14 +199,13 @@
           block:
             - name: Create static/dist/sub
               ansible.builtin.file:
-                path: "{{ galaxy_server_dir }}/static/dist/sub"
+                path: "{{ staged }}/sub"
                 state: directory
                 mode: "0755"
-            - name: Add a file to static/dist/sub
-              ansible.builtin.copy:
-                content: "console.log('nested');\n"
-                dest: "{{ galaxy_server_dir }}/static/dist/sub/analysis.bundled.js"
-                mode: "0644"
+            - name: Move the staged files to static/dist/sub
+              ansible.builtin.command:
+                cmd: mv {{ staged }}/analysis.bundled.js {{ staged }}/base.css {{ staged }}/sub/
+              changed_when: true
             - name: Include the check
               ansible.builtin.include_role:
                 name: galaxyproject.galaxy
@@ -106,53 +217,87 @@
             - name: Check the failure names the directory
               ansible.builtin.assert:
                 that:
-                  - ansible_failed_result.msg is search(galaxy_server_dir ~ '/static/dist')
+                  - ansible_failed_result.msg is search(staged)
+
+        # static/dist has no top-level files here, so the client is staged. The stage command succeeds without
+        # copying anything, which only the check at the end of the install catches.
+        - name: Run the install with a staging that succeeds but copies nothing
+          block:
+            - name: Make staging copy nothing
+              ansible.builtin.copy:
+                content: ""
+                dest: "{{ galaxy_venv_dir }}/empty_stage"
+                mode: "0644"
+            - name: Include the install
+              ansible.builtin.include_role:
+                name: galaxyproject.galaxy
+                tasks_from: _inc_client_prebuilt
+            - name: Fail if the install passed
+              ansible.builtin.fail:
+                msg: The install passed although nothing was staged
+          rescue:
+            - name: Check the final check failed after staging
+              ansible.builtin.assert:
+                that:
+                  - ansible_failed_task.name is search('Ensure the prebuilt client is in static/dist')
+                  - stage_calls | int == 6
           always:
-            - name: Remove static/dist/sub
+            - name: Let staging copy files again
               ansible.builtin.file:
-                path: "{{ galaxy_server_dir }}/static/dist/sub"
+                path: "{{ galaxy_venv_dir }}/empty_stage"
                 state: absent
 
-        - name: Create static/dist
+        # Only a missing version marker means "not staged yet". Any other error reading it must fail.
+        - name: Run the install with a version marker that can't be read
+          block:
+            - name: Remove the version marker
+              ansible.builtin.file:
+                path: "{{ staged }}/.prebuilt_client_version"
+                state: absent
+            - name: Put a directory in its place
+              ansible.builtin.file:
+                path: "{{ staged }}/.prebuilt_client_version"
+                state: directory
+                mode: "0755"
+            - name: Include the install
+              ansible.builtin.include_role:
+                name: galaxyproject.galaxy
+                tasks_from: _inc_client_prebuilt
+            - name: Fail if the install passed
+              ansible.builtin.fail:
+                msg: The install passed although the version marker can't be read
+          rescue:
+            - name: Check reading the version marker failed
+              ansible.builtin.assert:
+                that:
+                  - ansible_failed_task.name is search('Read the staged prebuilt client version')
+                  - stage_calls | int == 6
+          always:
+            - name: Remove the directory
+              ansible.builtin.file:
+                path: "{{ staged }}/.prebuilt_client_version"
+                state: absent
+
+        - name: Unpublish the client
           ansible.builtin.file:
-            path: "{{ galaxy_server_dir }}/static/dist"
-            state: directory
-            mode: "0755"
+            path: "{{ galaxy_venv_dir }}/client_version"
+            state: absent
 
-        - name: Add a file
-          ansible.builtin.copy:
-            content: "console.log('client');\n"
-            dest: "{{ galaxy_server_dir }}/static/dist/analysis.bundled.js"
-            mode: "0644"
-
-        - name: Run the check on a populated static/dist
-          ansible.builtin.include_role:
-            name: galaxyproject.galaxy
-            tasks_from: _inc_client_check_prebuilt
-
-        - name: Don't stage when the install changed nothing and static/dist has files
-          ansible.builtin.include_role:
-            name: galaxyproject.galaxy
-            tasks_from: _inc_client_prebuilt_needs_stage
-          vars:
-            __galaxy_prebuilt_client_install_changed: false
-
-        - name: Check staging isn't needed
-          ansible.builtin.assert:
-            that:
-              - not (__galaxy_prebuilt_client_needs_stage | bool)
-
-        - name: Stage when the install changed something, even if static/dist has files
-          ansible.builtin.include_role:
-            name: galaxyproject.galaxy
-            tasks_from: _inc_client_prebuilt_needs_stage
-          vars:
-            __galaxy_prebuilt_client_install_changed: true
-
-        - name: Check staging is needed after an install change
-          ansible.builtin.assert:
-            that:
-              - __galaxy_prebuilt_client_needs_stage | bool
+        - name: Run the install when it doesn't deliver the client package
+          block:
+            - name: Include the install
+              ansible.builtin.include_role:
+                name: galaxyproject.galaxy
+                tasks_from: _inc_client_prebuilt
+            - name: Fail if the install passed
+              ansible.builtin.fail:
+                msg: The install passed without the client package
+          rescue:
+            - name: Check the failure names the package
+              ansible.builtin.assert:
+                that:
+                  - ansible_failed_result.msg is search(package ~ '/package.json')
+                  - stage_calls | int == 6
 
       always:
         - name: Remove the fake server directory

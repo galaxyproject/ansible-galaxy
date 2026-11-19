@@ -1,16 +1,54 @@
 ---
 # Decide whether to stage the prebuilt client into static/dist (#235).
-# Staging normally follows an install that changed something. Also stage when static/dist has no files, so a run after
-# one whose install succeeded but whose staging failed recovers: the install then reports no change.
-# Expects __galaxy_prebuilt_client_install_changed. Sets __galaxy_prebuilt_client_needs_stage.
+# The role records the version it staged in a marker file in static/dist, after the stage command succeeds. Staging is
+# needed when the marker doesn't name the installed package's version: on a first install, after an upgrade, after a
+# staging that failed partway, and after static/dist was removed. It is also needed when static/dist has no files, since
+# `rm static/dist/*` leaves the hidden marker behind.
+# Sets __galaxy_prebuilt_client_version and __galaxy_prebuilt_client_needs_stage.
+# Both files may be missing, which slurp reports as "file not found". Any other error reading them fails.
+- name: Read the installed prebuilt client package
+  ansible.builtin.slurp:
+    src: "{{ __galaxy_prebuilt_client_package }}"
+  register: __galaxy_prebuilt_client_package_json
+  failed_when:
+    - __galaxy_prebuilt_client_package_json.failed | default(false)
+    - (__galaxy_prebuilt_client_package_json.msg | default('')) is not search('(?i)not found')
+
+# In check mode the install doesn't run, so the package can be missing.
+- name: Ensure the prebuilt client package is installed
+  ansible.builtin.assert:
+    that:
+      - __galaxy_prebuilt_client_package_json.content is defined
+    quiet: true
+    fail_msg: >-
+      The prebuilt client is not installed: {{ __galaxy_prebuilt_client_package }} is missing.
+      The client install may have failed, or the client package may not be published
+      for Galaxy version {{ __galaxy_major_version | default('(unknown)') }}.
+  when: not ansible_check_mode
+
+- name: Read the staged prebuilt client version
+  ansible.builtin.slurp:
+    src: "{{ __galaxy_prebuilt_client_marker }}"
+  register: __galaxy_prebuilt_client_marker_file
+  failed_when:
+    - __galaxy_prebuilt_client_marker_file.failed | default(false)
+    - (__galaxy_prebuilt_client_marker_file.msg | default('')) is not search('(?i)not found')
+
 - name: Find the staged prebuilt client before staging
   ansible.builtin.find:
     paths: "{{ galaxy_server_dir }}/static/dist"
     file_type: file
   register: __galaxy_prebuilt_client_before_stage
 
+- name: Set the installed prebuilt client version
+  ansible.builtin.set_fact:
+    __galaxy_prebuilt_client_version: >-
+      {{ (__galaxy_prebuilt_client_package_json.content | b64decode | from_json).version
+         if __galaxy_prebuilt_client_package_json.content is defined else '' }}
+
 - name: Decide whether to stage the prebuilt client
   ansible.builtin.set_fact:
     __galaxy_prebuilt_client_needs_stage: >-
-      {{ __galaxy_prebuilt_client_install_changed | bool
+      {{ (__galaxy_prebuilt_client_marker_file.content | default('') | b64decode | trim)
+         != __galaxy_prebuilt_client_version
          or __galaxy_prebuilt_client_before_stage.files | length == 0 }}
