@@ -23,6 +23,7 @@ jobs:
           defaults/main.yml
           handlers/main.yml
           tasks/_inc_galaxy_version.yml
+          tasks/clean_virtualenv.yml
           tasks/cleanup.yml
           tasks/database.yml
           tasks/layout.yml

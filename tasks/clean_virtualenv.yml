@@ -1,0 +1,28 @@
+---
+# Empty the Galaxy virtualenv so that it is rebuilt from scratch
+
+# The venv is emptied rather than removed: the privsep user may not be able to write to its parent directory, and the
+# directory keeps the ownership and mode set by the path management tasks.
+
+- name: Clean Galaxy virtualenv
+  remote_user: "{{ galaxy_remote_users.privsep | default(__galaxy_remote_user) }}"
+  become: "{{ true if galaxy_become_users.privsep is defined else __galaxy_become }}"
+  become_user: "{{ galaxy_become_users.privsep | default(__galaxy_become_user) }}"
+  block:
+
+    - name: Find contents of Galaxy virtualenv to clean
+      ansible.builtin.find:
+        paths: "{{ galaxy_venv_dir }}"
+        file_type: any
+        hidden: true
+      register: __galaxy_venv_contents
+
+    - name: Remove contents of Galaxy virtualenv
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ __galaxy_venv_contents.files }}"
+      loop_control:
+        label: "{{ item.path }}"
+      notify:
+        - restart galaxy
