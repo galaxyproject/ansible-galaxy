@@ -22,7 +22,7 @@
     name: galaxy.service
     state: started
     scope: "{{ galaxy_systemd_root | ternary(omit, 'user') }}"
-  when: "galaxy_systemd_mode == 'gravity' and galaxy_manage_systemd"
+  when: "galaxy_manage_restart | bool and galaxy_systemd_mode == 'gravity' and galaxy_manage_systemd"
   listen:
     - start galaxy
     - galaxy systemd start
@@ -32,7 +32,7 @@
     name: galaxy.service
     state: restarted
     scope: "{{ galaxy_systemd_root | ternary(omit, 'user') }}"
-  when: "galaxy_systemd_mode == 'mule' and galaxy_manage_systemd"
+  when: "galaxy_manage_restart | bool and galaxy_systemd_mode == 'mule' and galaxy_manage_systemd"
   listen:
     - restart galaxy
     - galaxy mule restart
@@ -48,7 +48,7 @@
   listen:
     - restart galaxy
     - galaxy gravity restart (22.05)
-  when: "galaxy_systemd_mode == 'gravity' and galaxy_manage_systemd and __galaxy_major_version is version('23.0', '<')"
+  when: "galaxy_manage_restart | bool and galaxy_systemd_mode == 'gravity' and galaxy_manage_systemd and __galaxy_major_version is version('23.0', '<')"
   become: true
   become_user: "{{ __galaxy_user_name }}"
 
@@ -60,7 +60,7 @@
   listen:
     - galaxyctl update
     - galaxyctl update (22.05)
-  when: "galaxy_systemd_mode == 'gravity' and galaxy_manage_systemd and __galaxy_major_version is version('23.0', '<')"
+  when: "galaxy_manage_restart | bool and galaxy_systemd_mode == 'gravity' and galaxy_manage_systemd and __galaxy_major_version is version('23.0', '<')"
   become: true
   become_user: "{{ __galaxy_user_name }}"
 
@@ -73,7 +73,7 @@
   listen:
     - galaxyctl update
     - galaxyctl update (23.0+)
-  when: "galaxy_systemd_mode == 'gravity' and __galaxy_major_version is version('23.0', '>=')"
+  when: "galaxy_manage_restart | bool and galaxy_systemd_mode == 'gravity' and __galaxy_major_version is version('23.0', '>=')"
   become: true
   become_user: "{{ (__galaxy_gravity_pm == 'systemd' and galaxy_systemd_root) | ternary('root', __galaxy_user_name) }}"
 
@@ -87,6 +87,6 @@
   listen:
     - restart galaxy
     - galaxy gravity restart (23.0+)
-  when: "galaxy_systemd_mode == 'gravity' and __galaxy_major_version is version('23.0', '>=')"
+  when: "galaxy_manage_restart | bool and galaxy_systemd_mode == 'gravity' and __galaxy_major_version is version('23.0', '>=')"
   become: true
   become_user: "{{ (__galaxy_gravity_pm == 'systemd' and galaxy_systemd_root) | ternary('root', __galaxy_user_name) }}"
