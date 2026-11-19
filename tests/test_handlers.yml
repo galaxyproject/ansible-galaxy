@@ -267,7 +267,16 @@
   gather_facts: false
   vars:
     handler_list: "{{ lookup('ansible.builtin.file', playbook_dir | dirname ~ '/handlers/main.yml') | from_yaml }}"
+    version_handler: Ensure Galaxy version is set for the handlers
   tasks:
+    # The other handlers' conditions read the version, so this one must only set it, and run before them.
+    - name: Check the version handler only sets the version and comes first
+      ansible.builtin.assert:
+        that:
+          - (handler_list | selectattr('name', 'equalto', version_handler) | list | length) == 1
+          - (handler_list | first).name == version_handler
+          - (handler_list | first)['ansible.builtin.include_tasks'] == '_inc_galaxy_version.yml'
+
     - name: Check the reload handler is not gated
       ansible.builtin.assert:
         that:
