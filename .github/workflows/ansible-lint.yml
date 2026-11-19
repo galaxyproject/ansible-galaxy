@@ -20,6 +20,24 @@ jobs:
       - name: Lint
         run: >-
           ansible-lint
+          defaults/main.yml
+          handlers/main.yml
+          tasks/_inc_galaxy_version.yml
           tasks/clean_virtualenv.yml
+          tasks/cleanup.yml
+          tasks/database.yml
+          tasks/layout.yml
+          tasks/local_tools.yml
+          tasks/static_setup.yml
           tasks/user-facts.yml
+          tests/fake_galaxyctl.yml
+          tests/files/include_database.yml
+          tests/test_cleanup.yml
+          tests/test_database.yml
+          tests/test_handlers.yml
+          tests/test_layout.yml
+          tests/test_local_tools.yml
+          tests/test_systemd_unit.yml
+          tests/test_tmpclean_command.yml
+          tests/test_tmpclean_real.yml
           tests/test_user_facts.yml

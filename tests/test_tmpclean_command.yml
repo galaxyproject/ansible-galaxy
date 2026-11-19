@@ -1,0 +1,89 @@
+---
+# galaxy_tmpclean_command must age files by ctime unless galaxy_tmpclean_timestamp says mtime (#266).
+# The role defaults are loaded with include_vars, so this checks the real defaults. include_vars
+# outranks task vars, so each case overrides with set_fact. The role picks the command by
+# ansible_facts['os_family'], so each case overrides that fact. The checks look for '--mtime ' with a
+# trailing space, so they don't match tmpreaper's separate --mtime-dir option.
+- name: Test which timestamp tmpclean ages files by
+  hosts: localhost
+  gather_facts: true
+  tasks:
+    - name: Load the role defaults
+      ansible.builtin.include_vars:
+        file: "{{ playbook_dir }}/../defaults/main.yml"
+
+    - name: Use the Debian command
+      ansible.builtin.set_fact:
+        ansible_facts: "{{ ansible_facts | combine({'os_family': 'Debian'}) }}"
+
+    - name: Check the Debian default ages files by ctime
+      ansible.builtin.assert:
+        that:
+          - "'--ctime ' in galaxy_tmpclean_command"
+          - "'--mtime ' not in galaxy_tmpclean_command"
+        quiet: true
+
+    - name: Set galaxy_tmpclean_timestamp to mtime for Debian
+      ansible.builtin.set_fact:
+        galaxy_tmpclean_timestamp: mtime
+
+    # mtime must give back exactly the command the role used before galaxy_tmpclean_timestamp existed.
+    - name: Check the Debian mtime setting ages files by mtime, as before
+      ansible.builtin.assert:
+        that:
+          - "'--mtime ' in galaxy_tmpclean_command"
+          - "'--ctime' not in galaxy_tmpclean_command"
+          - galaxy_tmpclean_command == '/usr/sbin/tmpreaper --all --mtime --mtime-dir --runtime=72000'
+        quiet: true
+
+    - name: Restore the default galaxy_tmpclean_timestamp after Debian
+      ansible.builtin.set_fact:
+        galaxy_tmpclean_timestamp: ctime
+
+    - name: Use the RedHat command
+      ansible.builtin.set_fact:
+        ansible_facts: "{{ ansible_facts | combine({'os_family': 'RedHat'}) }}"
+
+    - name: Check the RedHat default ages files by ctime
+      ansible.builtin.assert:
+        that:
+          - "'--ctime ' in galaxy_tmpclean_command"
+          - "'--mtime ' not in galaxy_tmpclean_command"
+        quiet: true
+
+    - name: Set galaxy_tmpclean_timestamp to mtime for RedHat
+      ansible.builtin.set_fact:
+        galaxy_tmpclean_timestamp: mtime
+
+    - name: Check the RedHat mtime setting ages files by mtime, as before
+      ansible.builtin.assert:
+        that:
+          - "'--mtime ' in galaxy_tmpclean_command"
+          - "'--ctime' not in galaxy_tmpclean_command"
+          - galaxy_tmpclean_command == '/usr/bin/tmpwatch -all --mtime --dirmtime'
+        quiet: true
+
+    - name: Restore the default galaxy_tmpclean_timestamp after RedHat
+      ansible.builtin.set_fact:
+        galaxy_tmpclean_timestamp: ctime
+
+    - name: Check an unknown galaxy_tmpclean_timestamp fails clearly
+      block:
+        - name: Set an unknown galaxy_tmpclean_timestamp
+          ansible.builtin.set_fact:
+            galaxy_tmpclean_timestamp: atime
+
+        - name: Resolve the command
+          ansible.builtin.debug:
+            msg: "{{ galaxy_tmpclean_command }}"
+
+        - name: Fail if the command resolved
+          ansible.builtin.fail:
+            msg: The command resolved for an unknown value
+      rescue:
+        - name: Check the failure names the variable and the allowed values
+          ansible.builtin.assert:
+            that:
+              - "'galaxy_tmpclean_timestamp' in ansible_failed_result.msg"
+              - "'must be ctime or mtime' in ansible_failed_result.msg"
+            quiet: true
