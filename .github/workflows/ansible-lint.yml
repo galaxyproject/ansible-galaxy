@@ -23,6 +23,7 @@ jobs:
           defaults/main.yml
           handlers/main.yml
           tasks/_inc_client_check_prebuilt.yml
+          tasks/_inc_client_prebuilt.yml
           tasks/_inc_client_prebuilt_needs_stage.yml
           tasks/_inc_galaxy_version.yml
           tasks/cleanup.yml
