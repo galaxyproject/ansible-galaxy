@@ -258,13 +258,22 @@
         state: absent
 
 # Running the start, restart and reload handlers would need systemd, so check the handlers file instead: every handler
-# except the daemon reload is gated on galaxy_manage_restart, and the reload (not a restart) isn't.
+# is gated on galaxy_manage_restart except two that don't start or restart anything: the daemon reload, and the one that
+# sets the Galaxy version for the other handlers.
 - name: Test which handlers galaxy_manage_restart gates
   hosts: localhost
   gather_facts: false
   vars:
     handler_list: "{{ lookup('ansible.builtin.file', playbook_dir | dirname ~ '/handlers/main.yml') | from_yaml }}"
+    version_handler: Ensure Galaxy version is set for the handlers
   tasks:
+    - name: Check the version handler only sets the version and is not gated
+      ansible.builtin.assert:
+        that:
+          - (handler_list | selectattr('name', 'equalto', version_handler) | list | length) == 1
+          - (handler_list | selectattr('name', 'equalto', version_handler) | first)['ansible.builtin.include_tasks'] == '_inc_galaxy_version.yml'
+          - (handler_list | selectattr('name', 'equalto', version_handler) | first).when is not search('galaxy_manage_restart')
+
     - name: Check the reload handler is not gated
       ansible.builtin.assert:
         that:
@@ -277,6 +286,6 @@
           - item.when is search('^galaxy_manage_restart \| bool and ')
         fail_msg: "Handler '{{ item.name }}' isn't gated on galaxy_manage_restart."
         quiet: true
-      loop: "{{ handler_list | rejectattr('name', 'equalto', 'Reload systemd daemon for Galaxy') | list }}"
+      loop: "{{ handler_list | rejectattr('name', 'in', ['Reload systemd daemon for Galaxy', version_handler]) | list }}"
       loop_control:
         label: "{{ item.name }}"
