@@ -38,5 +38,11 @@ MemoryAccounting=yes
 CPUAccounting=yes
 BlockIOAccounting=yes
 
+{% for directive in galaxy_systemd_extra_directives %}
+{{ directive }}
+{% if loop.last %}
+
+{% endif %}
+{% endfor %}
 [Install]
 WantedBy=multi-user.target
