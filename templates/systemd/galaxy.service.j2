@@ -31,9 +31,6 @@ Environment=GRAVITY_CONFIG_FILE={{ galaxy_config_file }}
 {% for env in galaxy_systemd_env %}
 Environment={{ env }}
 {% endfor %}
-{% for directive in galaxy_systemd_extra_directives %}
-{{ directive }}
-{% endfor %}
 MemoryLimit={{ __galaxy_systemd_memory_limit_merged.mule }}G
 Restart=always
 
@@ -41,5 +38,11 @@ MemoryAccounting=yes
 CPUAccounting=yes
 BlockIOAccounting=yes
 
+{% for directive in galaxy_systemd_extra_directives %}
+{{ directive }}
+{% if loop.last %}
+
+{% endif %}
+{% endfor %}
 [Install]
 WantedBy=multi-user.target

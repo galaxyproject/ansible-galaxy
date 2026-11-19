@@ -66,24 +66,35 @@
           - ProtectSystem=yes
           - NoNewPrivileges=yes
 
-    - name: Check the extra directives are in the Service section
+    # systemd uses the last value of a setting, so the directives must be the last lines of the Service section to
+    # override the role's own (e.g. Restart=).
+    - name: Check the extra directives end the Service section
       ansible.builtin.assert:
         that:
-          - "'\nProtectSystem=yes\nNoNewPrivileges=yes\n' in __service_section"
+          - __service_section.endswith('\n\nProtectSystem=yes\nNoNewPrivileges=yes\n\n')
           - "'ProtectSystem' not in __unit_text.split('[Service]')[0]"
           - "'ProtectSystem' not in __unit_text.split('[Install]')[1]"
       vars:
         __unit_text: "{{ lookup('ansible.builtin.file', __unit_dir.path ~ '/galaxy-extra-directives.service', rstrip=false) }}"
         __service_section: "{{ __unit_text.split('[Service]')[1].split('[Install]')[0] }}"
 
-    # The directives must be the only difference: an empty list renders nothing, not even a blank line, so the
-    # default unit is unchanged. Both renders use the same vars apart from the directives.
-    - name: Check the directive lines are the only difference from the unit without them
+    # Both renders use the same vars apart from the directives, so this checks the directives are written once and
+    # nothing else in the unit depends on the list (not that the default unit is unchanged; the next task does that).
+    - name: Check the directive lines and their blank line are the only difference from the unit without them
       ansible.builtin.assert:
         that:
-          - __with_directives | replace('ProtectSystem=yes\nNoNewPrivileges=yes\n', '', 1) == __without_directives
+          - __with_directives | replace('ProtectSystem=yes\nNoNewPrivileges=yes\n\n', '', 1) == __without_directives
       vars:
         __with_directives: "{{ lookup('ansible.builtin.file', __unit_dir.path ~ '/galaxy-extra-directives.service', rstrip=false) }}"
+        __without_directives: "{{ lookup('ansible.builtin.file', __unit_dir.path ~ '/galaxy-no-root.service', rstrip=false) }}"
+
+    # With no directives the loop renders nothing, not even a blank line: the last setting before it (an *IOAccounting=
+    # line) is followed by one blank line and the next section.
+    - name: Check the default unit has nothing between the last setting and the Install section
+      ansible.builtin.assert:
+        that:
+          - (__without_directives.split('[Install]')[0]).endswith('IOAccounting=yes\n\n')
+      vars:
         __without_directives: "{{ lookup('ansible.builtin.file', __unit_dir.path ~ '/galaxy-no-root.service', rstrip=false) }}"
 
     # The plays above set galaxy_systemd_extra_directives themselves, so check the role's own default adds nothing.

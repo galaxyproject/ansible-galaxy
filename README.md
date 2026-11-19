@@ -301,10 +301,11 @@ service with the `systemctl` utility as the `root` user or with `sudo`:
 ```
 
 You can add your own directives to the `[Service]` section of the Galaxy unit with `galaxy_systemd_extra_directives`, a
-list with one directive per item (default: `[]`). For example, this set from #145 hardens the unit. With systemd 259,
-`systemd-analyze security --offline=true` rates the Galaxy unit 3.7 with it and 9.0 without (scores vary between
-systemd versions). #145 also had `SystemCallFilter=~@clock @obsolete @privileged`, which is left out here because it
-didn't seem to work there:
+list with one directive per item (default: `[]`). They go at the end of the section, so they override the role's own
+settings (systemd uses the last value of a setting). For example, this set from [#145][issue-145] hardens the unit. With
+systemd 259, `systemd-analyze security --offline=true` rates the Galaxy unit 3.7 with it and 9.0 without (scores vary
+between systemd versions). [#145][issue-145] also had `SystemCallFilter=~@clock @obsolete @privileged`, which is left
+out here because it didn't seem to work there:
 
 ```yaml
 galaxy_systemd_extra_directives:
@@ -326,18 +327,27 @@ galaxy_systemd_extra_directives:
   - NoNewPrivileges=yes
 ```
 
-Test these before relying on them. For example:
+Before you rely on them:
 
-- `ProtectHome` hides `/home`, `/root` and `/run/user`, so it breaks a layout, venv or job directory under `/home`.
-- `PrivateTmp` gives the unit its own `/tmp`, so it breaks anything that shares files through `/tmp` with processes
-  outside the unit.
-- `NoNewPrivileges` and `RestrictNamespaces` can break container runners such as Apptainer, and the
-  `CapabilityBoundingSet` above leaves out `CAP_SETUID` and `CAP_SETGID`, which running jobs as the real user needs.
+- They only reach the `galaxy.service` unit that the role writes. With `gravity.process_manager: systemd`, Gravity
+  writes its own `galaxy-*.service` units for the processes that run Galaxy, and those don't get these directives.
+- systemd applies them when it starts the service, so a change needs `systemctl restart galaxy` (add `--user` for a
+  user unit). In Gravity mode, the role's handlers run `galaxyctl graceful`, which restarts the processes inside the
+  service but not the service itself.
+- Test them. For example:
+
+  - `ProtectHome` hides `/home`, `/root` and `/run/user`, so it breaks a layout, venv or job directory under `/home`.
+  - `PrivateTmp` gives the unit its own `/tmp`, so it breaks anything that shares files through `/tmp` with processes
+    outside the unit.
+  - `NoNewPrivileges` and `RestrictNamespaces` can break container runners such as Apptainer, and the
+    `CapabilityBoundingSet` above leaves out `CAP_SETUID` and `CAP_SETGID`, which running jobs as the real user needs.
 
 In a user unit (`galaxy_systemd_root: false`), `ProtectControlGroups` isn't supported, and the namespace options
-(`ProtectHome`, `PrivateTmp`, `PrivateDevices`, `ProtectKernel*`, `ProtectHostname`) turn on `PrivateUsers=`
-implicitly. That needs unprivileged user namespaces in the kernel, and inside it other users' files appear to be owned
-by `nobody`.
+(`ProtectSystem`, `ProtectHome`, `PrivateTmp`, `PrivateDevices`, `ProtectKernel*`, `ProtectHostname`) turn on
+`PrivateUsers=` implicitly. That needs unprivileged user namespaces in the kernel, and inside it other users' files
+appear to be owned by `nobody`.
+
+[issue-145]: https://github.com/galaxyproject/ansible-galaxy/issues/145
 
 You can use systemd user mode if you do not have root privileges on your system by setting `galaxy_systemd_root` to
 `false`. Add `--user` to the `systemctl` commands above to interact with systemd in user mode:
