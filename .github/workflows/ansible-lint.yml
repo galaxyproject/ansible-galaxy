@@ -25,6 +25,7 @@ jobs:
           tasks/_inc_galaxy_version.yml
           tasks/cleanup.yml
           tasks/database.yml
+          tasks/layout.yml
           tasks/local_tools.yml
           tasks/static_setup.yml
           tasks/user-facts.yml
@@ -33,6 +34,7 @@ jobs:
           tests/test_cleanup.yml
           tests/test_database.yml
           tests/test_handlers.yml
+          tests/test_layout.yml
           tests/test_local_tools.yml
           tests/test_systemd_unit.yml
           tests/test_tmpclean_command.yml
