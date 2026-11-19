@@ -3,6 +3,12 @@
 - name: Build Galaxy client
   block:
 
+    # A source build replaces the prebuilt client in static/dist, so the record of the staged prebuilt version is stale.
+    - name: Remove the staged prebuilt client version
+      file:
+        path: "{{ __galaxy_prebuilt_client_marker }}"
+        state: absent
+
     - name: Ensure client_build_hash.txt exists
       copy:
         content: "new-unbuilt"
